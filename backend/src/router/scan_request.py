@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 from typing_extensions import Self
 
 from ..validators.client_validator import validate_client_blocklist_check
-from ..validators.request_validator import validate_domain
+from ..validators.request_validator import validate_domain, validate_domain_blocklist_check
 
 
 class ScanRequest(BaseModel):
@@ -32,6 +32,14 @@ class ScanRequest(BaseModel):
         """
         # delegate validation to the external validator
         return validate_domain(value)
+
+    @field_validator("domain")
+    def _validate_domain_in_blocklist(cls, value):
+        """
+        Check if domain is blocked
+        """
+        # delegate validation to the external validator
+        return validate_domain_blocklist_check(value)
 
     @model_validator(mode="after")
     def _validate_session_in_blocklist(self) -> Self:

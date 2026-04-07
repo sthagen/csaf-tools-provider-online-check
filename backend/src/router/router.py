@@ -112,50 +112,6 @@ async def start_scan(request: ScanRequest) -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail=f"Failed to start scan: {str(e)}")
 
 
-@router.get(
-    "/scan/get/{task_id}",
-    summary="Get output of scan",
-    description="Get latest feedback of scan, either from cache or from running task",
-    tags=["scan"],
-    status_code=status.HTTP_200_OK,
-)
-async def get_scan(task_id: str) -> Dict[str, Any]:
-    """
-    Returns the current or cached output of the domain task which is running or has run
-    csaf checker on the associated domain
-    """
-
-    # 1. Find domain task in running task
-    slot = Slot_Manager().get_slot_by_task_id(task_id)
-    status = ScanResponseStatus.ERROR
-
-    if slot is not None:
-        data = slot.running_task.get_data(False)
-
-        if slot.running_task.is_paused():
-            status = ScanResponseStatus.PAUSED
-        else:
-            status = ScanResponseStatus.RUNNING_CHECKER
-    else:
-        # 2. Find domain task in database cache
-        data = Database_Manager().load_task_by_id(task_id)
-
-        if data is not None:
-            status = ScanResponseStatus.DONE_CHECKER
-
-    if data is None:
-        return {"status": status}
-
-    try:
-        return {
-            "status": status,
-            "runtime_output": data.csaf_checker_output_runtime_log,
-            "results_checker": data.csaf_checker_output_result,
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get scan: {str(e)}")
-
-
 @router.get("/health", summary="Health Check", tags=["devops"])
 async def health_check():
     """Check for free slots and csaf_checker binary"""
