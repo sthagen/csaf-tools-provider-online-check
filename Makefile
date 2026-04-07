@@ -39,6 +39,12 @@ coverage-containerd:
 	make dev-exec backend EXEC_COMMAND="backend coverage run -m pytest --log-cli-level=INFO --timeout=50 tests"
 	make dev-exec backend EXEC_COMMAND="backend coverage report -m"
 
+# CI
+
+ci-coverage:
+	make dev-exec backend EXEC_COMMAND="backend coverage run -m pytest --log-cli-level=DEBUG --timeout=15 tests"
+	make dev-exec backend EXEC_COMMAND="backend coverage report --fail-under=95"
+
 # CSAF
 
 csaf-check:

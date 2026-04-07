@@ -35,8 +35,8 @@ jobs:
         docker compose logs backend
         exit 1
 
-    - name: Run Tests
-      run: make run-tests-containerd
+    - name: Run Tests with coverage
+      run: make ci-coverage
 
     - name: Close container
       run: make dev-stop

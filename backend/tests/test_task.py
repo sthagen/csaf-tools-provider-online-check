@@ -27,7 +27,7 @@ def createTask(fast: bool) -> Domain_Task:
 
 async def runTaskInBackground(task: Domain_Task):
     asyncio.create_task(task.run_checker())
-    while task.get_csaf_checker() is None:
+    while (task.get_csaf_checker() is None) and (task.is_in_valid_state()):
         await asyncio.sleep(0.1)
 
 async def waitUntilLoopStepIncremented(task: Domain_Task):
@@ -130,7 +130,7 @@ class TestWorkingDomainTask:
 
     @pytest.mark.asyncio
     async def test_signaling_missing_task(self):
-        """ Tests if signals to a non existant task cause errors """
+        """ Tests if signals to a non existent task causes errors """
         task = createTask(False)
 
         # Propagate signals to task before starting csaf checker
