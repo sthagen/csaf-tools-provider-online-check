@@ -15,6 +15,7 @@ jobs:
         python-version: ${{ env.PYTHON_VERSION }}
         cache: 'pip'
         cache-dependency-path: ./backend/requirements.txt
+        pip-install: ./backend/requirements.txt
 
     - name: Build and run
       run: make dev-detached
@@ -68,6 +69,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
           cache-dependency-path: ./backend/requirements.txt
+          pip-install: ./backend/requirements.txt
 
       - name: Check black
         run: black ./backend/src/
