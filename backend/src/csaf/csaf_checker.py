@@ -1,25 +1,25 @@
 # Interface to call, communicate with and save results of csaf checker
 
 # Involved in: 7, 8, 9
-from ..database.domain_task_data import Domain_Task_Data
-
+import asyncio
+import logging
+import os
+import signal
 from typing import Optional
 
-import asyncio
-import os
-import logging
-import signal
+from ..database.domain_task_data import Domain_Task_Data
 
 logger = logging.getLogger(__name__)
 
 CSAF_BINARY_PATH = "./bin/csaf-binary/bin-linux-amd64/"
 CSAF_CHECKER_BINARY = "csaf_checker"
 CACHE_PATH_VALIDATOR = "/app/store/validator/cache/"
-CSAF_CHECKER_TIMEOUT: Optional[int] = int(os.environ.get("CSAF_CHECKER_TIMEOUT", "0")) or None
+CSAF_CHECKER_TIMEOUT: Optional[int] = (
+    int(os.environ.get("CSAF_CHECKER_TIMEOUT", "0")) or None
+)
 
 
-class CSAF_Checker():
-
+class CSAF_Checker:
     _signal_paused: bool = False
     _signal_stop: bool = False
     _signal_restart: bool = False
@@ -171,10 +171,14 @@ class CSAF_Checker():
 
     async def run(self, data: Domain_Task_Data):
         try:
-            return await asyncio.wait_for(self.__run(data), timeout=CSAF_CHECKER_TIMEOUT)
+            return await asyncio.wait_for(
+                self.__run(data), timeout=CSAF_CHECKER_TIMEOUT
+            )
 
         except asyncio.TimeoutError:
-            logger.warning(f"csaf_checker timed out for domain {data.domain} after {CSAF_CHECKER_TIMEOUT}s")
+            logger.warning(
+                f"csaf_checker timed out for domain {data.domain} after {CSAF_CHECKER_TIMEOUT}s"
+            )
             await self.__terminate_asyncio_task()
             return False
 
@@ -191,7 +195,9 @@ class CSAF_Checker():
 
         except FileNotFoundError as e:
             # binary not found
-            logger.error(f"CSAF Checker Binary not found: {self.__csaf_checker_path()}, error: {e}")
+            logger.error(
+                f"CSAF Checker Binary not found: {self.__csaf_checker_path()}, error: {e}"
+            )
             return False
 
         except Exception as e:
