@@ -116,15 +116,11 @@ class CSAF_Checker(BaseModel):
 
         logger.info("Terminating running csaf checker task")
         try:
-            self._running_task_checker.terminate()
+            if not asyncio.get_event_loop().is_closed():
+                self._running_task_checker.terminate()
             return
         except Exception:
             logger.exception("Failed to terminate subprocess on stop request")
-        try:
-            await self._running_task_checker.wait()
-            await self._running_task_checker.terminate()
-        except Exception:
-            pass
 
     async def run(self, data: Domain_Task_Data) -> (int, str):
         """
