@@ -1,14 +1,15 @@
 # Interface to call, communicate with and save results of csaf checker
 
-from ..database.domain_task_data import Domain_Task_Data
+import asyncio
+import logging
+import os
+import signal
+from pathlib import Path
+from typing import Annotated, Optional
 
-from typing import Optional, Annotated
 from pydantic import BaseModel, Field
 
-import asyncio
-import os
-import logging
-import signal
+from ..database.domain_task_data import Domain_Task_Data
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,7 @@ CACHE_PATH_VALIDATOR = "/app/store/validator/cache/"
 CSAF_CHECKER_TIMEOUT: Optional[int] = (
     int(os.environ.get("CSAF_CHECKER_TIMEOUT", "0")) or None
 )
+
 
 class CSAF_Checker(BaseModel):
     _signal_paused: Annotated[
@@ -225,7 +227,7 @@ class CSAF_Checker(BaseModel):
             await self.__terminate_asyncio_task()
             return (
                 1,
-                f"CSAF Checker timed out for domain {data.domain} after {CSAF_CHECKER_TIMEOUT}s"
+                f"CSAF Checker timed out for domain {data.domain} after {CSAF_CHECKER_TIMEOUT}s",
             )
 
         except asyncio.CancelledError as e:
