@@ -50,7 +50,7 @@ services:
   validator:
     build:
       context: ./validator
-      target: dev
+      target: prod
     container_name: validator
     ports:
       - "${PORT_VALIDATOR:-48092}:8082"
