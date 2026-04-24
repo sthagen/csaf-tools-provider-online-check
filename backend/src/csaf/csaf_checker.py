@@ -165,7 +165,7 @@ class CSAF_Checker(BaseModel):
                         logger.debug(f"SIGSTOP failed: {e}")
                         return (1, f"Error: Couldn't pause domain task: {e}")
 
-                while self._pause_event.is_set():
+                while self._signal_paused is True:
                     await asyncio.sleep(self._wait_time_interval)
                     pause_timer -= self._wait_time_interval
 
