@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
 cd /app/node_modules/@secvisogram/csaf-validator-service || exit 1

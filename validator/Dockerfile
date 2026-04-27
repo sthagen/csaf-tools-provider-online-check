@@ -22,6 +22,5 @@ CMD ["sh", "/app/command.sh"]
 FROM nginx:1.29.4 AS prod
 
 COPY --from=build /app/dist/client/browser /usr/share/nginx/html
-COPY nginx/nginx.conf /etc/nginx/nginx.conf
 
 CMD ["sh", "/app/command.sh"]
