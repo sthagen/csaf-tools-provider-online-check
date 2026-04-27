@@ -223,9 +223,9 @@ class CSAF_Checker(BaseModel):
                 # Runtime Line
                 data.csaf_checker_output_runtime_log.append(decoded_line)
 
-            if exitCode != 0:
-                logger.info(f"Task exited with code {exitCode} and error message: {errorMsg}")
-                return (exitCode, errorMsg)
+        if exitCode != 0:
+            logger.info(f"Task exited with code {exitCode} and error message: {errorMsg}")
+            return (exitCode, errorMsg)
 
         # Get exit codes
         exitCode = await self._running_task_checker.wait()
