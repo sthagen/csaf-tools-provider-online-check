@@ -23,6 +23,13 @@ CSAF_CHECKER_TIMEOUT: Optional[int] = (
 
 
 class CSAF_Checker(BaseModel):
+    _loop_step: Annotated[
+        int,
+        Field(
+            description="Current loop iteration step. Increments each time the run loop is reiterated"
+        )
+    ] = 0
+
     _signal_paused: Annotated[
         bool,
         Field(
@@ -71,6 +78,9 @@ class CSAF_Checker(BaseModel):
     def restart(self):
         self._signal_restart = True
 
+    def get_loop_step(self) -> int:
+        return self._loop_step
+
     def __csaf_checker_path(self) -> str:
         return os.path.join(CSAF_BINARY_PATH, CSAF_CHECKER_BINARY)
 
@@ -83,14 +93,15 @@ class CSAF_Checker(BaseModel):
         args = ["--verbose", data.domain]
 
         if data.enable_validator:
-            # Create cache folder if it doesnt exist yet
-            cache_path = Path(CACHE_PATH_VALIDATOR)
-            cache_path.mkdir(parents=True, exist_ok=True)
-
             args.append("--validator=http://validator:8082")
-            args.append(
-                f"--validator_cache={CACHE_PATH_VALIDATOR}{data.validator_cache_file}"
-            )
+
+            if data.enable_validator_cache:
+                # Create cache folder if it doesnt exist yet
+                cache_path = Path(CACHE_PATH_VALIDATOR)
+                cache_path.mkdir(parents=True, exist_ok=True)
+                args.append(
+                    f"--validator_cache={CACHE_PATH_VALIDATOR}{data.validator_cache_file}"
+                )
 
         # Run task asynchroniously
         self._running_task_checker = await asyncio.create_subprocess_exec(
@@ -109,13 +120,11 @@ class CSAF_Checker(BaseModel):
 
         logger.info("Terminating running csaf checker task")
         try:
-            self._running_task_checker.terminate()
+            if not asyncio.get_event_loop().is_closed():
+                self._running_task_checker.terminate()
+            return
         except Exception:
             logger.exception("Failed to terminate subprocess on stop request")
-        try:
-            await self._running_task_checker.wait()
-        except Exception:
-            pass
 
     async def __run(self, data: Domain_Task_Data) -> (int, str):
         """
@@ -135,17 +144,19 @@ class CSAF_Checker(BaseModel):
         logger.info(f"Async CSAF checker task for domain {data.domain}")
 
         # Stream output lines as they come
+        exitCode = 0
+        errorMsg = ""
         inJSONStructure = False
         while True:
             # Check signals
-
             # - Termination Signal
             if self._signal_stop:
                 logger.info(f"Stop csaf checker task for domain {data.domain}")
                 await self.__terminate_asyncio_task()
 
                 self._signal_stop = False
-                return (2, "")
+                exitCode = 2
+                break
 
             # - Restart Signal
             if self._signal_restart:
@@ -162,7 +173,7 @@ class CSAF_Checker(BaseModel):
                     try:
                         os.kill(self._running_task_checker.pid, signal.SIGSTOP)
                     except Exception as e:
-                        logger.debug(f"SIGSTOP failed: {e}")
+                        logger.info(f"SIGSTOP failed: {e}")
                         return (1, f"Error: Couldn't pause domain task: {e}")
 
                 while self._signal_paused is True:
@@ -171,12 +182,14 @@ class CSAF_Checker(BaseModel):
 
                     if pause_timer <= 0:
                         await self.__terminate_asyncio_task()
-                        return (
-                            1,
-                            "Error: Time Out: Domain task was paused for too long",
-                        )
+                        exitCode = 1
+                        errorMsg = "Error: Time Out: Domain task was paused for too long"
+                        break
 
-                # stop early in case restart or stop has been signaled while task was paused
+                if exitCode != 0:
+                    break
+
+                # reiterate early in case restart or stop has been signaled while task was paused
                 if self._signal_restart or self._signal_stop:
                     continue
 
@@ -185,13 +198,18 @@ class CSAF_Checker(BaseModel):
                     try:
                         os.kill(self._running_task_checker.pid, signal.SIGCONT)
                     except Exception as e:
-                        logger.debug(f"SIGCONT failed: {e}")
-                        return (1, f"Error: Couldn't unpause domain task: {e}")
+                        logger.info(f"SIGCONT failed: {e}")
+                        exitCode = 1
+                        errorMsg = f"Error: Couldn't unpause domain task: {e}"
+                        break
 
-                self._signal_paused = False
+            self._signal_paused = False
 
             # Interpret output
             line = await self._running_task_checker.stdout.readline()
+
+            self._loop_step = self._loop_step + 1
+
             if not line:
                 break
             decoded_line = line.decode(errors="replace").rstrip("\n")
@@ -205,14 +223,19 @@ class CSAF_Checker(BaseModel):
                 # Runtime Line
                 data.csaf_checker_output_runtime_log.append(decoded_line)
 
-        returncode = await self._running_task_checker.wait()
-        logger.info(f"Task done with returncode {returncode}")
+        if exitCode != 0:
+            logger.info(f"Task exited with code {exitCode} and error message: {errorMsg}")
+            return (exitCode, errorMsg)
 
-        if returncode == 0:
-            # Write Task
+        # Get exit codes
+        exitCode = await self._running_task_checker.wait()
+        logger.info(f"Task done with exit code {exitCode}")
+
+        if exitCode == 0:
+            # Success
             return (0, "")
         else:
-            return (1, f"CSAF Process ended with status code: {returncode}")
+            return (1, f"CSAF Process ended with status code {exitCode} and error message: {errorMsg}")
 
     async def run(self, data: Domain_Task_Data) -> (int, str):
         try:
@@ -232,13 +255,7 @@ class CSAF_Checker(BaseModel):
 
         except asyncio.CancelledError as e:
             # If the coroutine is cancelled, try to terminate the process
-            try:
-                await self.__terminate_asyncio_task()
-            except Exception as ex:
-                return (
-                    1,
-                    f"CSAF Process cancelled with error: {e}. Terminating task also failed: {ex}",
-                )
+            await self.__terminate_asyncio_task()
             return (1, f"CSAF Process cancelled with error: {e}")
 
         except FileNotFoundError as e:
@@ -251,11 +268,5 @@ class CSAF_Checker(BaseModel):
         except Exception as e:
             # Unexpected error running the process
             # Try to terminate the process
-            try:
-                await self.__terminate_asyncio_task()
-            except Exception as ex:
-                return (
-                    1,
-                    f"CSAF Checker error: {e}. Terminating task also failed: {ex}",
-                )
+            await self.__terminate_asyncio_task()
             return (1, f"CSAF Checker error: {e}")
