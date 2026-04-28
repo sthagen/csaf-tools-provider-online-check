@@ -98,6 +98,7 @@
                 <a href="https://github.com/Intevation/csaf-provider-scan/" target="_blank">
                   Website and Source Code
                 </a>
+                &nbsp;
                 <a :href="apiDocsUrl" target="_blank">
                   API Documentation
                 </a>
