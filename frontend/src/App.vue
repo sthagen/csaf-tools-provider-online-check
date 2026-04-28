@@ -37,6 +37,17 @@
                 </button>
               </form>
 
+              <!--- display of requirements messages -->
+              <div v-if="messagesList" class="mt-4">
+                <div v-if="result?.status === 'DONE_CHECKER'">
+                  <h5 class="alert-heading">Scan Done</h5>
+                </div>
+                <div v-for="item of messagesList" :class="{
+                  'text-green': isGreen(item), 'text-orange': isOrange(item), 'test-red': isRed(item)}">
+                  {{ item.text }}
+                </div>
+              </div>
+
               <div v-if="result" class="mt-4">
                 <div :class="['alert', resultClass]" role="alert">
                   <div v-if="result.status === 'ERROR' || result.status === 'UNDEFINED'">
@@ -123,7 +134,8 @@ export default {
       domain: '',
       loading: false,
       result: null,
-      error: null
+      error: null,
+      messagesList: null
     }
   },
   computed: {
@@ -156,10 +168,36 @@ export default {
           session_id: this.session_id
         })
         this.result = response.data
+        this.extractMessagesFromResultsChecker(this.result.results_checker)
       } catch (err) {
         this.error = err.response?.data?.detail || err.message || 'An error occurred while starting the scan'
       } finally {
         this.loading = false
+      }
+    },
+    isGreen(item) {
+      return item.type === 0
+    },
+    isOrange(item) {
+      return item.type === 1
+    },
+    isRed(item) {
+      return item.type === 2
+    },
+    extractMessagesFromResultsChecker(results_checker) {
+      if (typeof results_checker === 'string') {
+        results_checker = JSON.parse(results_checker)
+      }
+      if (results_checker.domains.length) {
+        this.extractMessages(results_checker.domains[0].requirements)
+      }
+    },
+    extractMessages(requirements) {
+      this.messagesList = []
+      for (const req of requirements) {
+        for (const msg2 of req.messages) {
+          this.messagesList.push(msg2)
+        }
       }
     }
   }
@@ -170,5 +208,17 @@ export default {
 #app {
   min-height: 100vh;
   background-color: #f8f9fa;
+
+  .text-green {
+    color: green;
+  }
+
+  .text-orange {
+    color: orange;
+  }
+
+  .test-red {
+    color: red;
+  }
 }
 </style>
