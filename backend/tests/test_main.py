@@ -2,7 +2,7 @@ import pytest
 from main import app
 from src.router.scan_request import ScanRequest
 from fastapi.testclient import TestClient
-from src.router.redis import Redis
+from src.database.redis import Redis_Controller
 
 client = TestClient(app)
 
@@ -108,6 +108,18 @@ class TestScanStartEndpointDomains:
         data = response.json()
         assert "detail" in data
 
+    def test_start_scan_blocked_domain(self):
+        """Fails with blocked domain"""
+        Redis_Controller().block_domain("example.com")
+        response = client.post(
+            "/api/scan/start",
+            json=mock_scan_request_variable_domain("example.com")
+        )
+        Redis_Controller().unblock_domain("example.com")
+        assert response.status_code == 422
+        data = response.json()
+        assert "detail" in data
+
     def test_start_scan_invalid_domain_with_protocol(self):
         """Fails with protocol in domain"""
         response = client.post(
@@ -204,7 +216,7 @@ class TestScanStartEndpointSessionId:
 
     def test_start_scan_blocked_session(self):
         """Fails with blocked session id"""
-        Redis().block_session_id_for_domain("12", "example.com")
+        Redis_Controller().block_session_id_for_domain("12", "example.com")
         response = client.post(
             "/api/scan/start",
             json=mock_scan_request_variable_session_id("12")
@@ -215,8 +227,8 @@ class TestScanStartEndpointSessionId:
 
     def test_start_scan_unblocked_session(self):
         """Fails with unblocked session id"""
-        Redis().block_session_id_for_domain("12", "example.com")
-        Redis().unblock_session_id_for_domain("12", "example.com")
+        Redis_Controller().block_session_id_for_domain("12", "example.com")
+        Redis_Controller().unblock_session_id_for_domain("12", "example.com")
         response = client.post(
             "/api/scan/start",
             json=mock_scan_request_variable_session_id("12")

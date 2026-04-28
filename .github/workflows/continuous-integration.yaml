@@ -12,10 +12,8 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v6
       with:
-        python-version: ${{ env.PYTHON_VERSION }}
-
-    - name: Install requirements
-      run: pip install --requirement backend/requirements.txt
+        python-version: "3.14"
+        pip-install: "-r ./backend/requirements.txt"
 
     - name: Build and run
       run: make dev-detached
@@ -36,8 +34,8 @@ jobs:
         docker compose ps
         exit 1
 
-    - name: Run Tests
-      run: make run-tests-containerd
+    - name: Run Tests with coverage
+      run: make ci-coverage
 
     - name: Close container
       run: make dev-stop
@@ -67,10 +65,8 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install requirements
-        run: pip install --requirement ./backend/requirements.txt
+          python-version: "3.14"
+          pip-install: "-r ./backend/requirements.txt"
 
       - name: Check black
         run: black ./backend/src/

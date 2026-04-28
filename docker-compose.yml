@@ -5,7 +5,7 @@ services:
       target: dev
     container_name: backend
     ports:
-      - "${PORT_BACKEND:-48090}:8000"
+      - "${PORT_BACKEND:-443}:8000"
     volumes:
       - ./backend:/app
     environment:
@@ -39,7 +39,7 @@ services:
       - /app/node_modules
     environment:
       - VITE_FOOTER_TEXT=${FOOTER_TEXT:-}
-      - VITE_BACKEND_PORT=${PORT_BACKEND:-48090}
+      - VITE_BACKEND_PORT=${PORT_BACKEND:-443}
     restart: unless-stopped
     networks:
       - scanner
@@ -51,6 +51,17 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+
+  validator:
+    build:
+      context: ./validator
+      target: dev
+    container_name: validator
+    ports:
+      - "${PORT_VALIDATOR:-48092}:8082"
+    restart: unless-stopped
+    depends_on:
+      - redis
 
   redis:
     image: redis:alpine

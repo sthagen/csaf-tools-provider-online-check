@@ -31,7 +31,7 @@ services:
       target: prod
       args:
         - VITE_FOOTER_TEXT=${FOOTER_TEXT:-}
-        - VITE_BACKEND_PORT=443
+        - VITE_BACKEND_PORT=${VITE_BACKEND_PORT:-48090}
     container_name: frontend
     ports:
       - "${PORT_FRONTEND:-48091}:8080"
@@ -46,6 +46,17 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
+
+  validator:
+    build:
+      context: ./validator
+      target: prod
+    container_name: validator
+    ports:
+      - "${PORT_VALIDATOR:-48092}:8082"
+    restart: unless-stopped
+    depends_on:
+      - redis
 
   redis:
     image: redis:alpine
