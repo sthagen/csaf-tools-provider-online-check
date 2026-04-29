@@ -44,7 +44,7 @@
                     <p class="mb-0">{{ result.error }}</p>
                   </div>
                   <div v-if="result.status === 'INITIALIZED'">
-                    <h5 class="alert-heading">Scan started. Please click Update</h5>
+                    <h5 class="alert-heading">Scan started...</h5>
                     <pre>{{ result.results_checker }}</pre>
                   </div>
                   <div v-if="result.status === 'RUNNING_CHECKER'">
@@ -159,7 +159,11 @@ export default {
       } catch (err) {
         this.error = err.response?.data?.detail || err.message || 'An error occurred while starting the scan'
       } finally {
-        this.loading = false
+        if (['INITIALIZED', 'RUNNING_CHECKER'].includes(this.result?.status) ) {
+          setTimeout(this.startScan, 3000)
+        } else {
+          this.loading = false
+        }
       }
     }
   }
