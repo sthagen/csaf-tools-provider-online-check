@@ -45,8 +45,7 @@
                 <div v-else-if="result?.status === 'CACHED_CHECKER'">
                   <h5 class="alert-heading">Scan found in cache</h5>
                 </div>
-                <div v-for="item of messagesList" :class="{
-                  'text-green': isGreen(item), 'text-orange': isOrange(item), 'text-red': isRed(item)}">
+                <div v-for="item of messagesList" :class="messageClass(item)">
                   {{ item.text }}
                 </div>
               </div>
@@ -202,16 +201,19 @@ export default defineComponent({
         this.loading = false
       }
     },
-    isGreen(item) {
-      return item.type === 0
+    messageClass(item: { type: number}) {
+      switch (item.type) {
+        case 0:
+          return 'text-green'
+        case 1:
+          return 'text-orange'
+        case 2:
+          return 'text-red'
+        default:
+          return ''
+      }
     },
-    isOrange(item) {
-      return item.type === 1
-    },
-    isRed(item) {
-      return item.type === 2
-    },
-    extractMessagesFromResultsChecker(results_checker) {
+    extractMessagesFromResultsChecker(results_checker: any) {
       if (typeof results_checker === 'string') {
         results_checker = JSON.parse(results_checker)
       }
@@ -219,7 +221,7 @@ export default defineComponent({
         this.extractMessages(results_checker.domains[0].requirements)
       }
     },
-    extractMessages(requirements) {
+    extractMessages(requirements: {messages: {text: string, type: number}[]}[]) {
       this.messagesList = []
       for (const req of requirements) {
         for (const msg2 of req.messages) {
