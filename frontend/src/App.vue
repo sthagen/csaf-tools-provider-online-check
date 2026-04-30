@@ -36,6 +36,7 @@
                   {{ result ? 'Update' : 'Start Scan' }}
                 </button>
               </form>
+              <VersionDisplay :checkerVersion="version"/>
 
               <div v-if="result" class="mt-4">
                 <div :class="['alert', resultClass]" role="alert">
@@ -114,6 +115,7 @@
 
 <script>
 import axios from 'axios'
+import VersionDisplay from './VersionDisplay.vue';
 
 export default {
   name: 'App',
@@ -125,6 +127,9 @@ export default {
       result: null,
       error: null
     }
+  },
+  components: {
+    VersionDisplay
   },
   computed: {
     resultClass() {
@@ -142,6 +147,13 @@ export default {
     },
     footerText() {
       return import.meta.env.VITE_FOOTER_TEXT || ''
+    },
+    version() {
+      let results_checker = this.result?.results_checker
+      if (typeof results_checker === 'string') {
+        results_checker = JSON.parse(results_checker)
+      }
+      return results_checker?.version
     }
   },
   methods: {
