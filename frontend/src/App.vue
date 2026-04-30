@@ -112,10 +112,23 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import axios from 'axios'
+import { defineComponent } from 'vue'
 
-export default {
+interface ImportMeta {
+  env: {VITE_BACKEND_PORT: number, VITE_FOOTER_TEXT: string};
+}
+
+interface AppData {
+  session_id: string;
+  domain: string;
+  loading: boolean;
+  result: any;
+  error: any;
+}
+
+export default defineComponent({
   name: 'App',
   data() {
     return {
@@ -124,7 +137,7 @@ export default {
       loading: false,
       result: null,
       error: null
-    }
+    } as AppData
   },
   computed: {
     resultClass() {
@@ -134,14 +147,14 @@ export default {
       // Use the same protocol and host as the client, but with backend port
       const protocol = window.location.protocol
       const hostname = window.location.hostname
-      const backendPort = import.meta.env.VITE_BACKEND_PORT || 48090
+      const backendPort = (import.meta as unknown as ImportMeta).env.VITE_BACKEND_PORT || 48090
       return `${protocol}//${hostname}:${backendPort}`
     },
     apiDocsUrl() {
       return `${this.backendUrl}/api/docs`
     },
     footerText() {
-      return import.meta.env.VITE_FOOTER_TEXT || ''
+      return (import.meta as unknown as ImportMeta).env.VITE_FOOTER_TEXT || ''
     }
   },
   methods: {
@@ -156,7 +169,7 @@ export default {
           session_id: this.session_id
         })
         this.result = response.data
-      } catch (err) {
+      } catch (err: any) {
         this.error = err.response?.data?.detail || err.message || 'An error occurred while starting the scan'
       } finally {
         if (['INITIALIZED', 'RUNNING_CHECKER'].includes(this.result?.status) ) {
@@ -167,7 +180,7 @@ export default {
       }
     }
   }
-}
+})
 </script>
 
 <style scoped>
