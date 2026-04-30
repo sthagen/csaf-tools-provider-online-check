@@ -33,7 +33,7 @@
                   :disabled="loading"
                 >
                   <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  {{ result ? 'Update' : 'Start Scan' }}
+                  <span v-else>{{ 'Start Scan' }}</span>
                 </button>
               </form>
 
