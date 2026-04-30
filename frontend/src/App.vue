@@ -42,13 +42,19 @@
                 <div v-if="result?.status === 'DONE_CHECKER'">
                   <h5 class="alert-heading">Scan Done</h5>
                 </div>
+                <div v-else-if="result?.status === 'CACHED_CHECKER'">
+                  <h5 class="alert-heading">Scan found in cache</h5>
+                </div>
                 <div v-for="item of messagesList" :class="{
-                  'text-green': isGreen(item), 'text-orange': isOrange(item), 'test-red': isRed(item)}">
+                  'text-green': isGreen(item), 'text-orange': isOrange(item), 'text-red': isRed(item)}">
                   {{ item.text }}
                 </div>
               </div>
 
-              <div v-if="result" class="mt-4">
+              <div 
+                v-if="result && ['ERROR', 'UNDEFINED', 'INITIALIZED', 'RUNNING_CHECKER', 'PAUSED'].includes(result?.status)"
+                class="mt-4"
+              >
                 <div :class="['alert', resultClass]" role="alert">
                   <div v-if="result.status === 'ERROR' || result.status === 'UNDEFINED'">
                     <h5 class="alert-heading">Error</h5>
@@ -62,16 +68,8 @@
                     <h5 class="alert-heading">Scan Running...</h5>
                     <pre>{{ result.results_checker }}</pre>
                   </div>
-                  <div v-if="result.status === 'CACHED_CHECKER'">
-                    <h5 class="alert-heading">Scan found in Cache</h5>
-                    <pre>{{ result.results_checker }}</pre>
-                  </div>
                   <div v-if="result.status === 'PAUSED'">
                     <h5 class="alert-heading">Scan paused</h5>
-                    <pre>{{ result.results_checker }}</pre>
-                  </div>
-                  <div v-if="result.status === 'DONE_CHECKER'">
-                    <h5 class="alert-heading">Scan Done</h5>
                     <pre>{{ result.results_checker }}</pre>
                   </div>
                 </div>
@@ -140,7 +138,18 @@ export default {
   },
   computed: {
     resultClass() {
-      return this.result?.status != 'ERROR' ? 'alert-success' : 'alert-danger'
+      switch(this.result?.status) {
+        case 'ERROR':
+          return 'alert-danger'
+        case 'UNDEFINED':
+          return 'alert-danger'
+        case 'DONE_CHECKER':
+          return 'alert-success'
+        case 'CACHED_CHECKER':
+          return 'alert-success'
+        default:
+          return 'alert-info'
+      }
     },
     backendUrl() {
       // Use the same protocol and host as the client, but with backend port
@@ -168,7 +177,11 @@ export default {
           session_id: this.session_id
         })
         this.result = response.data
-        this.extractMessagesFromResultsChecker(this.result.results_checker)
+        if (['DONE_CHECKER', 'CACHED_CHECKER'].includes(this.result?.status)) {
+          this.extractMessagesFromResultsChecker(this.result.results_checker)
+        } else {
+          this.messagesList = null
+        }
       } catch (err) {
         this.error = err.response?.data?.detail || err.message || 'An error occurred while starting the scan'
       } finally {
@@ -217,7 +230,7 @@ export default {
     color: orange;
   }
 
-  .test-red {
+  .text-red {
     color: red;
   }
 }
