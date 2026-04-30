@@ -217,14 +217,12 @@ export default defineComponent({
       if (typeof results_checker === 'string') {
         results_checker = JSON.parse(results_checker)
       }
-      if (results_checker.domains.length) {
-        this.extractMessages(results_checker.domains[0].requirements)
-      }
+      this.extractMessages(results_checker.domains[0].requirements)
     },
     extractMessages(requirements: {messages: {text: string, type: number}[]}[]) {
       this.messagesList = []
       for (const req of requirements) {
-        for (const msg2 of req.messages) {
+        for (const msg2 of req.messages ?? []) {
           this.messagesList.push(msg2)
         }
       }
