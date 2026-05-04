@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import Annotated, Optional
 
 import redis
@@ -11,11 +12,11 @@ from .domain_task_data import Domain_Task_Data
 logger = logging.getLogger(__name__)
 
 # Fields
+ENV_CACHE_LIFETIME = "CACHE_TIMEOUT_SECONDS"
 BLOCKLIST_CLIENT_DB_FIELD = "blocklist-client:"
 BLOCKLIST_DOMAIN_DB_FIELD = "blocklist-domain:"
 RECORDED_DOMAIN_TASK_BY_DOMAIN = "domain-task:"
 RECORDED_DOMAIN_TASK_BY_UUID = "domain-task-id-to-domain:"
-
 
 class Redis_Controller:
     _instance: Annotated[
@@ -42,9 +43,11 @@ class Redis_Controller:
         # Save task as json blob
         json = task.model_dump_json()
 
+        CACHE_LIFETIME = os.getenv(ENV_CACHE_LIFETIME, 604800)
+
         # Connect json with task uuid and hashed domain name
-        self._redis.set(RECORDED_DOMAIN_TASK_BY_DOMAIN + task.get_domain_hash(), json)
-        self._redis.set(RECORDED_DOMAIN_TASK_BY_UUID + str(task.uuid), json)
+        self._redis.set(RECORDED_DOMAIN_TASK_BY_DOMAIN + task.get_domain_hash(), json, ex=CACHE_LIFETIME)
+        self._redis.set(RECORDED_DOMAIN_TASK_BY_UUID + str(task.uuid), json, ex=CACHE_LIFETIME)
 
     def get_domain_task_by_uuid(self, uuid: str) -> Domain_Task_Data:
         if not self._redis.exists(RECORDED_DOMAIN_TASK_BY_UUID + str(uuid)):

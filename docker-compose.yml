@@ -11,6 +11,7 @@ services:
     environment:
       - SCAN_SLOTS=${SCAN_SLOTS:-10}
       - CSAF_CHECKER_TIMEOUT=${CSAF_CHECKER_TIMEOUT:-3600}
+      - CACHE_TIMEOUT_SECONDS=${CACHE_TIMEOUT_SECONDS-604800}
     restart: unless-stopped
     deploy:
       resources:
