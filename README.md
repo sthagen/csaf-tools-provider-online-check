@@ -88,7 +88,7 @@ If testing untrusted CSAF providers, it is recommended to run the tool only in c
 
 ## Dependencies
 
-The CSAF Provider Online Check tool provides SBOMs in both CycloneDX and SPDX formats. These can be found in the `/sboms/` directory.
+The CSAF Provider Online Check tool provides SBOMs in both CycloneDX and SPDX formats.
 It covers dependencies for the backend, frontend and validator image.
 The files are generated using syft (https://github.com/anchore/syft)
 
@@ -180,6 +180,19 @@ Enable the required modules:
 a2enmod proxy proxy_http ssl headers
 systemctl restart apache2
 ```
+
+### Blocking Domains
+
+Operators can block certain domains, preventing scans of them entirely.
+To block a domain, insert it into the environment variable "DOMAIN_BLOCKLIST". Each string seperated by a whitespace will be interpreted as a separate domain. Should a user attempt to scan a blocked domain, an informative error is returned instead.
+
+Example:
+
+```shell
+DOMAIN_BLOCKLIST="example.com second.example.com"
+```
+
+A full restart is required to set the blocked domains into effect.
 
 ### Restrict Network Access
 

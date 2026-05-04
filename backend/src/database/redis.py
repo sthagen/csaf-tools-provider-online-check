@@ -44,7 +44,7 @@ class Redis_Controller:
         for domain in blocked_domains.split():
             success = self.block_domain(domain)
             if not success:
-                logger.warn(f"Blocked Domain Injection: Domain {domain} has already been blocked. Does {ENV_DOMAIN_BLOCKLIST} contain duplicates?")
+                logger.warning(f"Blocked Domain Injection: Domain {domain} has already been blocked. Does {ENV_DOMAIN_BLOCKLIST} contain duplicates?")
 
     # Cached Domain Tasks
     # This links a domain tasks uuid to the persistent cache file of its data
