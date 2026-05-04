@@ -39,6 +39,10 @@ coverage-containerd:
 	make dev-exec backend EXEC_COMMAND="backend coverage run -m pytest --log-cli-level=INFO --timeout=50 tests"
 	make dev-exec backend EXEC_COMMAND="backend coverage report -m"
 
+generate-sboms:
+	bash ./dev/sboms/generate-sboms.sh
+
+
 # CI
 
 ci-coverage:
