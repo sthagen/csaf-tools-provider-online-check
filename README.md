@@ -86,6 +86,18 @@ To minimize the impact on the network on the source and destination servers and 
 Keep in mind, that the CSAF Provider Online check tool, and it's component (the CSAF Checker and Validator) process untrusted CSAF documents.
 If testing untrusted CSAF providers, it is recommended to run the tool only in containers and with restricted network access.
 
+## Dependencies
+
+The CSAF Provider Online Check tool provides SBOMs in both CycloneDX and SPDX formats. These can be found in the `/sboms/` directory.
+It covers dependencies for the backend, frontend and validator image.
+The files are generated using syft (https://github.com/anchore/syft)
+
+The files are regularily updated with each release.
+
+To manually generate them, call the make target `make generate-sboms`.
+The environment variable `GENERATED_FILE_PATH` determines the relative output directory (default is `./sboms/`, relative to the root directory).
+It can be overwritten by calling `GENERATED_FILE_PATH=<relative-path> make generate-sboms`. The specified output directory must exist beforehand.
+
 ## Contributing
 
 #### Commit message convention
