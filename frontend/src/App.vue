@@ -196,6 +196,7 @@ export default defineComponent({
           this.messagesList = null
         }
       } catch (err: any) {
+        this.messagesList = null
         this.error = err.response?.data?.detail || err.message || 'An error occurred while starting the scan'
       } finally {
         if (['INITIALIZED', 'RUNNING_CHECKER'].includes(this.result?.status) ) {
@@ -223,6 +224,8 @@ export default defineComponent({
       }
       if (results_checker.domains?.[0]?.requirements) {
         this.extractMessages(results_checker.domains[0].requirements)
+      } else {
+        this.messagesList = null
       }
     },
     extractMessages(requirements: {messages: {text: string, type: number}[]}[]) {
