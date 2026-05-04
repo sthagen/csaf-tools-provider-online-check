@@ -37,7 +37,23 @@
                 </button>
               </form>
 
-              <div v-if="result" class="mt-4">
+              <!-- display of requirements messages -->
+              <div v-if="messagesList" class="mt-4">
+                <div v-if="result?.status === 'DONE_CHECKER'">
+                  <h5 class="alert-heading">Scan Done</h5>
+                </div>
+                <div v-else-if="result?.status === 'CACHED_CHECKER'">
+                  <h5 class="alert-heading">Scan found in cache</h5>
+                </div>
+                <div v-for="item of messagesList" :class="messageClass(item)">
+                  {{ item.text }}
+                </div>
+              </div>
+
+              <div 
+                v-if="result && ['ERROR', 'UNDEFINED', 'INITIALIZED', 'RUNNING_CHECKER', 'PAUSED'].includes(result?.status)"
+                class="mt-4"
+              >
                 <div :class="['alert', resultClass]" role="alert">
                   <div v-if="result.status === 'ERROR' || result.status === 'UNDEFINED'">
                     <h5 class="alert-heading">Error</h5>
@@ -51,16 +67,8 @@
                     <h5 class="alert-heading">Scan Running...</h5>
                     <pre>{{ result.results_checker }}</pre>
                   </div>
-                  <div v-if="result.status === 'CACHED_CHECKER'">
-                    <h5 class="alert-heading">Scan found in Cache</h5>
-                    <pre>{{ result.results_checker }}</pre>
-                  </div>
                   <div v-if="result.status === 'PAUSED'">
                     <h5 class="alert-heading">Scan paused</h5>
-                    <pre>{{ result.results_checker }}</pre>
-                  </div>
-                  <div v-if="result.status === 'DONE_CHECKER'">
-                    <h5 class="alert-heading">Scan Done</h5>
                     <pre>{{ result.results_checker }}</pre>
                   </div>
                 </div>
@@ -126,6 +134,7 @@ interface AppData {
   loading: boolean;
   result: any;
   error: any;
+  messagesList: any;
 }
 
 export default defineComponent({
@@ -136,12 +145,24 @@ export default defineComponent({
       domain: '',
       loading: false,
       result: null,
-      error: null
+      error: null,
+      messagesList: null
     } as AppData
   },
   computed: {
     resultClass() {
-      return this.result?.status != 'ERROR' ? 'alert-success' : 'alert-danger'
+      switch(this.result?.status) {
+        case 'ERROR':
+          return 'alert-danger'
+        case 'UNDEFINED':
+          return 'alert-danger'
+        case 'DONE_CHECKER':
+          return 'alert-success'
+        case 'CACHED_CHECKER':
+          return 'alert-success'
+        default:
+          return 'alert-info'
+      }
     },
     backendUrl() {
       // Use the same protocol and host as the client, but with backend port
@@ -169,13 +190,49 @@ export default defineComponent({
           session_id: this.session_id
         })
         this.result = response.data
+        if (['DONE_CHECKER', 'CACHED_CHECKER'].includes(this.result?.status)) {
+          this.extractMessagesFromResultsChecker(this.result.results_checker)
+        } else {
+          this.messagesList = null
+        }
       } catch (err: any) {
+        this.messagesList = null
         this.error = err.response?.data?.detail || err.message || 'An error occurred while starting the scan'
       } finally {
         if (['INITIALIZED', 'RUNNING_CHECKER'].includes(this.result?.status) ) {
           setTimeout(this.startScan, 3000)
         } else {
           this.loading = false
+        }
+      }
+    },
+    messageClass(item: { type: number}) {
+      switch (item.type) {
+        case 0:
+          return 'text-green'
+        case 1:
+          return 'text-orange'
+        case 2:
+          return 'text-red'
+        default:
+          return ''
+      }
+    },
+    extractMessagesFromResultsChecker(results_checker: any) {
+      if (typeof results_checker === 'string') {
+        results_checker = JSON.parse(results_checker)
+      }
+      if (results_checker.domains?.[0]?.requirements) {
+        this.extractMessages(results_checker.domains[0].requirements)
+      } else {
+        this.messagesList = null
+      }
+    },
+    extractMessages(requirements: {messages: {text: string, type: number}[]}[]) {
+      this.messagesList = []
+      for (const req of requirements) {
+        for (const msg2 of req.messages ?? []) {
+          this.messagesList.push(msg2)
         }
       }
     }
@@ -187,5 +244,17 @@ export default defineComponent({
 #app {
   min-height: 100vh;
   background-color: #f8f9fa;
+
+  .text-green {
+    color: green;
+  }
+
+  .text-orange {
+    color: orange;
+  }
+
+  .text-red {
+    color: red;
+  }
 }
 </style>
