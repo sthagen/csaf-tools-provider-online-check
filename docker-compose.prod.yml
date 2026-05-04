@@ -3,12 +3,17 @@ services:
     build:
       context: ./backend
       target: prod
+      args:
+        - CSAF_CHECKER_VERSION=${CSAF_CHECKER_VERSION:-3.4.0}
     container_name: backend
     ports:
       - "${PORT_BACKEND:-48090}:8000"
     environment:
       - SCAN_SLOTS=${SCAN_SLOTS:-10}
       - CSAF_CHECKER_TIMEOUT=${CSAF_CHECKER_TIMEOUT:-3600}
+      - CSAF_CHECKER_VERSION=${CSAF_CHECKER_VERSION:-3.4.0}
+      - CSAF_VALIDATOR_VERSION=${CSAF_VALIDATOR_VERSION:-2.0.24}
+      - APP_VERSION=${APP_VERSION:-1.0.0}
     restart: unless-stopped
     deploy:
       resources:
@@ -51,7 +56,11 @@ services:
     build:
       context: ./validator
       target: prod
+      args:
+      - CSAF_VALIDATOR_VERSION=${CSAF_VALIDATOR_VERSION:-2.0.24}
     container_name: validator
+    environment:
+      - CSAF_VALIDATOR_VERSION=${CSAF_VALIDATOR_VERSION:-2.0.24}
     ports:
       - "${PORT_VALIDATOR:-48092}:8082"
     restart: unless-stopped
