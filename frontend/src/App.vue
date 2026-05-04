@@ -33,7 +33,7 @@
                   :disabled="loading"
                 >
                   <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  {{ result ? 'Update' : 'Start Scan' }}
+                  <span v-else>{{ 'Start Scan' }}</span>
                 </button>
               </form>
 
@@ -44,7 +44,7 @@
                     <p class="mb-0">{{ result.error }}</p>
                   </div>
                   <div v-if="result.status === 'INITIALIZED'">
-                    <h5 class="alert-heading">Scan started. Please click Update</h5>
+                    <h5 class="alert-heading">Scan started...</h5>
                     <pre>{{ result.results_checker }}</pre>
                   </div>
                   <div v-if="result.status === 'RUNNING_CHECKER'">
@@ -98,6 +98,7 @@
                 <a href="https://github.com/Intevation/csaf-provider-scan/" target="_blank">
                   Website and Source Code
                 </a>
+                &nbsp;
                 <a :href="apiDocsUrl" target="_blank">
                   API Documentation
                 </a>
@@ -111,10 +112,23 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import axios from 'axios'
+import { defineComponent } from 'vue'
 
-export default {
+interface ImportMeta {
+  env: {VITE_BACKEND_PORT: number, VITE_FOOTER_TEXT: string};
+}
+
+interface AppData {
+  session_id: string;
+  domain: string;
+  loading: boolean;
+  result: any;
+  error: any;
+}
+
+export default defineComponent({
   name: 'App',
   data() {
     return {
@@ -123,7 +137,7 @@ export default {
       loading: false,
       result: null,
       error: null
-    }
+    } as AppData
   },
   computed: {
     resultClass() {
@@ -133,14 +147,14 @@ export default {
       // Use the same protocol and host as the client, but with backend port
       const protocol = window.location.protocol
       const hostname = window.location.hostname
-      const backendPort = import.meta.env.VITE_BACKEND_PORT || 48090
+      const backendPort = (import.meta as unknown as ImportMeta).env.VITE_BACKEND_PORT || 48090
       return `${protocol}//${hostname}:${backendPort}`
     },
     apiDocsUrl() {
       return `${this.backendUrl}/api/docs`
     },
     footerText() {
-      return import.meta.env.VITE_FOOTER_TEXT || ''
+      return (import.meta as unknown as ImportMeta).env.VITE_FOOTER_TEXT || ''
     }
   },
   methods: {
@@ -155,14 +169,18 @@ export default {
           session_id: this.session_id
         })
         this.result = response.data
-      } catch (err) {
+      } catch (err: any) {
         this.error = err.response?.data?.detail || err.message || 'An error occurred while starting the scan'
       } finally {
-        this.loading = false
+        if (['INITIALIZED', 'RUNNING_CHECKER'].includes(this.result?.status) ) {
+          setTimeout(this.startScan, 3000)
+        } else {
+          this.loading = false
+        }
       }
     }
   }
-}
+})
 </script>
 
 <style scoped>
