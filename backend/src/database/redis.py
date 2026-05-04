@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import Annotated, Optional
 
 import redis
@@ -11,6 +12,8 @@ from .domain_task_data import Domain_Task_Data
 logger = logging.getLogger(__name__)
 
 # Fields
+ENV_DOMAIN_BLOCKLIST = "DOMAIN_BLOCKLIST"
+
 BLOCKLIST_CLIENT_DB_FIELD = "blocklist-client:"
 BLOCKLIST_DOMAIN_DB_FIELD = "blocklist-domain:"
 RECORDED_DOMAIN_TASK_BY_DOMAIN = "domain-task:"
@@ -35,6 +38,13 @@ class Redis_Controller:
 
         # Setup Redis
         self._redis = redis.Redis(host="redis", port=6379, db=0)
+
+        # Inject blocked domains from env file
+        blocked_domains = os.getenv(ENV_DOMAIN_BLOCKLIST, "")
+        for domain in blocked_domains.split():
+            success = self.block_domain(domain)
+            if not success:
+                logger.warn(f"Blocked Domain Injection: Domain {domain} has already been blocked. Does {ENV_DOMAIN_BLOCKLIST} contain duplicates?")
 
     # Cached Domain Tasks
     # This links a domain tasks uuid to the persistent cache file of its data
