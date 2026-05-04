@@ -37,7 +37,7 @@
                 </button>
               </form>
 
-              <!--- display of requirements messages -->
+              <!-- display of requirements messages -->
               <div v-if="messagesList" class="mt-4">
                 <div v-if="result?.status === 'DONE_CHECKER'">
                   <h5 class="alert-heading">Scan Done</h5>
