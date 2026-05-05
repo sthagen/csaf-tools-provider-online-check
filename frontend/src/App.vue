@@ -36,6 +36,7 @@
                   <span v-else>{{ 'Start Scan' }}</span>
                 </button>
               </form>
+              <VersionDisplay :checkerVersion="version"/>
 
               <!-- display of requirements messages -->
               <div v-if="messagesList" class="mt-4">
@@ -123,6 +124,7 @@
 <script lang="ts">
 import axios from 'axios'
 import { defineComponent } from 'vue'
+import VersionDisplay from './VersionDisplay.vue';
 
 interface ImportMeta {
   env: {VITE_BACKEND_PORT: number, VITE_FOOTER_TEXT: string};
@@ -148,6 +150,9 @@ export default defineComponent({
       error: null,
       messagesList: null
     } as AppData
+  },
+  components: {
+    VersionDisplay
   },
   computed: {
     resultClass() {
@@ -176,6 +181,13 @@ export default defineComponent({
     },
     footerText() {
       return (import.meta as unknown as ImportMeta).env.VITE_FOOTER_TEXT || ''
+    },
+    version() {
+      let results_checker = this.result?.results_checker
+      if (typeof results_checker === 'string') {
+        results_checker = JSON.parse(results_checker)
+      }
+      return results_checker?.version
     }
   },
   methods: {
