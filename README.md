@@ -184,7 +184,7 @@ systemctl restart apache2
 ### Blocking Domains
 
 Operators can block certain domains, preventing scans of them entirely.
-To block a domain, insert it into the environment variable "DOMAIN_BLOCKLIST". Each string seperated by a whitespace will be interpreted as a separate domain. Should a user attempt to scan a blocked domain, an informative error is returned instead.
+To block a domain, insert it into the environment variable "DOMAIN_BLOCKLIST". Each string separated by a whitespace will be interpreted as a separate domain. Should a user attempt to scan a blocked domain, an informative error is returned instead.
 
 Example:
 
