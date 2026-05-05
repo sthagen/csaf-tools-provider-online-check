@@ -1,7 +1,9 @@
 <template>
-    <div v-show="providerVersion">CSAF Provider {{ providerVersion }}</div>
-    <div v-show="checkerVersion">CSAF Checker {{ checkerVersion }}</div>
-    <div v-show="validatorVersion">CSAF Validator {{ validatorVersion }}</div>
+    <div class="box-layout">
+        <div v-show="providerVersion">CSAF Provider</div><div class="align-right">{{ providerVersion }}</div>
+        <div v-show="checkerVersion">CSAF Checker</div><div class="align-right">{{ checkerVersion }}</div>
+        <div v-show="validatorVersion">CSAF Validator</div><div class="align-right">{{ validatorVersion }}</div>
+    </div>
 </template>
 
 <script lang="ts">
@@ -16,4 +18,13 @@ export default defineComponent({
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+.box-layout {
+    display: grid;
+    grid-template-columns: 120px 40px;
+}
+.align-right {
+    justify-self: end;
+}
+
+</style>
