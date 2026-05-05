@@ -1,8 +1,7 @@
 <template>
-    <h6>Versions</h6>
-    <div>CSAF Provider Scan beta1</div>
-    <div v-show="checkerVersion">CSAF checker {{ checkerVersion }}</div>
-    <div v-show="validatorVersion">CSAF validators {{ validatorVersion }}</div>
+    <div v-show="providerVersion">CSAF Provider {{ providerVersion }}</div>
+    <div v-show="checkerVersion">CSAF Checker {{ checkerVersion }}</div>
+    <div v-show="validatorVersion">CSAF Validator {{ validatorVersion }}</div>
 </template>
 
 <script lang="ts">
@@ -10,6 +9,7 @@ import { defineComponent } from 'vue';
 
 export default defineComponent({
     props: {
+        providerVersion: String,
         checkerVersion: String,
         validatorVersion: String
     }

@@ -36,7 +36,10 @@
                   <span v-else>{{ 'Start Scan' }}</span>
                 </button>
               </form>
-              <VersionDisplay :checkerVersion="version"/>
+              <VersionDisplay :checkerVersion="version?.csaf_checker_version"
+                              :provider-version="version?.csaf_provider_version"
+                              :validator-version="version?.csaf_validator_version"
+              />
 
               <!-- display of requirements messages -->
               <div v-if="messagesList" class="mt-4">
@@ -137,6 +140,11 @@ interface AppData {
   result: any;
   error: any;
   messagesList: any;
+  version: {
+    csaf_checker_version: string;
+    csaf_validator_version: string;
+    csaf_provider_version: string;
+  } | null
 }
 
 export default defineComponent({
@@ -148,11 +156,17 @@ export default defineComponent({
       loading: false,
       result: null,
       error: null,
-      messagesList: null
+      messagesList: null,
+      version: null
     } as AppData
   },
   components: {
     VersionDisplay
+  },
+  async mounted() {
+    axios
+      .get(`${this.backendUrl}/api/information/`)
+      .then(response => this.version = response.data)
   },
   computed: {
     resultClass() {
@@ -181,13 +195,6 @@ export default defineComponent({
     },
     footerText() {
       return (import.meta as unknown as ImportMeta).env.VITE_FOOTER_TEXT || ''
-    },
-    version() {
-      let results_checker = this.result?.results_checker
-      if (typeof results_checker === 'string') {
-        results_checker = JSON.parse(results_checker)
-      }
-      return results_checker?.version
     }
   },
   methods: {
