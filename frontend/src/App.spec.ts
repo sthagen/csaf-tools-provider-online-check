@@ -34,7 +34,7 @@ describe("Testing App...", () => {
         )
         expect(app.vm.messagesList).toBe(null)
     }),
-    test('extractMessagesFromResultsChecker with onject', () => {
+    test('extractMessagesFromResultsChecker with object', () => {
         app.vm.extractMessagesFromResultsChecker(
             { "domains": [{"requirements": [{ "messages": [{"text": "Test1", "type": 0}]}]}]}
         )
