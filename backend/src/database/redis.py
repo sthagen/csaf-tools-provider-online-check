@@ -25,6 +25,11 @@ class Redis_Controller:
         Optional[Redis_Controller], Field(description="Singleton instance")
     ] = None
 
+    _cache_lifetime: Annotated[
+        int,
+        Field(description="Lifetime of a redis cache entry before expiry"),
+    ] = int(os.environ.get("CACHE_TIMEOUT_SECONDS", "604800"))
+
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
@@ -59,8 +64,14 @@ class Redis_Controller:
         json = task.model_dump_json()
 
         # Connect json with task uuid and hashed domain name
-        self._redis.set(RECORDED_DOMAIN_TASK_BY_DOMAIN + task.get_domain_hash(), json)
-        self._redis.set(RECORDED_DOMAIN_TASK_BY_UUID + str(task.uuid), json)
+        self._redis.set(
+            RECORDED_DOMAIN_TASK_BY_DOMAIN + task.get_domain_hash(),
+            json,
+            ex=self._cache_lifetime,
+        )
+        self._redis.set(
+            RECORDED_DOMAIN_TASK_BY_UUID + str(task.uuid), json, ex=self._cache_lifetime
+        )
 
     def get_domain_task_by_uuid(self, uuid: str) -> Domain_Task_Data:
         if not self._redis.exists(RECORDED_DOMAIN_TASK_BY_UUID + str(uuid)):
