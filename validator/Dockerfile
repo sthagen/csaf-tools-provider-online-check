@@ -3,8 +3,9 @@ FROM node:22.21-alpine AS build
 WORKDIR /app
 
 ## Installs
+ARG CSAF_VALIDATOR_VERSION=2.0.24
 
-RUN npm install @secvisogram/csaf-validator-service
+RUN npm install @secvisogram/csaf-validator-service@${CSAF_VALIDATOR_VERSION}
 
 # Setup
 EXPOSE 8082
@@ -20,6 +21,8 @@ CMD ["sh", "/app/command.sh"]
 FROM node:22.21-alpine AS prod
 
 WORKDIR /app
+
+ARG CSAF_VALIDATOR_VERSION=2.0.24
 
 COPY --from=build /app/node_modules /app/node_modules
 

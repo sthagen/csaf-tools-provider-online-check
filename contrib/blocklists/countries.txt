@@ -1,0 +1,8 @@
+# Country blocklist
+# One ISO 3166-1 alpha-2 country code per line.
+# Lines starting with # are ignored.
+# Examples:
+#   CN
+#   RU
+# anonymous proxies:
+A1

@@ -23,18 +23,19 @@ def mock_scan_request_variable_session_id(session_id: str):
     return mock
 
 
-class TestRootEndpoint:
-    """Tests for the root endpoint"""
+class TestInformationEndpoint:
+    """Tests for the information endpoint"""
 
-    def test_root_endpoint(self):
-        """/api/ endpoint returns API information"""
-        response = client.get("/api/")
+    def test_information_endpoint(self):
+        """/api/information endpoint returns API information"""
+        response = client.get("/api/information")
         assert response.status_code == 200
         data = response.json()
-        assert "name" in data
-        assert "version" in data
-        assert data["name"] == "CSAF Provider Scan API"
-        assert data["version"] == "1.0.0"
+        assert "csaf_checker_version" in data
+        assert "csaf_validator_version" in data
+        assert "csaf_provider_version" in data
+        assert "docs" in data
+        assert "openapi" in data
 
 
 class TestHealthEndpoint:
