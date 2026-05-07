@@ -25,6 +25,10 @@
                     required
                   >
                   <div class="form-text">Enter a domain to scan a CSAF provider</div>
+                  <VersionDisplay :checkerVersion="version?.csaf_checker_version"
+                                  :provider-version="version?.csaf_provider_version"
+                                  :validator-version="version?.csaf_validator_version"
+                  />
                 </div>
 
                 <button
@@ -36,10 +40,6 @@
                   <span v-else>{{ 'Start Scan' }}</span>
                 </button>
               </form>
-              <VersionDisplay :checkerVersion="version?.csaf_checker_version"
-                              :provider-version="version?.csaf_provider_version"
-                              :validator-version="version?.csaf_validator_version"
-              />
 
               <!-- display of requirements messages -->
               <div v-if="messagesList" class="mt-4">
