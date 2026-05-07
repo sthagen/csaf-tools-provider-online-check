@@ -45,9 +45,7 @@
                 <div v-else-if="result?.status === 'CACHED_CHECKER'">
                   <h5 class="alert-heading">Scan found in cache</h5>
                 </div>
-                <div v-for="item of messagesList" :class="messageClass(item)">
-                  {{ item.text }}
-                </div>
+                <Message v-for="item of messagesList" :text="item.text" :type="item.type"></Message>
               </div>
 
               <div 
@@ -123,6 +121,7 @@
 <script lang="ts">
 import axios from 'axios'
 import { defineComponent } from 'vue'
+import Message from './Message.vue'
 
 interface ImportMeta {
   env: {VITE_BACKEND_PORT: number, VITE_FOOTER_TEXT: string};
@@ -139,6 +138,7 @@ interface AppData {
 
 export default defineComponent({
   name: 'App',
+  components: { Message },
   data() {
     return {
       session_id: '1',
@@ -206,18 +206,6 @@ export default defineComponent({
         }
       }
     },
-    messageClass(item: { type: number}) {
-      switch (item.type) {
-        case 0:
-          return 'text-green'
-        case 1:
-          return 'text-orange'
-        case 2:
-          return 'text-red'
-        default:
-          return ''
-      }
-    },
     extractMessagesFromResultsChecker(results_checker: any) {
       if (typeof results_checker === 'string') {
         results_checker = JSON.parse(results_checker)
@@ -244,17 +232,5 @@ export default defineComponent({
 #app {
   min-height: 100vh;
   background-color: #f8f9fa;
-
-  .text-green {
-    color: green;
-  }
-
-  .text-orange {
-    color: orange;
-  }
-
-  .text-red {
-    color: red;
-  }
 }
 </style>
