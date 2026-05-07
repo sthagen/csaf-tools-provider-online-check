@@ -4,7 +4,8 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 from typing_extensions import Self
 
 from ..validators.client_validator import validate_client_blocklist_check
-from ..validators.request_validator import validate_domain, validate_domain_blocklist_check
+from ..validators.request_validator import (validate_domain,
+                                            validate_domain_blocklist_check)
 
 
 class ScanRequest(BaseModel):
