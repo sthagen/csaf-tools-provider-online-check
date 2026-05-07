@@ -17,13 +17,15 @@ BLOCKLIST_DOMAIN_DB_FIELD = "blocklist-domain:"
 RECORDED_DOMAIN_TASK_BY_DOMAIN = "domain-task:"
 RECORDED_DOMAIN_TASK_BY_UUID = "domain-task-id-to-domain:"
 
+
 class Redis_Controller:
     _instance: Annotated[
         Optional[Redis_Controller], Field(description="Singleton instance")
     ] = None
 
     _cache_lifetime: Annotated[
-        Field(description="Lifetime of a redis cache entry before expiry")
+        int,
+        Field(description="Lifetime of a redis cache entry before expiry"),
     ] = int(os.environ.get("CACHE_TIMEOUT_SECONDS", "604800"))
 
     def __new__(cls, *args, **kwargs):
@@ -47,8 +49,14 @@ class Redis_Controller:
         json = task.model_dump_json()
 
         # Connect json with task uuid and hashed domain name
-        self._redis.set(RECORDED_DOMAIN_TASK_BY_DOMAIN + task.get_domain_hash(), json, ex=self._cache_lifetime)
-        self._redis.set(RECORDED_DOMAIN_TASK_BY_UUID + str(task.uuid), json, ex=self._cache_lifetime)
+        self._redis.set(
+            RECORDED_DOMAIN_TASK_BY_DOMAIN + task.get_domain_hash(),
+            json,
+            ex=self._cache_lifetime,
+        )
+        self._redis.set(
+            RECORDED_DOMAIN_TASK_BY_UUID + str(task.uuid), json, ex=self._cache_lifetime
+        )
 
     def get_domain_task_by_uuid(self, uuid: str) -> Domain_Task_Data:
         if not self._redis.exists(RECORDED_DOMAIN_TASK_BY_UUID + str(uuid)):
@@ -67,7 +75,9 @@ class Redis_Controller:
     # Client Blocklist
 
     def is_session_id_in_client_blocklist(self, session_id: str, domain: str) -> bool:
-        return self._redis.sismember(BLOCKLIST_CLIENT_DB_FIELD + domain, session_id) == 1
+        return (
+            self._redis.sismember(BLOCKLIST_CLIENT_DB_FIELD + domain, session_id) == 1
+        )
 
     def block_session_id_for_domain(self, session_id: str, domain: str) -> bool:
         if self.is_session_id_in_client_blocklist(session_id, domain):
