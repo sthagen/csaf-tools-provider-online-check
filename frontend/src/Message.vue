@@ -1,5 +1,5 @@
 <template>
-    <div :class="messageClass()">
+    <div :class="messageClass">
         {{ text }}
     </div>
 </template>
@@ -10,17 +10,17 @@ export default defineComponent({
         type: Number,
         text: String
     },
-    methods: {
+    computed: {
         messageClass() {
             switch (this.type) {
                 case 0:
-                return 'text-green'
+                    return 'text-green'
                 case 1:
-                return 'text-orange'
+                    return 'text-orange'
                 case 2:
-                return 'text-red'
+                    return 'text-red'
                 default:
-                return ''
+                    return ''
             }
         }
     }
