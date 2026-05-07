@@ -17,6 +17,6 @@ export default defineComponent({
 <style scoped>
 .version {
     color: var(--bs-secondary-color);
-    font-size: 0.875em;
+    font-size: 0.75em;
 }
 </style>
