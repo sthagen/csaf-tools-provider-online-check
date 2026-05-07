@@ -1,5 +1,5 @@
 <template>
-    <div class="version">Provider {{ providerVersion }} Checker {{ checkerVersion }} Validator{{ validatorVersion }}</div>
+    <div class="version">Provider {{ providerVersion }} Checker {{ checkerVersion }} Validator {{ validatorVersion }}</div>
 </template>
 
 <script lang="ts">
