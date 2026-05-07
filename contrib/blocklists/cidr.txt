@@ -1,0 +1,6 @@
+# CIDR blocklist
+# One entry per line
+# Lines starting with # are ignored
+# Examples:
+#   203.0.113.0/24
+#   198.51.100.42
