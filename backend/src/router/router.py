@@ -25,17 +25,9 @@ router = APIRouter()
 
 logger = logging.getLogger(__name__)
 
-
-@router.get("/", summary="API root", tags=["main"])
-async def root():
-    """Root endpoint with API information"""
-    return {
-        "name": "CSAF Provider Scan API",
-        "version": "1.0.0",
-        "docs": "/api/docs",
-        "openapi": "/api/openapi.json",
-    }
-
+ENV_CSAF_CHECKER_VERSION="CSAF_CHECKER_VERSION"
+ENV_CSAF_VALIDATOR_VERSION="CSAF_VALIDATOR_VERSION"
+ENV_CSAF_PROVIDER_VERSION="APP_VERSION"
 
 @router.post(
     "/scan/start",
@@ -111,10 +103,33 @@ async def start_scan(request: ScanRequest) -> Dict[str, Any]:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to start scan: {str(e)}")
 
+@router.get("/information", summary="General Provider Information", tags=["meta"])
+async def meta_info() -> Dict[str, Any]:
+    """
+    Returns information about the provider and its components, such as version numbers
+
+    Returns:
+        InformationResponse with provider information
+    """
+
+    csaf_checker_version = os.getenv(ENV_CSAF_CHECKER_VERSION, "")
+    csaf_validator_version = os.getenv(ENV_CSAF_VALIDATOR_VERSION, "")
+    csaf_provider_version = os.getenv(ENV_CSAF_PROVIDER_VERSION, "")
+
+    return {
+        "csaf_checker_version": csaf_checker_version,
+        "csaf_validator_version": csaf_validator_version,
+        "csaf_provider_version": csaf_provider_version,
+        "docs": "/api/docs",
+        "openapi": "/api/openapi.json",
+    }
+
 
 @router.get("/health", summary="Health Check", tags=["devops"])
 async def health_check():
-    """Check for free slots and csaf_checker binary"""
+    """
+    Check for free slots and csaf_checker binary
+    """
     errors = []
 
     # Check free slots
