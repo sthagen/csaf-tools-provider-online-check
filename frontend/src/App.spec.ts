@@ -56,11 +56,24 @@ describe("Testing App...", () => {
     test('backendUrl and apiDocsUrl', () => {
         const protocol = window.location.protocol
         const hostname = window.location.hostname
+        vi.stubEnv('VITE_BACKEND_PORT', undefined)
+        app = mount(App)
         expect(app.vm.backendUrl).toBe(`${protocol}//${hostname}:48090`)
         expect(app.vm.apiDocsUrl).toBe(`${protocol}//${hostname}:48090/api/docs`)
+        vi.stubEnv('VITE_BACKEND_PORT', 33333)
+        app = mount(App)
+        expect(app.vm.backendUrl).toBe(`${protocol}//${hostname}:33333`)
+        expect(app.vm.apiDocsUrl).toBe(`${protocol}//${hostname}:33333/api/docs`)
+
     }),
     test('footerText empty', () => {
+        vi.stubEnv('VITE_FOOTER_TEXT', 'FooterTest1')
+        app = mount(App)
+        expect(app.vm.footerText).toBe('FooterTest1')
+        vi.stubEnv('VITE_FOOTER_TEXT', undefined)
+        app = mount(App)
         expect(app.vm.footerText).toBe('')
+
     }),
     test('startScan RUNNING', async () => {
         vi.spyOn(axios, 'post').mockImplementation(() => { return {data: {status: "RUNNING" }}})

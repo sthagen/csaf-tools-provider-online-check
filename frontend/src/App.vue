@@ -124,10 +124,6 @@
 import axios from 'axios'
 import { defineComponent } from 'vue'
 
-interface ImportMeta {
-  env: {VITE_BACKEND_PORT: number, VITE_FOOTER_TEXT: string};
-}
-
 interface AppData {
   session_id: string;
   domain: string;
@@ -168,14 +164,14 @@ export default defineComponent({
       // Use the same protocol and host as the client, but with backend port
       const protocol = window.location.protocol
       const hostname = window.location.hostname
-      const backendPort = (import.meta as unknown as ImportMeta).env.VITE_BACKEND_PORT || 48090
+      const backendPort = import.meta.env.VITE_BACKEND_PORT || 48090
       return `${protocol}//${hostname}:${backendPort}`
     },
     apiDocsUrl() {
       return `${this.backendUrl}/api/docs`
     },
     footerText() {
-      return (import.meta as unknown as ImportMeta).env.VITE_FOOTER_TEXT || ''
+      return import.meta.env.VITE_FOOTER_TEXT || ''
     }
   },
   methods: {
