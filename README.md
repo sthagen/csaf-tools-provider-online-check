@@ -192,7 +192,7 @@ Example:
 DOMAIN_BLOCKLIST="example.com second.example.com"
 ```
 
-A full restart is required to set the blocked domains into effect.
+A restart of the backend container is required to set the blocked domains into effect.
 
 ### Restrict Network Access
 
