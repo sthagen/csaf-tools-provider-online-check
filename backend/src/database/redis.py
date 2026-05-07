@@ -48,7 +48,9 @@ class Redis_Controller:
         for domain in blocked_domains.split():
             success = self.block_domain(domain)
             if not success:
-                logger.error(f"Blocked Domain Injection: Domain {domain} has already been blocked. Does {ENV_DOMAIN_BLOCKLIST} contain duplicates?")
+                logger.error(
+                    f"Blocked Domain Injection: Domain {domain} has already been blocked. Does {ENV_DOMAIN_BLOCKLIST} contain duplicates?"
+                )
 
     # Cached Domain Tasks
     # This links a domain tasks uuid to the persistent cache file of its data
@@ -77,7 +79,9 @@ class Redis_Controller:
     # Client Blocklist
 
     def is_session_id_in_client_blocklist(self, session_id: str, domain: str) -> bool:
-        return self._redis.sismember(BLOCKLIST_CLIENT_DB_FIELD + domain, session_id)  == 1
+        return (
+            self._redis.sismember(BLOCKLIST_CLIENT_DB_FIELD + domain, session_id) == 1
+        )
 
     def block_session_id_for_domain(self, session_id: str, domain: str) -> bool:
         if self.is_session_id_in_client_blocklist(session_id, domain):
