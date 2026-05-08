@@ -70,6 +70,22 @@ make run-tests # Run pytest on backend tests
 
 See the README files in [backend/](backend/) and [frontend/](frontend/) for component-specific development instructions.
 
+### Frontend Testing / Coverage
+
+To test/coverage the frontend, start the dev container and use the commands:
+```shell
+make run-fe-tests-containerd
+make run-fe-coverage-containerd
+```
+or use one of the npm targets in the dev frontend container
+```shell
+make dev-enter frontend
+npm run tests
+npm run tests-single
+npm run coverage
+npm run coverage-single
+```
+
 ## Architecture
 
 The application consists of three main components:
