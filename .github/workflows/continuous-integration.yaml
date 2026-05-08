@@ -70,10 +70,10 @@ jobs:
         exit 1
 
     - name: Run Tests
-      run: npm run tests-single
+      run: make run-fe-tests-containerd
 
     - name: Run Coverage
-      run: npm run coverage-single
+      run: npm run-fe-coverage-containerd
 
     - name: Close container
       run: make dev-stop
