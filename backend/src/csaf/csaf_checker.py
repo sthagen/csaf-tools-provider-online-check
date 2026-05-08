@@ -27,7 +27,7 @@ class CSAF_Checker(BaseModel):
         int,
         Field(
             description="Current loop iteration step. Increments each time the run loop is reiterated"
-        )
+        ),
     ] = 0
 
     _signal_paused: Annotated[
@@ -183,7 +183,9 @@ class CSAF_Checker(BaseModel):
                     if pause_timer <= 0:
                         await self.__terminate_asyncio_task()
                         exitCode = 1
-                        errorMsg = "Error: Time Out: Domain task was paused for too long"
+                        errorMsg = (
+                            "Error: Time Out: Domain task was paused for too long"
+                        )
                         break
 
                 if exitCode != 0:
@@ -224,7 +226,9 @@ class CSAF_Checker(BaseModel):
                 data.csaf_checker_output_runtime_log.append(decoded_line)
 
         if exitCode != 0:
-            logger.info(f"Task exited with code {exitCode} and error message: {errorMsg}")
+            logger.info(
+                f"Task exited with code {exitCode} and error message: {errorMsg}"
+            )
             return (exitCode, errorMsg)
 
         # Get exit codes
@@ -235,7 +239,10 @@ class CSAF_Checker(BaseModel):
             # Success
             return (0, "")
         else:
-            return (1, f"CSAF Process ended with status code {exitCode} and error message: {errorMsg}")
+            return (
+                1,
+                f"CSAF Process ended with status code {exitCode} and error message: {errorMsg}",
+            )
 
     async def run(self, data: Domain_Task_Data) -> (int, str):
         try:

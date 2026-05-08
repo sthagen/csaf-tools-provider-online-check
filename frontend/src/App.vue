@@ -25,6 +25,10 @@
                     required
                   >
                   <div class="form-text">Enter a domain to scan a CSAF provider</div>
+                  <VersionDisplay :checkerVersion="version?.csaf_checker_version"
+                                  :provider-version="version?.csaf_provider_version"
+                                  :validator-version="version?.csaf_validator_version"
+                  />
                 </div>
 
                 <button
@@ -122,6 +126,7 @@
 import axios from 'axios'
 import { defineComponent } from 'vue'
 import Message from './Message.vue'
+import VersionDisplay from './VersionDisplay.vue';
 
 interface ImportMeta {
   env: {VITE_BACKEND_PORT: number, VITE_FOOTER_TEXT: string};
@@ -134,11 +139,16 @@ interface AppData {
   result: any;
   error: any;
   messagesList: any;
+  version: {
+    csaf_checker_version: string;
+    csaf_validator_version: string;
+    csaf_provider_version: string;
+  } | null
 }
 
 export default defineComponent({
   name: 'App',
-  components: { Message },
+  components: { Message, VersionDisplay },
   data() {
     return {
       session_id: '1',
@@ -146,8 +156,14 @@ export default defineComponent({
       loading: false,
       result: null,
       error: null,
-      messagesList: null
+      messagesList: null,
+      version: null
     } as AppData
+  },
+  async mounted() {
+    axios
+      .get(`${this.backendUrl}/api/information/`)
+      .then(response => this.version = response.data)
   },
   computed: {
     resultClass() {

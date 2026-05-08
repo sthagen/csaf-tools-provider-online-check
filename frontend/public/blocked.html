@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSAF Provider Scan</title>
+    <style>
+        /*  */
+        *, *::before, *::after { box-sizing: border-box; }
+        body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 1rem; color: #212529; background-color: #f8f9fa; }
+        a { color: #0d6efd; }
+        h5 { margin-top: 0; margin-bottom: .5rem; font-weight: 500; line-height: 1.2; font-size: 1.25rem; }
+        p { margin-top: 0; margin-bottom: 1rem; }
+
+        /* navbar */
+        .navbar { display: flex; align-items: center; padding: .5rem 1rem; background-color: #212529; }
+        .navbar-brand { color: #fff; font-size: 1.25rem; font-weight: 500; text-decoration: none; margin-bottom: 0; padding-top: .3125rem; padding-bottom: .3125rem; }
+        .container-fluid { width: 100%; padding-right: .75rem; padding-left: .75rem; }
+
+        /* badge */
+        .badge { display: inline-block; padding: .35em .65em; font-size: .75em; font-weight: 700; border-radius: .375rem; }
+        .bg-warning { background-color: #ffc107; }
+        .text-dark { color: #212529; }
+        .ms-2 { margin-left: .5rem; }
+
+        /* layout */
+        .container { width: 100%; max-width: 960px; margin-right: auto; margin-left: auto; padding-right: .75rem; padding-left: .75rem; }
+        .mt-4 { margin-top: 1.5rem; }
+        .mt-5 { margin-top: 3rem; }
+        .row { display: flex; flex-wrap: wrap; margin-right: -.75rem; margin-left: -.75rem; }
+        .justify-content-center { justify-content: center; }
+        .col-md-8 { width: 100%; padding-right: .75rem; padding-left: .75rem; }
+
+        /* card */
+        .card { background-color: #fff; border: 1px solid rgba(0,0,0,.125); border-radius: .375rem; }
+        .card-body { padding: 1rem; }
+        .card-title { margin-bottom: .5rem; font-weight: 500; }
+        .card-text { margin-bottom: 1rem; }
+        .shadow { box-shadow: 0 .5rem 1rem rgba(0,0,0,.15); }
+
+        /* alert */
+        .alert { padding: 1rem; border: 1px solid transparent; border-radius: .375rem; }
+        .alert-heading { margin-top: 0; margin-bottom: .5rem; }
+        .alert-danger { color: #58151c; background-color: #f8d7da; border-color: #f1aeb5; }
+    </style>
+</head>
+<body>
+    <div id="app" data-v-app="">
+        <div data-v-8e2b346d="" id="app">
+            <nav data-v-8e2b346d="" class="navbar navbar-dark bg-dark">
+                <div data-v-8e2b346d="" class="container-fluid"><span data-v-8e2b346d=""
+                        class="navbar-brand mb-0 h1">CSAF Provider Scan <span data-v-8e2b346d=""
+                            class="badge bg-warning text-dark ms-2">Beta</span></span></div>
+            </nav>
+            <div data-v-8e2b346d="" class="container mt-5">
+                <div data-v-8e2b346d="" class="row justify-content-center">
+                    <div data-v-8e2b346d="" class="col-md-8">
+                        <div data-v-8e2b346d="" class="card shadow">
+                            <div data-v-8e2b346d="" class="card-body">
+                                <div class="alert alert-danger">
+                                    <h5 class="alert-heading">Access Denied</h5>
+                                    <p>Your request has been blocked.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div data-v-8e2b346d="" class="row justify-content-center mt-4">
+                    <div data-v-8e2b346d="" class="col-md-8">
+                        <div data-v-8e2b346d="" class="card">
+                            <div data-v-8e2b346d="" class="card-body">
+                                <h5 data-v-8e2b346d="" class="card-title">About</h5>
+                                <p data-v-8e2b346d="" class="card-text"> This is an experimental tool that scans domains
+                                    for <a data-v-8e2b346d="" href="https://www.csaf.io" target="_blank">CSAF</a>
+                                    (Common Security Advisory Framework) provider metadata and checks its validity.
+                                    Results may vary. </p>
+                                <p data-v-8e2b346d=""><a data-v-8e2b346d=""
+                                        href="https://github.com/Intevation/csaf-provider-scan/" target="_blank">
+                                        Website and Source Code </a> &nbsp; <a data-v-8e2b346d=""
+                                        href="http://docker-swa.whale.intevation.de:48090/api/docs" target="_blank"> API
+                                        Documentation </a></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

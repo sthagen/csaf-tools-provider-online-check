@@ -1,0 +1,243 @@
+# User-Agent blocklist
+# One substring pattern per line
+# Pattern are case-insensitive
+# Lines starting with # are ignored.
+# Examples:
+#   python-requests
+#   curl/
+#   Scrapy
+360Spider
+80legs
+Aboundex
+ahrefs
+AhrefsBot
+AIBOT
+Alexibot
+AliyunSecBot
+amazonbot
+asterias
+attach
+BackDoorBot
+BackWeb
+Baiduspider
+Bandit
+Barkrowler
+BatchFTP
+Bigfoot
+bingbot
+Black\.Hole
+BlackWidow
+BlowFish
+BotALot
+Buddy
+BuiltBotTough
+Bullseye
+BunnySlippers
+Cegbfeieh
+ChatGLM\-Spider
+CheeseBot
+CherryPicker
+ChinaClaw
+claudebot
+Cogentbot
+Collector
+Copier
+CopyRightCheck
+cosmos
+Crescent
+Custo
+DIIbot
+DISCo
+DittoSpyder
+Download Demon
+Download Devil
+Download Wonder
+dragonfly
+Drip
+EasyDL
+ebingbong
+eCatch
+EirGrabber
+EmailCollector
+EmailSiphon
+EmailWolf
+EroCrawler
+Exabot
+Express WebPictures
+Extractor
+EyeNetIE
+FHscan
+flunky
+Foobot
+FrontPage
+Go-Ahead-Got-It
+gotit
+gptbot
+GrabNet
+Grafula
+Harvest
+hloader
+HMView
+HTTrack
+humanlinks
+IbouBot
+IlseBot
+Image Stripper
+Image Sucker
+Indy Library
+InfoNaviRobot
+InfoTekies
+Intelliseek
+InterGET
+Internet Ninja
+Iria
+Jakarta
+Java
+JennyBot
+JetCar
+JOC
+JustView
+Jyxobot
+Kenjin\.Spider
+Keyword\.Density
+larbin
+LexiBot
+lftp
+libWeb/clsHTTP
+Lightpanda
+likse
+LinkextractorPro
+LinkScan/8\.1a\.Unix
+LinkWalker
+LNSpiderguy
+LWP::Simple
+lwp-trivial
+Mag-Net
+Magnet
+MarkWatch
+Mass Downloader
+Mata\.Hari
+Memo
+meta-externalagent
+Microsoft\.URL
+Microsoft URL Control
+MIDown tool
+MIIxpc
+Mirror
+Missigua Locator
+Mister PiX
+MJ12bot
+moget
+Mozilla/3\.Mozilla/2\.01
+Mozilla\.*NEWT
+NAMEPROTECT
+Navroad
+NearSite
+NetAnts
+Netcraft
+NetMechanic
+NetSpider
+Net Vampire
+NetZIP
+NextGenSearchBot
+NG
+NICErsPRO
+niki-bot
+NimbleCrawler
+Ninja
+NPbot
+Octopus
+Offline Explorer
+Offline Navigator
+Openfind
+opensiteexplorer
+OutfoxBot
+PageGrabber
+Papa Foto
+pavuk
+pcBrowser
+PerplexityBot
+petalbot
+PHP version tracker
+pingdom
+Pockey
+ProPowerBot/2\.14
+ProWebWalker
+psbot
+Pump
+QueryN\.Metasearch
+RealDownload
+Reaper
+Recorder
+ReGet
+RepoMonkey
+RMA
+semrush
+Siphon
+SiteSnagger
+SlySearch
+SmartDownload
+Snake
+Snapbot
+Snoopy
+sogou
+SpaceBison
+SpankBot
+spanner
+Sqworm
+Stripper
+Sucker
+SuperBot
+SuperHTTP
+Surfbot
+suzuran
+Szukacz/1\.4
+tAkeOut
+Teleport
+Telesoft
+The\.Intraformant
+TheNomad
+TightTwatBot
+Titan
+True_Robot
+turingos
+TurnitinBot
+TurnitinBot/1\.5
+Ubuntu/10\.04
+URLy\.Warning
+Vacuum
+VCI
+VoidEYE
+WebAuto
+WebBandit
+Webclipping\.com
+WebCopier
+WebEMailExtrac\.*
+WebEnhancer
+WebFetch
+WebGo IS
+Web Image Collector
+Web\.Image\.Collector
+WebLeacher
+WebmasterWorldForumBot
+WebReaper
+WebSauger
+Website eXtractor
+Website Quester
+Webster
+WebStripper
+Web Sucker
+WebWhacker
+WebZIP
+Whacker
+Widow
+Windows NT 5\.0
+WISENutbot
+WWW-Collector-E
+WWWOFFLE
+Xaldon
+Xenu
+yandex
+Zeus
+ZmEu
+Zyborg

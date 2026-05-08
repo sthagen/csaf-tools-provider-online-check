@@ -49,7 +49,7 @@ class Domain_Task_Data(BaseModel):
         Field(
             description="Time in seconds in which a recorded task is considered to fresh to be rerun automatically"
         ),
-    ] = int(os.environ.get("CACHE_TIMEOUT_SECONDS", "300"))
+    ] = int(os.environ.get("CACHE_TIMEOUT_SECONDS", "604800"))
 
     @classmethod
     def create(cls, domain: str) -> "Domain_Task_Data":
