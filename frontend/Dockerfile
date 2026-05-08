@@ -10,7 +10,7 @@ RUN npm install --include=dev
 EXPOSE 8080
 
 # with hot-reloading
-CMD ["npm", "run", "--include=dev"]
+CMD ["npm", "run", "dev"]
 
 # --- Prod stages ---
 

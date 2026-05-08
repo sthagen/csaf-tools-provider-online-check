@@ -40,6 +40,44 @@ jobs:
     - name: Close container
       run: make dev-stop
 
+  frontend-tests:
+    name: "Test Frontend"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v5
+
+    - uses: actions/setup-node@v6
+      with:
+        node-version: 24
+
+    - name: Build and run
+      run: make dev-detached
+
+    - name: Wait for frontend to be ready
+      run: |
+        echo "Waiting for frontend..."
+        for i in $(seq 1 60); do
+          if curl -f http://0.0.0.0:48091/ 2>&1; then
+            echo "Frontend is ready!"
+            exit 0
+          fi
+          echo "Attempt $i/60 - waiting 5s..."
+          sleep 5
+        done
+        echo "Frontend failed to become ready"
+        docker compose logs --timestamps frontend
+        docker compose ps
+        exit 1
+
+    - name: Run Tests
+      run: npm run tests-single
+
+    - name: Run Coverage
+      run: npm run coverage-single
+
+    - name: Close container
+      run: make dev-stop
+
   devops-linters:
     name: "Lint DevOps"
     runs-on: ubuntu-latest
