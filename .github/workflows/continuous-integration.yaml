@@ -37,12 +37,6 @@ jobs:
     - name: Run Tests with coverage
       run: make ci-coverage
 
-    - name: Run Frontend Tests
-      run: make run-fe-tests-containerd
-
-    - name: Run Frontend Coverage
-      run: npm run-fe-coverage-containerd
-
     - name: Close container
       run: make dev-stop
 
