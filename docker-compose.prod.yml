@@ -72,6 +72,8 @@ services:
     restart: unless-stopped
     depends_on:
       - redis
+    networks:
+      - scanner
 
   redis:
     image: redis:alpine
