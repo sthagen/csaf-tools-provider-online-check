@@ -49,7 +49,7 @@
                 <div v-else-if="result?.status === 'CACHED_CHECKER'">
                   <h5 class="alert-heading">Scan found in cache</h5>
                 </div>
-                <Message v-for="item of messagesList" :text="item.text" :type="item.type"></Message>
+                <MessageLine v-for="item of messagesList" :key=item.text :text="item.text" :type="item.type"></MessageLine>
               </div>
 
               <div 
@@ -125,7 +125,7 @@
 <script lang="ts">
 import axios from 'axios'
 import { defineComponent } from 'vue'
-import Message from './Message.vue'
+import MessageLine from './MessageLine.vue'
 import VersionDisplay from './VersionDisplay.vue';
 
 interface ImportMeta {
@@ -148,7 +148,7 @@ interface AppData {
 
 export default defineComponent({
   name: 'App',
-  components: { Message, VersionDisplay },
+  components: { MessageLine, VersionDisplay },
   data() {
     return {
       session_id: '1',
