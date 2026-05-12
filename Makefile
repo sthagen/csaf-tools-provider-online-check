@@ -22,6 +22,12 @@ run-tests:
 run-tests-containerd:
 	make dev-exec backend EXEC_COMMAND="backend pytest --log-cli-level=INFO --timeout=50 tests"
 
+run-fe-tests-containerd:
+	make dev-exec frontend EXEC_COMMAND="frontend npm run tests-single"
+
+run-fe-coverage-containerd:
+	make dev-exec frontend EXEC_COMMAND="frontend npm run coverage-single"
+
 lint:
 	bash backend/dev/run-lint.sh -l -b
 
