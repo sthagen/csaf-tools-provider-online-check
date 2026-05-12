@@ -26,6 +26,13 @@ class ScanRequest(BaseModel):
         ),
     ] = False
 
+    clear_any_running: Annotated[
+        bool,
+        Field(
+            description="Stops and clears any slots that are already checking or have recently checked the requested domain"
+        )
+    ] = False
+
     @field_validator("domain")
     def _validate_domain(cls, value):
         """
