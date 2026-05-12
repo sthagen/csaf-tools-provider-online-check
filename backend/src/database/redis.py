@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import Annotated, Optional
 
 import redis
@@ -11,8 +12,10 @@ from .domain_task_data import Domain_Task_Data
 logger = logging.getLogger(__name__)
 
 # Fields
+ENV_DOMAIN_BLOCKLIST = "DOMAIN_BLOCKLIST"
+
 BLOCKLIST_CLIENT_DB_FIELD = "blocklist-client:"
-BLOCKLIST_DOMAIN_DB_FIELD = "blocklist-domain:"
+BLOCKLIST_DOMAIN_DB_FIELD = "blocklist-domain"
 RECORDED_DOMAIN_TASK_BY_DOMAIN = "domain-task:"
 RECORDED_DOMAIN_TASK_BY_UUID = "domain-task-id-to-domain:"
 
@@ -21,6 +24,11 @@ class Redis_Controller:
     _instance: Annotated[
         Optional[Redis_Controller], Field(description="Singleton instance")
     ] = None
+
+    _cache_lifetime: Annotated[
+        int,
+        Field(description="Lifetime of a redis cache entry before expiry"),
+    ] = int(os.environ.get("CACHE_TIMEOUT_SECONDS", "604800"))
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
@@ -36,6 +44,19 @@ class Redis_Controller:
         # Setup Redis
         self._redis = redis.Redis(host="redis", port=6379, db=0)
 
+        # Clear blocked domains
+        if self._redis.exists(BLOCKLIST_DOMAIN_DB_FIELD):
+            self._redis.delete(BLOCKLIST_DOMAIN_DB_FIELD)
+
+        # Inject blocked domains from env file
+        blocked_domains = os.getenv(ENV_DOMAIN_BLOCKLIST, "")
+        for domain in blocked_domains.split():
+            success = self.block_domain(domain)
+            if not success:
+                logger.error(
+                    f"Blocked Domain Injection: Domain {domain} has already been blocked. Does {ENV_DOMAIN_BLOCKLIST} contain duplicates?"
+                )
+
     # Cached Domain Tasks
     # This links a domain tasks uuid to the persistent cache file of its data
     def record_domain_task(self, task: Domain_Task_Data):
@@ -43,8 +64,14 @@ class Redis_Controller:
         json = task.model_dump_json()
 
         # Connect json with task uuid and hashed domain name
-        self._redis.set(RECORDED_DOMAIN_TASK_BY_DOMAIN + task.get_domain_hash(), json)
-        self._redis.set(RECORDED_DOMAIN_TASK_BY_UUID + str(task.uuid), json)
+        self._redis.set(
+            RECORDED_DOMAIN_TASK_BY_DOMAIN + task.get_domain_hash(),
+            json,
+            ex=self._cache_lifetime,
+        )
+        self._redis.set(
+            RECORDED_DOMAIN_TASK_BY_UUID + str(task.uuid), json, ex=self._cache_lifetime
+        )
 
     def get_domain_task_by_uuid(self, uuid: str) -> Domain_Task_Data:
         if not self._redis.exists(RECORDED_DOMAIN_TASK_BY_UUID + str(uuid)):
@@ -63,7 +90,9 @@ class Redis_Controller:
     # Client Blocklist
 
     def is_session_id_in_client_blocklist(self, session_id: str, domain: str) -> bool:
-        return self._redis.sismember(BLOCKLIST_CLIENT_DB_FIELD + domain, session_id) == 1
+        return (
+            self._redis.sismember(BLOCKLIST_CLIENT_DB_FIELD + domain, session_id) == 1
+        )
 
     def block_session_id_for_domain(self, session_id: str, domain: str) -> bool:
         if self.is_session_id_in_client_blocklist(session_id, domain):
@@ -77,13 +106,13 @@ class Redis_Controller:
     # Domain Blocklist
 
     def is_domain_in_domain_blocklist(self, domain: str) -> bool:
-        return self._redis.sismember(BLOCKLIST_DOMAIN_DB_FIELD + domain, 1) == 1
+        return self._redis.sismember(BLOCKLIST_DOMAIN_DB_FIELD, domain) == 1
 
     def block_domain(self, domain: str) -> bool:
         if self.is_domain_in_domain_blocklist(domain):
             return False
-        self._redis.sadd(BLOCKLIST_DOMAIN_DB_FIELD + domain, 1)
+        self._redis.sadd(BLOCKLIST_DOMAIN_DB_FIELD, domain)
         return True
 
     def unblock_domain(self, domain: str):
-        self._redis.srem(BLOCKLIST_DOMAIN_DB_FIELD + domain, 1)
+        self._redis.srem(BLOCKLIST_DOMAIN_DB_FIELD, domain)

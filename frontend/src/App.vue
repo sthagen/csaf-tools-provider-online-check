@@ -25,6 +25,10 @@
                     required
                   >
                   <div class="form-text">Enter a domain to scan a CSAF provider</div>
+                  <VersionDisplay :checkerVersion="version?.csaf_checker_version"
+                                  :provider-version="version?.csaf_provider_version"
+                                  :validator-version="version?.csaf_validator_version"
+                  />
                 </div>
 
                 <button
@@ -45,9 +49,7 @@
                 <div v-else-if="result?.status === 'CACHED_CHECKER'">
                   <h5 class="alert-heading">Scan found in cache</h5>
                 </div>
-                <div v-for="item of messagesList" :class="messageClass(item)">
-                  {{ item.text }}
-                </div>
+                <Message v-for="item of messagesList" :text="item.text" :type="item.type"></Message>
               </div>
 
               <div 
@@ -123,6 +125,8 @@
 <script lang="ts">
 import axios from 'axios'
 import { defineComponent } from 'vue'
+import Message from './Message.vue'
+import VersionDisplay from './VersionDisplay.vue';
 
 interface AppData {
   session_id: string;
@@ -131,10 +135,16 @@ interface AppData {
   result: any;
   error: any;
   messagesList: any;
+  version: {
+    csaf_checker_version: string;
+    csaf_validator_version: string;
+    csaf_provider_version: string;
+  } | null
 }
 
 export default defineComponent({
   name: 'App',
+  components: { Message, VersionDisplay },
   data() {
     return {
       session_id: '1',
@@ -142,8 +152,14 @@ export default defineComponent({
       loading: false,
       result: null,
       error: null,
-      messagesList: null
+      messagesList: null,
+      version: null
     } as AppData
+  },
+  async mounted() {
+    axios
+      .get(`${this.backendUrl}/api/information/`)
+      .then(response => this.version = response.data)
   },
   computed: {
     resultClass() {
@@ -202,18 +218,6 @@ export default defineComponent({
         }
       }
     },
-    messageClass(item: { type: number}) {
-      switch (item.type) {
-        case 0:
-          return 'text-green'
-        case 1:
-          return 'text-orange'
-        case 2:
-          return 'text-red'
-        default:
-          return ''
-      }
-    },
     extractMessagesFromResultsChecker(results_checker: any) {
       if (typeof results_checker === 'string') {
         results_checker = JSON.parse(results_checker)
@@ -240,17 +244,5 @@ export default defineComponent({
 #app {
   min-height: 100vh;
   background-color: #f8f9fa;
-
-  .text-green {
-    color: green;
-  }
-
-  .text-orange {
-    color: orange;
-  }
-
-  .text-red {
-    color: red;
-  }
 }
 </style>
