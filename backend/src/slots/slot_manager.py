@@ -86,7 +86,9 @@ class Slot_Manager:
                 logger.info(
                     f"A task is already operating for {request.domain} in slot id {slot_with_identical_running_task.id}"
                 )
-                return slot_with_identical_running_task.running_task.get_data(False).uuid
+                return slot_with_identical_running_task.running_task.get_data(
+                    False
+                ).uuid
 
         # Find available slot
         if available_slot is None:

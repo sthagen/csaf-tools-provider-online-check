@@ -30,7 +30,7 @@ class ScanRequest(BaseModel):
         bool,
         Field(
             description="Stops and clears any slots that are already checking or have recently checked the requested domain"
-        )
+        ),
     ] = False
 
     @field_validator("domain")
