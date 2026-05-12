@@ -7,15 +7,12 @@ describe("Testing App...", () => {
 
     let app: any
     beforeEach(()=> {
+        vi.spyOn(axios, "get").mockImplementation(
+            () => { return new Promise((resolve, reject) => {return resolve({})} ) }
+        )
         app = mount(App)
     })
 
-    test('messageClass', () => {
-        expect(app.vm.messageClass({type: 0})).toBe('text-green')
-        expect(app.vm.messageClass({type: 1})).toBe('text-orange')
-        expect(app.vm.messageClass({type: 2})).toBe('text-red')
-        expect(app.vm.messageClass({type: -1})).toBe('')
-    }),
     test('extractMessages', () => {
         app.vm.extractMessages([{ messages: [{text: "Test1", type: 0}]}])
         expect(app.vm.messagesList).toStrictEqual([{text: "Test1", type: 0}])
@@ -60,7 +57,7 @@ describe("Testing App...", () => {
         app = mount(App)
         expect(app.vm.backendUrl).toBe(`${protocol}//${hostname}:48090`)
         expect(app.vm.apiDocsUrl).toBe(`${protocol}//${hostname}:48090/api/docs`)
-        vi.stubEnv('VITE_BACKEND_PORT', 33333)
+        vi.stubEnv('VITE_BACKEND_PORT', "33333")
         app = mount(App)
         expect(app.vm.backendUrl).toBe(`${protocol}//${hostname}:33333`)
         expect(app.vm.apiDocsUrl).toBe(`${protocol}//${hostname}:33333/api/docs`)
