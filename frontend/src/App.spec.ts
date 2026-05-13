@@ -14,16 +14,16 @@ describe("Testing App...", () => {
     })
 
     test('extractMessages', () => {
-        app.vm.extractMessages([{ messages: [{text: "Test1", type: 0}]}])
-        expect(app.vm.messagesList).toStrictEqual([{text: "Test1", type: 0}])
+        app.vm.extractMessages([{ messages: [{text: "Test1", type: 0}], num: 11}])
+        expect(app.vm.messagesList).toStrictEqual([{text: "Test1", type: 0, num:11}])
         app.vm.extractMessages([{messages: undefined}])
         expect(app.vm.messagesList).toStrictEqual([])
     }),
     test('extractMessagesFromResultsChecker with json string', () =>{
         app.vm.extractMessagesFromResultsChecker(
-            '{ "domains": [{"requirements": [{ "messages": [{"text": "Test1", "type": 0}]}]}]}'
+            '{ "domains": [{"requirements": [{ "messages": [{"text": "Test1", "type": 0}], "num": 11 }]}]}'
         )
-        expect(app.vm.messagesList).toStrictEqual([{text: "Test1", type: 0}])
+        expect(app.vm.messagesList).toStrictEqual([{text: "Test1", type: 0, num: 11}])
     }),
     test('extractMessagesFromResultsChecker with requirements null', () => {
         app.vm.extractMessagesFromResultsChecker(
@@ -33,9 +33,9 @@ describe("Testing App...", () => {
     }),
     test('extractMessagesFromResultsChecker with object', () => {
         app.vm.extractMessagesFromResultsChecker(
-            { "domains": [{"requirements": [{ "messages": [{"text": "Test1", "type": 0}]}]}]}
+            { "domains": [{"requirements": [{ "messages": [{"text": "Test1", "type": 0}], "num": 11}]}]}
         )
-        expect(app.vm.messagesList).toStrictEqual([{text: "Test1", type: 0}])
+        expect(app.vm.messagesList).toStrictEqual([{text: "Test1", type: 0, num: 11}])
     }),
     test('resultClass', () => {
         const test_oracle = [
@@ -84,7 +84,7 @@ describe("Testing App...", () => {
         vi.spyOn(axios, 'post').mockImplementation(() => { 
             return {data: {
                 status: "CACHED_CHECKER",
-                results_checker: { "domains": [{"requirements": [{ "messages": [{"text": "Test1", "type": 0}]}]}]}
+                results_checker: { "domains": [{"requirements": [{ "messages": [{"text": "Test1", "type": 0}], "num": 12 }]}]}
             }}
         })
         app.vm.domain = "Test"
@@ -92,7 +92,7 @@ describe("Testing App...", () => {
         await flushPromises()
         expect(app.vm.loading).toBe(false)
         expect(app.vm.result?.status).toBe('CACHED_CHECKER')
-        expect(app.vm.messagesList).toStrictEqual([{text: 'Test1', type: 0}])
+        expect(app.vm.messagesList).toStrictEqual([{text: 'Test1', type: 0, num: 12}])
 
     })
 
