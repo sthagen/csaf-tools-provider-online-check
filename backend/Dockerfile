@@ -38,6 +38,12 @@ CMD ["sh", "/app/command.sh"]
 # --- Prod target ---
 FROM base AS prod
 
+# Download swagger-ui-bundle.js and swagger-ui.css, using the version FastAPI expects
+RUN SWAGGER_UI_VERSION=$(python3 -c "import re; from fastapi.openapi.docs import get_swagger_ui_html; print(re.search(r'swagger-ui-dist@([\w.]+)', get_swagger_ui_html(openapi_url='/api/openapi.json', title='title').body.decode()).group(1))") && \
+    mkdir -p /app/static/swagger-ui && \
+    curl -Lf "https://cdn.jsdelivr.net/npm/swagger-ui-dist@${SWAGGER_UI_VERSION}/swagger-ui-bundle.js" -o /app/static/swagger-ui/swagger-ui-bundle.js && \
+    curl -Lf "https://cdn.jsdelivr.net/npm/swagger-ui-dist@${SWAGGER_UI_VERSION}/swagger-ui.css" -o /app/static/swagger-ui/swagger-ui.css
+
 # Download csaf_checker binary
 ARG CSAF_SHA256=d604d17805bb1dfd4fa3c1887c7d109356eb5e36079a3877e37ef9fb412b66b7
 WORKDIR /app/bin
