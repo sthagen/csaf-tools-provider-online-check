@@ -5,7 +5,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN npm install
+RUN npm install --include=dev
 
 EXPOSE 8080
 
