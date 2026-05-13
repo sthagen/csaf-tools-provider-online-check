@@ -50,16 +50,16 @@
                   <h5 class="alert-heading">Scan found in cache</h5>
                 </div>
                 
-                <h6 :class="publisherStatus">CSAF publisher</h6>
+                <h6 :class="publisherStatus" class="small-margin-top">CSAF publisher</h6>
                 <Message v-for="item of publisherMessages" :text="item.text" :type="item.type"></Message> 
                 
-                <h6 :class="providerStatus">CSAF provider</h6>
+                <h6 :class="providerStatus" class="small-margin-top">CSAF provider</h6>
                 <Message v-for="item of providerMessages" :text="item.text" :type="item.type"></Message> 
                 
-                <h6 :class="trustedProviderStatus">CSAF trusted provider</h6>
+                <h6 :class="trustedProviderStatus" class="small-margin-top">CSAF trusted provider</h6>
                 <Message v-for="item of trustedProviderMessages" :text="item.text" :type="item.type"></Message> 
 
-                <h6>All messages</h6>
+                <h6 class="small-margin-top">All messages</h6>
                 <Message v-for="item of messagesList" :text="item.text" :type="item.type"></Message>
               </div>
 
@@ -317,5 +317,8 @@ export default defineComponent({
 }
 .text-red {
   color: red;
+}
+.small-margin-top {
+  margin-top: 15px;
 }
 </style>
