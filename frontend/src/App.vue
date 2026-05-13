@@ -59,10 +59,28 @@
                 <h6 :class="trustedProviderStatus" class="small-margin-top">CSAF trusted provider</h6>
                 <Message v-for="item of trustedProviderMessages" :text="item.text" :type="item.type"></Message> 
 
-                <h6 class="small-margin-top">All messages</h6>
-                <Message v-for="item of messagesList" :text="item.text" :type="item.type"></Message>
+                <p class="small-margin-top">
+                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseAllMessages" role="button" aria-expanded="false" aria-controls="collapseAllMessages">
+                      Display all messages
+                    </a>
+                    &nbsp;
+                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseResultOutput" role="button" aria-expanded="false" aria-controls="collapseResultOutput">
+                      Display result output
+                    </a>
+                </p>
+                <div class="collapse" id="collapseAllMessages">
+                  <div class="card card-body">
+                    <h6>All messages:</h6>
+                    <Message v-for="item of messagesList" :text="item.text" :type="item.type"></Message>
+                  </div>
+                </div>
+                <div class="collapse" id="collapseResultOutput">
+                  <div class="card card-body">
+                    <h6>Result of the checker (for debug):</h6>
+                    {{ result?.results_checker }}
+                  </div>
+                </div>
               </div>
-
               <div 
                 v-if="result && ['ERROR', 'UNDEFINED', 'INITIALIZED', 'RUNNING_CHECKER', 'PAUSED'].includes(result?.status)"
                 class="mt-4"
