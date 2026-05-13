@@ -1,11 +1,11 @@
 # --- Dev target ---
-FROM node:alpine AS dev
+FROM node:24.14-alpine AS dev
 
 WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install --include=dev
+RUN npm install
 
 COPY . .
 
