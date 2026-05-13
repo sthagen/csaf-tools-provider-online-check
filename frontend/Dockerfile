@@ -3,9 +3,11 @@ FROM node:alpine AS dev
 
 WORKDIR /app
 
-COPY . .
+COPY package*.json ./
 
 RUN npm install --include=dev
+
+COPY . .
 
 EXPOSE 8080
 
