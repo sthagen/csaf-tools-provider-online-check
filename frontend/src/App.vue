@@ -49,15 +49,15 @@
                 <div v-else-if="result?.status === 'CACHED_CHECKER'">
                   <h5 class="alert-heading">Scan found in cache</h5>
                 </div>
-                
+
                 <h6 :class="publisherStatus" class="small-margin-top">CSAF publisher</h6>
-                <Message v-for="item of publisherMessages" :text="item.text" :type="item.type"></Message> 
-                
+                <Message v-for="item of publisherMessages" :text="item.text" :type="item.type"></Message>
+
                 <h6 :class="providerStatus" class="small-margin-top">CSAF provider</h6>
-                <Message v-for="item of providerMessages" :text="item.text" :type="item.type"></Message> 
-                
+                <Message v-for="item of providerMessages" :text="item.text" :type="item.type"></Message>
+
                 <h6 :class="trustedProviderStatus" class="small-margin-top">CSAF trusted provider</h6>
-                <Message v-for="item of trustedProviderMessages" :text="item.text" :type="item.type"></Message> 
+                <Message v-for="item of trustedProviderMessages" :text="item.text" :type="item.type"></Message>
 
                 <p class="small-margin-top">
                     <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseAllMessages" role="button" aria-expanded="false" aria-controls="collapseAllMessages">
@@ -76,12 +76,14 @@
                 </div>
                 <div class="collapse" id="collapseResultOutput">
                   <div class="card card-body">
-                    <h6>Result of the checker (for debug):</h6>
-                    {{ result?.results_checker }}
+                    <div class="d-flex justify-content-end mb-2">
+                      <button class="btn btn-sm btn-outline-secondary" @click="copyResultToClipboard">Copy to clipboard</button>
+                    </div>
+                    <pre>{{ result?.results_checker }}</pre>
                   </div>
                 </div>
               </div>
-              <div 
+              <div
                 v-if="result && ['ERROR', 'UNDEFINED', 'INITIALIZED', 'RUNNING_CHECKER', 'PAUSED'].includes(result?.status)"
                 class="mt-4"
               >
@@ -276,6 +278,9 @@ export default defineComponent({
     },
   },
   methods: {
+    copyResultToClipboard() {
+      navigator.clipboard.writeText(JSON.stringify(this.result?.results_checker, null, 2))
+    },
     async startScan() {
       this.loading = true
       this.result = null
