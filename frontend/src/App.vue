@@ -49,15 +49,15 @@
                 <div v-else-if="result?.status === 'CACHED_CHECKER'">
                   <h3 class="alert-heading">Scan found in cache</h3>
                 </div>
-                
+
                 <h4 :class="publisherStatus" class="small-margin-top medium-font-size">CSAF publisher</h4>
-                <Message v-for="item of publisherMessages" :text="item.text" :type="item.type"></Message> 
-                
+                <Message v-for="item of publisherMessages" :text="item.text" :type="item.type"></Message>
+
                 <h4 :class="providerStatus" class="small-margin-top medium-font-size">CSAF provider</h4>
-                <Message v-for="item of providerMessages" :text="item.text" :type="item.type"></Message> 
-                
+                <Message v-for="item of providerMessages" :text="item.text" :type="item.type"></Message>
+
                 <h4 :class="trustedProviderStatus" class="small-margin-top medium-font-size">CSAF trusted provider</h4>
-                <Message v-for="item of trustedProviderMessages" :text="item.text" :type="item.type"></Message> 
+                <Message v-for="item of trustedProviderMessages" :text="item.text" :type="item.type"></Message>
 
                 <p class="small-margin-top">
                     <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseAllMessages" role="button" aria-expanded="false" aria-controls="collapseAllMessages">
@@ -66,6 +66,10 @@
                     &nbsp;
                     <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseResultOutput" role="button" aria-expanded="false" aria-controls="collapseResultOutput">
                       Show JSON output
+                    </a>
+                    &nbsp;
+                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseLogOutput" role="button" aria-expanded="false" aria-controls="collapseLogOutput">
+                      Show log output
                     </a>
                 </p>
                 <div class="collapse" id="collapseAllMessages">
@@ -76,15 +80,26 @@
                 </div>
                 <div class="collapse" id="collapseResultOutput">
                   <div class="card card-body">
-                    <h6>Result of the checker (for debug):</h6>
-                    <div class="d-flex justify-content-end mb-2">
+                    <h6>Result of the checker:</h6>
+                    <div class="d-flex justify-content-end gap-2 mb-2">
                       <button class="btn btn-sm btn-outline-secondary" @click="copyResultToClipboard">Copy to clipboard</button>
+                      <button class="btn btn-sm btn-outline-secondary" @click="downloadJson">Download</button>
                     </div>
                     <pre>{{ result?.results_checker }}</pre>
                   </div>
                 </div>
+                <div class="collapse" id="collapseLogOutput">
+                  <div class="card card-body">
+                    <h6>Log output:</h6>
+                    <div class="d-flex justify-content-end gap-2 mb-2">
+                      <button class="btn btn-sm btn-outline-secondary" @click="copyLogToClipboard">Copy to clipboard</button>
+                      <button class="btn btn-sm btn-outline-secondary" @click="downloadLog">Download</button>
+                    </div>
+                    <pre>{{ result?.runtime_output?.join('\n') }}</pre>
+                  </div>
+                </div>
               </div>
-              <div 
+              <div
                 v-if="result && ['ERROR', 'UNDEFINED', 'INITIALIZED', 'RUNNING_CHECKER', 'PAUSED'].includes(result?.status)"
                 class="mt-4"
               >
@@ -360,8 +375,43 @@ export default defineComponent({
     filterMessageListByNums(nums: number[]): MessageData[] {
       return this.messagesList?.filter((msg: MessageData) => nums.includes(msg.num)) ?? []
     },
+    copyToClipboard(text: string) {
+      if (navigator.clipboard) {
+        // This is the "normal" modern method, but does not work with HTTP (development setups)
+        navigator.clipboard.writeText(text)
+      } else {
+        // Fallback to old method for development setups using HTTP
+        const el = document.createElement('textarea')
+        el.value = text
+        document.body.appendChild(el)
+        el.select()
+        document.execCommand('copy')
+        document.body.removeChild(el)
+      }
+    },
     copyResultToClipboard() {
-      navigator.clipboard.writeText(JSON.stringify(this.result?.results_checker, null, 2))
+      // results_checker is a string (not a JSON object), pass it directly
+      this.copyToClipboard(this.result?.results_checker ?? '')
+    },
+    copyLogToClipboard() {
+      // runtime_output is a list, join it by newlines
+      this.copyToClipboard(this.result?.runtime_output?.join('\n') ?? '')
+    },
+    downloadJson() {
+      const blob = new Blob([this.result?.results_checker ?? ''], { type: 'application/json' })
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(blob)
+      a.download = `${this.domain}-result.json`
+      a.click()
+      URL.revokeObjectURL(a.href)
+    },
+    downloadLog() {
+      const blob = new Blob([this.result?.runtime_output?.join('\n') ?? ''], { type: 'text/plain' })
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(blob)
+      a.download = `${this.domain}-log.txt`
+      a.click()
+      URL.revokeObjectURL(a.href)
     }
   }
 })
