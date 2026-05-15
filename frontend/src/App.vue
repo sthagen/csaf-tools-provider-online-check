@@ -49,15 +49,15 @@
                 <div v-else-if="result?.status === 'CACHED_CHECKER'">
                   <h5 class="alert-heading">Scan found in cache</h5>
                 </div>
-                
+
                 <h6 :class="publisherStatus" class="small-margin-top">CSAF publisher</h6>
-                <Message v-for="item of publisherMessages" :text="item.text" :type="item.type"></Message> 
-                
+                <Message v-for="item of publisherMessages" :text="item.text" :type="item.type"></Message>
+
                 <h6 :class="providerStatus" class="small-margin-top">CSAF provider</h6>
-                <Message v-for="item of providerMessages" :text="item.text" :type="item.type"></Message> 
-                
+                <Message v-for="item of providerMessages" :text="item.text" :type="item.type"></Message>
+
                 <h6 :class="trustedProviderStatus" class="small-margin-top">CSAF trusted provider</h6>
-                <Message v-for="item of trustedProviderMessages" :text="item.text" :type="item.type"></Message> 
+                <Message v-for="item of trustedProviderMessages" :text="item.text" :type="item.type"></Message>
 
                 <p class="small-margin-top">
                     <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseAllMessages" role="button" aria-expanded="false" aria-controls="collapseAllMessages">
@@ -84,7 +84,7 @@
                   </div>
                 </div>
               </div>
-              <div 
+              <div
                 v-if="result && ['ERROR', 'UNDEFINED', 'INITIALIZED', 'RUNNING_CHECKER', 'PAUSED'].includes(result?.status)"
                 class="mt-4"
               >
@@ -127,6 +127,32 @@
         </div>
       </div>
 
+      <div v-if="recentScans.length > 0" class="row justify-content-center mt-4">
+        <div class="col-md-8">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Recently Scanned</h5>
+              <table class="table table-sm table-hover mb-0">
+                <thead>
+                  <tr>
+                    <th>Domain</th>
+                    <th>Scan Time</th>
+                    <th>Scan Duration</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="scan in recentScans" :key="scan.task_id" style="cursor:pointer" @click="domain = scan.domain">
+                    <td>{{ scan.domain }}</td>
+                    <td>{{ formatTime(scan.end_time) }}</td>
+                    <td>{{ scan.duration }}s</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="row justify-content-center mt-4">
         <div class="col-md-8">
           <div class="card">
@@ -160,6 +186,14 @@ import { defineComponent } from 'vue'
 import Message from './Message.vue'
 import VersionDisplay from './VersionDisplay.vue';
 
+interface RecentScan {
+  task_id: string;
+  domain: string;
+  start_time: number;
+  end_time: number;
+  duration: number;
+}
+
 interface AppData {
   session_id: string;
   domain: string;
@@ -167,6 +201,7 @@ interface AppData {
   result: any;
   error: any;
   messagesList: null | MessageData[];
+  recentScans: RecentScan[];
   version: {
     csaf_checker_version: string;
     csaf_validator_version: string;
@@ -191,6 +226,7 @@ export default defineComponent({
       result: null,
       error: null,
       messagesList: null,
+      recentScans: [],
       version: null
     } as AppData
   },
@@ -198,6 +234,9 @@ export default defineComponent({
     axios
       .get(`${this.backendUrl}/api/information/`)
       .then(response => this.version = response.data)
+    axios
+      .get(`${this.backendUrl}/api/scans`)
+      .then(response => this.recentScans = response.data)
   },
   computed: {
     resultClass() {
@@ -300,6 +339,7 @@ export default defineComponent({
         this.result = response.data
         if (['DONE_CHECKER', 'CACHED_CHECKER'].includes(this.result?.status)) {
           this.extractMessagesFromResultsChecker(this.result.results_checker)
+          axios.get(`${this.backendUrl}/api/scans`).then(r => this.recentScans = r.data)
         } else {
           this.messagesList = null
         }
@@ -334,6 +374,9 @@ export default defineComponent({
     },
     copyResultToClipboard() {
       navigator.clipboard.writeText(JSON.stringify(this.result?.results_checker, null, 2))
+    },
+    formatTime(ts: number) {
+      return new Date(ts * 1000).toLocaleString()
     }
   }
 })
