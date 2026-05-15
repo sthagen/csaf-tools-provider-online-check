@@ -61,11 +61,11 @@
 
                 <p class="small-margin-top">
                     <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseAllMessages" role="button" aria-expanded="false" aria-controls="collapseAllMessages">
-                      Display all messages
+                      Show all messages
                     </a>
                     &nbsp;
                     <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseResultOutput" role="button" aria-expanded="false" aria-controls="collapseResultOutput">
-                      Display result output
+                      Show JSON output
                     </a>
                 </p>
                 <div class="collapse" id="collapseAllMessages">
@@ -77,7 +77,10 @@
                 <div class="collapse" id="collapseResultOutput">
                   <div class="card card-body">
                     <h6>Result of the checker (for debug):</h6>
-                    {{ result?.results_checker }}
+                    <div class="d-flex justify-content-end mb-2">
+                      <button class="btn btn-sm btn-outline-secondary" @click="copyResultToClipboard">Copy to clipboard</button>
+                    </div>
+                    <pre>{{ result?.results_checker }}</pre>
                   </div>
                 </div>
               </div>
@@ -239,6 +242,7 @@ export default defineComponent({
             : {text: 'Is not a valid CSAF publisher', type: 2 }
         )
         providerMessages.push(...(this.messagesList.filter(msg => [5, 6, 7].includes(msg.num))))
+        // TODO 8 or 9 or 10
         const dirBaseMessages = this.messagesList.filter(msg => [11,12,13,14].includes(msg.num))
         const rolieBaseMessages = this.messagesList.filter(msg => [15,16,17].includes(msg.num))
         if (rolieBaseMessages.filter(msg => msg.type === 2).length <= dirBaseMessages.filter(msg => msg.type === 2).length) {
@@ -320,6 +324,9 @@ export default defineComponent({
           this.messagesList.push({type: msg2.type, text: msg2.text, num: req.num })
         }
       }
+    },
+    copyResultToClipboard() {
+      navigator.clipboard.writeText(JSON.stringify(this.result?.results_checker, null, 2))
     }
   }
 })
