@@ -293,8 +293,7 @@ export default defineComponent({
                                               : {text: 'Is not a valid CSAF provider', type: 2})
 
         // requirements 18-20
-        const filtered = this.messagesList.filter((msg: MessageData) => [18,19,20].includes(msg.num))
-        trustedProviderMessages.push(...filtered)
+        trustedProviderMessages.push(...this.filterMessageListByNums([18, 19, 20]))
         return trustedProviderMessages
       }
       return null
