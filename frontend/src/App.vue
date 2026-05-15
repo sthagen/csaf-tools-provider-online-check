@@ -229,7 +229,8 @@ export default defineComponent({
     },
     publisherMessages() {
       if (this.messagesList) {
-        return this.messagesList.filter((msg: MessageData) => [1, 2, 3, 4].includes(msg.num))
+        // requirements 1-4
+        return this.filterMessageListByNums([1, 2, 3, 4])
       }
       return null
     },
@@ -247,10 +248,27 @@ export default defineComponent({
             ? {text: 'Is a valid CSAF publisher', type: 0 }
             : {text: 'Is not a valid CSAF publisher', type: 2 }
         )
-        providerMessages.push(...(this.messagesList.filter((msg: MessageData) => [5, 6, 7].includes(msg.num))))
-        // TODO 8 or 9 or 10
-        const dirBaseMessages = this.messagesList.filter((msg: MessageData) => [11,12,13,14].includes(msg.num))
-        const rolieBaseMessages = this.messagesList.filter((msg: MessageData) => [15,16,17].includes(msg.num))
+
+        // requirements 5-7
+        providerMessages.push(...this.filterMessageListByNums([5, 6, 7]))
+
+        // requirements 8 or 9 or 10
+        const req8Messages = this.filterMessageListByNums([8])
+        const req9Messages = this.filterMessageListByNums([9])
+        const req10Messages = this.filterMessageListByNums([10])
+        if (req8Messages.length > 0  && req8Messages.filter((msg:MessageData) => msg.type === 2).length === 0) {
+          providerMessages.push(...req8Messages)
+        } else if (req9Messages.length > 0  && req9Messages.filter((msg:MessageData) => msg.type === 2).length === 0) {
+          providerMessages.push(...req9Messages)
+        } else if (req10Messages.length > 0  && req10Messages.filter((msg:MessageData) => msg.type === 2).length === 0) {
+          providerMessages.push(...req10Messages)
+        } else {
+          providerMessages.push(...req8Messages, ...req9Messages, ...req10Messages)
+        }
+
+        // requirements dir based (11-14) or ROLIE based (15-17)
+        const dirBaseMessages = this.filterMessageListByNums([11, 12, 13, 14])
+        const rolieBaseMessages = this.filterMessageListByNums([15, 16, 17])
         if (rolieBaseMessages.filter((msg:MessageData) => msg.type === 2).length
             <= dirBaseMessages.filter((msg: MessageData) => msg.type === 2).length) {
           providerMessages.push(...rolieBaseMessages)
@@ -273,6 +291,8 @@ export default defineComponent({
         trustedProviderMessages.push(
           this.providerStatus === 'text-green' ? {text: 'Is valid CSAF provider', type: 0 }
                                               : {text: 'Is not a valid CSAF provider', type: 2})
+
+        // requirements 18-20
         const filtered = this.messagesList.filter((msg: MessageData) => [18,19,20].includes(msg.num))
         trustedProviderMessages.push(...filtered)
         return trustedProviderMessages
@@ -331,6 +351,9 @@ export default defineComponent({
           this.messagesList.push({type: msg2.type, text: msg2.text, num: req.num })
         }
       }
+    },
+    filterMessageListByNums(nums: number[]): MessageData[] {
+      return this.messagesList?.filter((msg: MessageData) => nums.includes(msg.num)) ?? []
     },
     copyResultToClipboard() {
       navigator.clipboard.writeText(JSON.stringify(this.result?.results_checker, null, 2))
