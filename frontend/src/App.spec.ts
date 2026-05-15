@@ -73,7 +73,9 @@ describe("Testing App...", () => {
 
     }),
     test('startScan RUNNING', async () => {
-        vi.spyOn(axios, 'post').mockImplementation(() => { return {data: {status: "RUNNING" }}})
+        vi.spyOn(axios, 'post').mockImplementation(
+            () => new Promise(resolve => resolve({data: {status: "RUNNING" }}))
+        );
         app.vm.domain = "Test"
         app.vm.startScan()
         await flushPromises()
@@ -81,12 +83,17 @@ describe("Testing App...", () => {
         expect(app.vm.result?.status).toBe('RUNNING')
     }),
     test('startScan CACHED_CHECKER', async () => {
-        vi.spyOn(axios, 'post').mockImplementation(() => { 
-            return {data: {
-                status: "CACHED_CHECKER",
-                results_checker: { "domains": [{"requirements": [{ "messages": [{"text": "Test1", "type": 0}], "num": 12 }]}]}
-            }}
-        })
+        vi.spyOn(axios, 'post').mockImplementation(
+            () => new Promise(resolve =>
+            {
+                return resolve({
+                    data: {
+                        status: "CACHED_CHECKER",
+                        results_checker: { "domains": [{ "requirements": [{ "messages": [{ "text": "Test1", "type": 0 }], "num": 12 }] }] }
+                    }
+                }
+            )}
+        ))
         app.vm.domain = "Test"
         app.vm.startScan()
         await flushPromises()
