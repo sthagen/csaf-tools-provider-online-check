@@ -49,9 +49,41 @@
                 <div v-else-if="result?.status === 'CACHED_CHECKER'">
                   <h5 class="alert-heading">Scan found in cache</h5>
                 </div>
-                <Message v-for="item of messagesList" :text="item.text" :type="item.type"></Message>
-              </div>
+                
+                <h6 :class="publisherStatus" class="small-margin-top">CSAF publisher</h6>
+                <Message v-for="item of publisherMessages" :text="item.text" :type="item.type"></Message> 
+                
+                <h6 :class="providerStatus" class="small-margin-top">CSAF provider</h6>
+                <Message v-for="item of providerMessages" :text="item.text" :type="item.type"></Message> 
+                
+                <h6 :class="trustedProviderStatus" class="small-margin-top">CSAF trusted provider</h6>
+                <Message v-for="item of trustedProviderMessages" :text="item.text" :type="item.type"></Message> 
 
+                <p class="small-margin-top">
+                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseAllMessages" role="button" aria-expanded="false" aria-controls="collapseAllMessages">
+                      Show all messages
+                    </a>
+                    &nbsp;
+                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseResultOutput" role="button" aria-expanded="false" aria-controls="collapseResultOutput">
+                      Show JSON output
+                    </a>
+                </p>
+                <div class="collapse" id="collapseAllMessages">
+                  <div class="card card-body">
+                    <h6>All messages:</h6>
+                    <Message v-for="item of messagesList" :text="item.text" :type="item.type"></Message>
+                  </div>
+                </div>
+                <div class="collapse" id="collapseResultOutput">
+                  <div class="card card-body">
+                    <h6>Result of the checker (for debug):</h6>
+                    <div class="d-flex justify-content-end mb-2">
+                      <button class="btn btn-sm btn-outline-secondary" @click="copyResultToClipboard">Copy to clipboard</button>
+                    </div>
+                    <pre>{{ result?.results_checker }}</pre>
+                  </div>
+                </div>
+              </div>
               <div 
                 v-if="result && ['ERROR', 'UNDEFINED', 'INITIALIZED', 'RUNNING_CHECKER', 'PAUSED'].includes(result?.status)"
                 class="mt-4"
@@ -188,7 +220,64 @@ export default defineComponent({
     },
     footerText() {
       return import.meta.env.VITE_FOOTER_TEXT || ''
-    }
+    },
+    publisherMessages() {
+      if (this.messagesList) {
+        return this.messagesList.filter(msg => [1, 2, 3, 4].includes(msg.num))
+      }
+      return null
+    },
+    publisherStatus() {
+      if (this.publisherMessages) {
+        return this.publisherMessages.filter(msg => msg.type === 2).length === 0 ? 'text-green' : 'text-red'
+      }
+      return 'text-red'
+    },
+    providerMessages() {
+      if (this.messagesList) {
+        const providerMessages = []
+        providerMessages.push(
+          this.publisherStatus === 'text-green'
+            ? {text: 'Is a valid CSAF publisher', type: 0 }
+            : {text: 'Is not a valid CSAF publisher', type: 2 }
+        )
+        providerMessages.push(...(this.messagesList.filter(msg => [5, 6, 7].includes(msg.num))))
+        // TODO 8 or 9 or 10
+        const dirBaseMessages = this.messagesList.filter(msg => [11,12,13,14].includes(msg.num))
+        const rolieBaseMessages = this.messagesList.filter(msg => [15,16,17].includes(msg.num))
+        if (rolieBaseMessages.filter(msg => msg.type === 2).length <= dirBaseMessages.filter(msg => msg.type === 2).length) {
+          providerMessages.push(...rolieBaseMessages)
+        } else {
+          providerMessages.push(...dirBaseMessages)
+        }
+        return providerMessages
+      }
+      return null
+    },
+    providerStatus() {
+      if (this.providerMessages) {
+        return this.providerMessages.filter(msg => msg.type === 2).length === 0 ? 'text-green' : 'text-red'
+      }
+      return 'text-red'
+    },
+    trustedProviderMessages() {
+      if (this.messagesList) {
+        const trustedProviderMessages = []
+        trustedProviderMessages.push(
+          this.providerStatus === 'text-green' ? {text: 'Is valid CSAF provider', type: 0 }
+                                              : {text: 'Is not a valid CSAF provider', type: 2})
+        const filtered = this.messagesList.filter(msg => [18,19,20].includes(msg.num))
+        trustedProviderMessages.push(...filtered)
+        return trustedProviderMessages
+      }
+      return null
+    },
+    trustedProviderStatus() {
+      if (this.trustedProviderMessages) {
+        return this.trustedProviderMessages.filter(msg => msg.type === 2).length === 0 ? 'text-green' : 'text-red'
+      }
+      return 'text-red'
+    },
   },
   methods: {
     async startScan() {
@@ -232,9 +321,12 @@ export default defineComponent({
       this.messagesList = []
       for (const req of requirements) {
         for (const msg2 of req.messages ?? []) {
-          this.messagesList.push(msg2)
+          this.messagesList.push({type: msg2.type, text: msg2.text, num: req.num })
         }
       }
+    },
+    copyResultToClipboard() {
+      navigator.clipboard.writeText(JSON.stringify(this.result?.results_checker, null, 2))
     }
   }
 })
@@ -244,5 +336,14 @@ export default defineComponent({
 #app {
   min-height: 100vh;
   background-color: #f8f9fa;
+}
+.text-green {
+  color: green;
+}
+.text-red {
+  color: red;
+}
+.small-margin-top {
+  margin-top: 15px;
 }
 </style>
