@@ -44,19 +44,19 @@
               <!-- display of requirements messages -->
               <div v-if="messagesList" class="mt-4">
                 <div v-if="result?.status === 'DONE_CHECKER'">
-                  <h5 class="alert-heading">Scan Done</h5>
+                  <h3 class="alert-heading">Scan Done</h3>
                 </div>
                 <div v-else-if="result?.status === 'CACHED_CHECKER'">
-                  <h5 class="alert-heading">Scan found in cache</h5>
+                  <h3 class="alert-heading">Scan found in cache</h3>
                 </div>
                 
-                <h6 :class="publisherStatus" class="small-margin-top">CSAF publisher</h6>
+                <h4 :class="publisherStatus" class="small-margin-top medium-font-size">CSAF publisher</h4>
                 <Message v-for="item of publisherMessages" :text="item.text" :type="item.type"></Message> 
                 
-                <h6 :class="providerStatus" class="small-margin-top">CSAF provider</h6>
+                <h4 :class="providerStatus" class="small-margin-top medium-font-size">CSAF provider</h4>
                 <Message v-for="item of providerMessages" :text="item.text" :type="item.type"></Message> 
                 
-                <h6 :class="trustedProviderStatus" class="small-margin-top">CSAF trusted provider</h6>
+                <h4 :class="trustedProviderStatus" class="small-margin-top medium-font-size">CSAF trusted provider</h4>
                 <Message v-for="item of trustedProviderMessages" :text="item.text" :type="item.type"></Message> 
 
                 <p class="small-margin-top">
@@ -352,5 +352,8 @@ export default defineComponent({
 }
 .small-margin-top {
   margin-top: 15px;
+}
+.medium-font-size {
+  font-size: 1.3rem;
 }
 </style>

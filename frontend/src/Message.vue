@@ -1,5 +1,5 @@
 <template>
-    <div :class="messageClass">
+    <div :class="messageClass" class="small-bottom-margin">
         {{ text }}
     </div>
 </template>
@@ -37,6 +37,9 @@ color: orange;
 }
 .text-red {
 color: red;
+}
+.small-bottom-margin {
+    margin-bottom: 12px;
 }
 </style>
 
