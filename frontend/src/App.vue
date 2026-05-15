@@ -166,12 +166,18 @@ interface AppData {
   loading: boolean;
   result: any;
   error: any;
-  messagesList: any;
+  messagesList: null | MessageData[];
   version: {
     csaf_checker_version: string;
     csaf_validator_version: string;
     csaf_provider_version: string;
   } | null
+}
+
+interface MessageData {
+  text: string;
+  type: number;
+  num: number;
 }
 
 export default defineComponent({
@@ -223,13 +229,13 @@ export default defineComponent({
     },
     publisherMessages() {
       if (this.messagesList) {
-        return this.messagesList.filter(msg => [1, 2, 3, 4].includes(msg.num))
+        return this.messagesList.filter((msg: MessageData) => [1, 2, 3, 4].includes(msg.num))
       }
       return null
     },
     publisherStatus() {
       if (this.publisherMessages) {
-        return this.publisherMessages.filter(msg => msg.type === 2).length === 0 ? 'text-green' : 'text-red'
+        return this.publisherMessages.filter((msg: MessageData) => msg.type === 2).length === 0 ? 'text-green' : 'text-red'
       }
       return 'text-red'
     },
@@ -241,11 +247,12 @@ export default defineComponent({
             ? {text: 'Is a valid CSAF publisher', type: 0 }
             : {text: 'Is not a valid CSAF publisher', type: 2 }
         )
-        providerMessages.push(...(this.messagesList.filter(msg => [5, 6, 7].includes(msg.num))))
+        providerMessages.push(...(this.messagesList.filter((msg: MessageData) => [5, 6, 7].includes(msg.num))))
         // TODO 8 or 9 or 10
-        const dirBaseMessages = this.messagesList.filter(msg => [11,12,13,14].includes(msg.num))
-        const rolieBaseMessages = this.messagesList.filter(msg => [15,16,17].includes(msg.num))
-        if (rolieBaseMessages.filter(msg => msg.type === 2).length <= dirBaseMessages.filter(msg => msg.type === 2).length) {
+        const dirBaseMessages = this.messagesList.filter((msg: MessageData) => [11,12,13,14].includes(msg.num))
+        const rolieBaseMessages = this.messagesList.filter((msg: MessageData) => [15,16,17].includes(msg.num))
+        if (rolieBaseMessages.filter((msg:MessageData) => msg.type === 2).length
+            <= dirBaseMessages.filter((msg: MessageData) => msg.type === 2).length) {
           providerMessages.push(...rolieBaseMessages)
         } else {
           providerMessages.push(...dirBaseMessages)
@@ -266,7 +273,7 @@ export default defineComponent({
         trustedProviderMessages.push(
           this.providerStatus === 'text-green' ? {text: 'Is valid CSAF provider', type: 0 }
                                               : {text: 'Is not a valid CSAF provider', type: 2})
-        const filtered = this.messagesList.filter(msg => [18,19,20].includes(msg.num))
+        const filtered = this.messagesList.filter((msg: MessageData) => [18,19,20].includes(msg.num))
         trustedProviderMessages.push(...filtered)
         return trustedProviderMessages
       }
@@ -317,7 +324,7 @@ export default defineComponent({
         this.messagesList = null
       }
     },
-    extractMessages(requirements: {messages: {text: string, type: number}[]}[]) {
+    extractMessages(requirements: {num: number, messages: {text: string, type: number}[]}[]) {
       this.messagesList = []
       for (const req of requirements) {
         for (const msg2 of req.messages ?? []) {
