@@ -229,7 +229,8 @@ export default defineComponent({
     },
     publisherMessages() {
       if (this.messagesList) {
-        // requirements 1-4
+        // requirements 1 (Valid CSAF document), 2 (Filename), 3 (TLS), 4 (TLP:WHITE)
+        // Show all messages
         return this.filterMessageListByNums([1, 2, 3, 4])
       }
       return null
@@ -249,10 +250,12 @@ export default defineComponent({
             : {text: 'Is not a valid CSAF publisher', type: 2 }
         )
 
-        // requirements 5-7
+        // requirements 5 (TLP:AMBER and TLP:RED), 6 (Redirects) and 7 (provider-metadata.json)
+        // Show all messages
         providerMessages.push(...this.filterMessageListByNums([5, 6, 7]))
 
-        // requirements 8 or 9 or 10
+        // requirements min one of 8 (security.txt), 9 (Well-known URL for provider-metadata.json), 10 (DNS path)
+        // One must succed, then show that message, else show all messages
         const req8Messages = this.filterMessageListByNums([8])
         const req9Messages = this.filterMessageListByNums([9])
         const req10Messages = this.filterMessageListByNums([10])
@@ -266,7 +269,9 @@ export default defineComponent({
           providerMessages.push(...req8Messages, ...req9Messages, ...req10Messages)
         }
 
-        // requirements dir based (11-14) or ROLIE based (15-17)
+        // requirements dir based 11 (One folder per year), 12 (index.txt), 13 (changes.csv), 14 (Directory listings)
+        //           or ROLIE based 15 (ROLIE feed), 16 (ROLIE service document), 17 (ROLIE category document)
+        // Show the dir-based messages or show the ROLIE based messages
         const dirBaseMessages = this.filterMessageListByNums([11, 12, 13, 14])
         const rolieBaseMessages = this.filterMessageListByNums([15, 16, 17])
         if (rolieBaseMessages.filter((msg:MessageData) => msg.type === 2).length
@@ -292,7 +297,8 @@ export default defineComponent({
           this.providerStatus === 'text-green' ? {text: 'Is valid CSAF provider', type: 0 }
                                               : {text: 'Is not a valid CSAF provider', type: 2})
 
-        // requirements 18-20
+        // requirements 18 (Integrity), 19 (Signatures), 20 (Public OpenPGP Key)
+        // Show all messages
         trustedProviderMessages.push(...this.filterMessageListByNums([18, 19, 20]))
         return trustedProviderMessages
       }
