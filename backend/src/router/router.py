@@ -104,6 +104,23 @@ async def start_scan(request: ScanRequest) -> Dict[str, Any]:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to start scan: {str(e)}")
 
+@router.get("/scans", summary="List of recorded scans", tags=["scan"])
+async def list_scans(limit: int = 15) -> list[Dict[str, Any]]:
+    """
+    Returns a list of completed scans, most recent first.
+    """
+    tasks = Database_Manager().load_all_tasks(limit=limit)
+    return [
+        {
+            "task_id": str(task.uuid),
+            "domain": task.domain,
+            "start_time": task.start_time,
+            "end_time": task.end_time,
+            "duration": task.end_time - task.start_time,
+        }
+        for task in tasks
+    ]
+
 
 @router.get("/information", summary="General Provider Information", tags=["meta"])
 async def meta_info() -> Dict[str, Any]:
