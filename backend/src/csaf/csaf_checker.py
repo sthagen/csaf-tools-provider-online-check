@@ -227,7 +227,7 @@ class CSAF_Checker(BaseModel):
 
         if exitCode != 0:
             logger.info(
-                f"Task exited with code {exitCode} and error message: {errorMsg}"
+                f"{data.csaf_checker_output_runtime_log} \nTask exited with code {exitCode} and error message: {errorMsg} \nLast CSAF output has been prepended"
             )
             return (exitCode, errorMsg)
 
@@ -241,7 +241,7 @@ class CSAF_Checker(BaseModel):
         else:
             return (
                 1,
-                f"CSAF Process ended with status code {exitCode} and error message: {errorMsg}",
+                f"{data.csaf_checker_output_runtime_log} \nTask exited with code {exitCode} and error message: {errorMsg} \nLast CSAF output has been prepended",
             )
 
     async def run(self, data: Domain_Task_Data) -> (int, str):
