@@ -44,19 +44,19 @@
               <!-- display of requirements messages -->
               <div v-if="messagesList" class="mt-4">
                 <div v-if="result?.status === 'DONE_CHECKER'">
-                  <h5 class="alert-heading">Scan Done</h5>
+                  <h3 class="alert-heading">Scan Done</h3>
                 </div>
                 <div v-else-if="result?.status === 'CACHED_CHECKER'">
-                  <h5 class="alert-heading">Scan found in cache</h5>
+                  <h3 class="alert-heading">Scan found in cache</h3>
                 </div>
 
-                <h6 :class="publisherStatus" class="small-margin-top">CSAF publisher</h6>
+                <h4 :class="publisherStatus" class="small-margin-top medium-font-size">CSAF publisher</h4>
                 <Message v-for="item of publisherMessages" :text="item.text" :type="item.type"></Message>
 
-                <h6 :class="providerStatus" class="small-margin-top">CSAF provider</h6>
+                <h4 :class="providerStatus" class="small-margin-top medium-font-size">CSAF provider</h4>
                 <Message v-for="item of providerMessages" :text="item.text" :type="item.type"></Message>
 
-                <h6 :class="trustedProviderStatus" class="small-margin-top">CSAF trusted provider</h6>
+                <h4 :class="trustedProviderStatus" class="small-margin-top medium-font-size">CSAF trusted provider</h4>
                 <Message v-for="item of trustedProviderMessages" :text="item.text" :type="item.type"></Message>
 
                 <p class="small-margin-top">
@@ -67,6 +67,10 @@
                     <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseResultOutput" role="button" aria-expanded="false" aria-controls="collapseResultOutput">
                       Show JSON output
                     </a>
+                    &nbsp;
+                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseLogOutput" role="button" aria-expanded="false" aria-controls="collapseLogOutput">
+                      Show log output
+                    </a>
                 </p>
                 <div class="collapse" id="collapseAllMessages">
                   <div class="card card-body">
@@ -76,11 +80,22 @@
                 </div>
                 <div class="collapse" id="collapseResultOutput">
                   <div class="card card-body">
-                    <h6>Result of the checker (for debug):</h6>
-                    <div class="d-flex justify-content-end mb-2">
+                    <h6>Result of the checker:</h6>
+                    <div class="d-flex justify-content-end gap-2 mb-2">
                       <button class="btn btn-sm btn-outline-secondary" @click="copyResultToClipboard">Copy to clipboard</button>
+                      <button class="btn btn-sm btn-outline-secondary" @click="downloadJson">Download</button>
                     </div>
                     <pre>{{ result?.results_checker }}</pre>
+                  </div>
+                </div>
+                <div class="collapse" id="collapseLogOutput">
+                  <div class="card card-body">
+                    <h6>Log output:</h6>
+                    <div class="d-flex justify-content-end gap-2 mb-2">
+                      <button class="btn btn-sm btn-outline-secondary" @click="copyLogToClipboard">Copy to clipboard</button>
+                      <button class="btn btn-sm btn-outline-secondary" @click="downloadLog">Download</button>
+                    </div>
+                    <pre>{{ result?.runtime_output?.join('\n') }}</pre>
                   </div>
                 </div>
               </div>
@@ -268,7 +283,9 @@ export default defineComponent({
     },
     publisherMessages() {
       if (this.messagesList) {
-        return this.messagesList.filter((msg: MessageData) => [1, 2, 3, 4].includes(msg.num))
+        // requirements 1 (Valid CSAF document), 2 (Filename), 3 (TLS), 4 (TLP:WHITE)
+        // Show all messages
+        return this.filterMessageListByNums([1, 2, 3, 4])
       }
       return null
     },
@@ -286,10 +303,31 @@ export default defineComponent({
             ? {text: 'Is a valid CSAF publisher', type: 0 }
             : {text: 'Is not a valid CSAF publisher', type: 2 }
         )
-        providerMessages.push(...(this.messagesList.filter((msg: MessageData) => [5, 6, 7].includes(msg.num))))
-        // TODO 8 or 9 or 10
-        const dirBaseMessages = this.messagesList.filter((msg: MessageData) => [11,12,13,14].includes(msg.num))
-        const rolieBaseMessages = this.messagesList.filter((msg: MessageData) => [15,16,17].includes(msg.num))
+
+        // requirements 5 (TLP:AMBER and TLP:RED), 6 (Redirects) and 7 (provider-metadata.json)
+        // Show all messages
+        providerMessages.push(...this.filterMessageListByNums([5, 6, 7]))
+
+        // requirements min one of 8 (security.txt), 9 (Well-known URL for provider-metadata.json), 10 (DNS path)
+        // One must succed, then show that message, else show all messages
+        const req8Messages = this.filterMessageListByNums([8])
+        const req9Messages = this.filterMessageListByNums([9])
+        const req10Messages = this.filterMessageListByNums([10])
+        if (req8Messages.length > 0  && req8Messages.filter((msg:MessageData) => msg.type === 2).length === 0) {
+          providerMessages.push(...req8Messages)
+        } else if (req9Messages.length > 0  && req9Messages.filter((msg:MessageData) => msg.type === 2).length === 0) {
+          providerMessages.push(...req9Messages)
+        } else if (req10Messages.length > 0  && req10Messages.filter((msg:MessageData) => msg.type === 2).length === 0) {
+          providerMessages.push(...req10Messages)
+        } else {
+          providerMessages.push(...req8Messages, ...req9Messages, ...req10Messages)
+        }
+
+        // requirements dir based 11 (One folder per year), 12 (index.txt), 13 (changes.csv), 14 (Directory listings)
+        //           or ROLIE based 15 (ROLIE feed), 16 (ROLIE service document), 17 (ROLIE category document)
+        // Show the dir-based messages or show the ROLIE based messages
+        const dirBaseMessages = this.filterMessageListByNums([11, 12, 13, 14])
+        const rolieBaseMessages = this.filterMessageListByNums([15, 16, 17])
         if (rolieBaseMessages.filter((msg:MessageData) => msg.type === 2).length
             <= dirBaseMessages.filter((msg: MessageData) => msg.type === 2).length) {
           providerMessages.push(...rolieBaseMessages)
@@ -312,8 +350,10 @@ export default defineComponent({
         trustedProviderMessages.push(
           this.providerStatus === 'text-green' ? {text: 'Is valid CSAF provider', type: 0 }
                                               : {text: 'Is not a valid CSAF provider', type: 2})
-        const filtered = this.messagesList.filter((msg: MessageData) => [18,19,20].includes(msg.num))
-        trustedProviderMessages.push(...filtered)
+
+        // requirements 18 (Integrity), 19 (Signatures), 20 (Public OpenPGP Key)
+        // Show all messages
+        trustedProviderMessages.push(...this.filterMessageListByNums([18, 19, 20]))
         return trustedProviderMessages
       }
       return null
@@ -372,8 +412,46 @@ export default defineComponent({
         }
       }
     },
+    filterMessageListByNums(nums: number[]): MessageData[] {
+      return this.messagesList?.filter((msg: MessageData) => nums.includes(msg.num)) ?? []
+    },
+    copyToClipboard(text: string) {
+      if (navigator.clipboard) {
+        // This is the "normal" modern method, but does not work with HTTP (development setups)
+        navigator.clipboard.writeText(text)
+      } else {
+        // Fallback to old method for development setups using HTTP
+        const el = document.createElement('textarea')
+        el.value = text
+        document.body.appendChild(el)
+        el.select()
+        document.execCommand('copy')
+        document.body.removeChild(el)
+      }
+    },
     copyResultToClipboard() {
-      navigator.clipboard.writeText(JSON.stringify(this.result?.results_checker, null, 2))
+      // results_checker is a string (not a JSON object), pass it directly
+      this.copyToClipboard(this.result?.results_checker ?? '')
+    },
+    copyLogToClipboard() {
+      // runtime_output is a list, join it by newlines
+      this.copyToClipboard(this.result?.runtime_output?.join('\n') ?? '')
+    },
+    downloadJson() {
+      const blob = new Blob([this.result?.results_checker ?? ''], { type: 'application/json' })
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(blob)
+      a.download = `${this.domain}-result.json`
+      a.click()
+      URL.revokeObjectURL(a.href)
+    },
+    downloadLog() {
+      const blob = new Blob([this.result?.runtime_output?.join('\n') ?? ''], { type: 'text/plain' })
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(blob)
+      a.download = `${this.domain}-log.txt`
+      a.click()
+      URL.revokeObjectURL(a.href)
     },
     formatTime(ts: number) {
       return new Date(ts * 1000).toLocaleString()
@@ -395,5 +473,8 @@ export default defineComponent({
 }
 .small-margin-top {
   margin-top: 15px;
+}
+.medium-font-size {
+  font-size: 1.3rem;
 }
 </style>
