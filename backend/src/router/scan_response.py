@@ -42,7 +42,9 @@ class ScanResponse(BaseModel):
         Field(description="Amount of files that have been checked so far")
     ] = 0
 
-    scan_stage: Annotated[
+    latest_file_checked: Annotated[
         str,
-        Field(description="Granular stage description for the RUNNING_CHECKER status")
-    ] = "Done"
+        Field(
+            description="Name of the latest file that has been checked, including directory path"
+        )
+    ] = ""

@@ -89,20 +89,3 @@ class Slot(BaseModel):
             return ScanResponseStatus.INITIALIZED, ""
 
         return ScanResponseStatus.RUNNING_CHECKER, ""
-
-    # Returns the amount of checked files
-    def getAmountOfCheckedFiles(self) -> int:
-        if self.running_task is None:
-            return 0
-
-        data = self.running_task.get_data(True)
-
-        if data is None or len(data.csaf_checker_output_runtime_log) == 0:
-            return 0
-
-        latest_line = data.csaf_checker_output_runtime_log[-1]
-
-        if latest_line is None or latest_line == "":
-            return 0
-
-        return 0

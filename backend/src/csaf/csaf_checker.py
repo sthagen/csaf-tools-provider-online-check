@@ -214,6 +214,7 @@ class CSAF_Checker(BaseModel):
 
             if not line:
                 break
+
             decoded_line = line.decode(errors="replace").rstrip("\n")
 
             # Once a single '{' is read, it is assumed that the csaf results are printed out
@@ -224,6 +225,12 @@ class CSAF_Checker(BaseModel):
             else:
                 # Runtime Line
                 data.csaf_checker_output_runtime_log.append(decoded_line)
+                # Check if log line references a file
+                if "[GET]" in decoded_line:
+                    data.files_checked += 1
+
+                    # Extract file name (with path relative to domain)
+                    data.latest_file_checked = decoded_line.split(data.domain)[-1]
 
         if exitCode != 0:
             logger.info(
