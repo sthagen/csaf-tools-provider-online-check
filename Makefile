@@ -48,10 +48,10 @@ coverage-containerd:
 generate-sboms:
 	bash ./dev/sboms/generate-sboms.sh
 
-fe-lint-ci:
+fe-lint-ci-containerd:
 	make dev-exec frontend EXEC_COMMAND="frontend npm run lint-ci"
 
-fe-lint:
+fe-lint-containerd:
 	make dev-exec frontend EXEC_COMMAND="frontend npm run lint"
 
 # CI
