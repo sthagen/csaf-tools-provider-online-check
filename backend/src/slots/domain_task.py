@@ -165,10 +165,10 @@ class Domain_Task(BaseModel):
     def on_interrupt(self):
         self.status = Domain_Task_Status.INTERRUPTED
 
-    def on_error(self, string):
+    def on_error(self, errMsg):
         self.status = Domain_Task_Status.ERROR
 
-        logger.error(f"Domain Task Error: {string}")
+        logger.error(f"Domain Task Error: {errMsg}")
 
     def get_status(self) -> Domain_Task_Status:
         return self.status
