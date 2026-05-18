@@ -17,6 +17,8 @@ from ..csaf.csaf_checker import CSAF_BINARY_PATH, CSAF_CHECKER_BINARY
 from ..database.database import Database_Manager
 from ..database.redis import Redis_Controller
 from ..slots.slot_manager import Slot_Manager
+from .health_response import HealthResponse
+from .information_response import InformationResponse
 from .scan_request import ScanRequest
 from .scan_response import ScanResponse, ScanResponseStatus
 
@@ -103,8 +105,8 @@ async def start_scan(request: ScanRequest) -> Dict[str, Any]:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to start scan: {str(e)}")
 
-@router.get("/information", summary="General Provider Information", tags=["meta"])
-async def meta_info() -> Dict[str, Any]:
+@router.get("/information", summary="General Provider Information", tags=["meta"], response_model=InformationResponse)
+async def meta_info() -> InformationResponse:
     """
     Returns information about the provider and its components, such as version numbers
 
@@ -125,8 +127,8 @@ async def meta_info() -> Dict[str, Any]:
     }
 
 
-@router.get("/health", summary="Health Check", tags=["devops"])
-async def health_check():
+@router.get("/health", summary="Health Check", tags=["devops"], response_model=HealthResponse)
+async def health_check() -> HealthResponse:
     """
     Check for free slots and csaf_checker binary
     """
