@@ -63,6 +63,7 @@ async def start_scan(request: ScanRequest) -> Dict[str, Any]:
         uuid = Slot_Manager().start_domain_task(request)
         status = ScanResponseStatus.ERROR
         errorMsg = ""
+        filesChecked = ""
 
         if uuid == "":
             # No slot is available
@@ -79,6 +80,8 @@ async def start_scan(request: ScanRequest) -> Dict[str, Any]:
             data = slot.running_task.get_data(False)
 
             status, errorMsg = slot.getSlotStatusResponse()
+
+            filesChecked = slot.getAmountOfCheckedFiles()
         else:
             # 2. Find domain task in database cache
             data = Database_Manager().load_task_by_id(uuid)
@@ -99,6 +102,8 @@ async def start_scan(request: ScanRequest) -> Dict[str, Any]:
             "task_id": uuid,
             "runtime_output": data.csaf_checker_output_runtime_log,
             "results_checker": data.csaf_checker_output_result,
+            "files_checked": filesChecked,
+            "scan_stage": "Done",
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to start scan: {str(e)}")
