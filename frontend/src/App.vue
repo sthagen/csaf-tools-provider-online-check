@@ -49,7 +49,7 @@
                 <div v-else-if="result?.status === 'CACHED_CHECKER'">
                   <h5 class="alert-heading">Scan found in cache</h5>
                 </div>
-                <MessageLine v-for="item of messagesList" :key=item.text :text="item.text" :type="item.type"></MessageLine>
+                <MessageLine v-for="item of messagesList" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
               </div>
 
               <div 
