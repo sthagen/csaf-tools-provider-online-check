@@ -44,15 +44,62 @@
               <!-- display of requirements messages -->
               <div v-if="messagesList" class="mt-4">
                 <div v-if="result?.status === 'DONE_CHECKER'">
-                  <h5 class="alert-heading">Scan Done</h5>
+                  <h3 class="alert-heading">Scan Done</h3>
                 </div>
                 <div v-else-if="result?.status === 'CACHED_CHECKER'">
-                  <h5 class="alert-heading">Scan found in cache</h5>
+                  <h3 class="alert-heading">Scan found in cache</h3>
                 </div>
-                <MessageLine v-for="item of messagesList" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
-              </div>
 
-              <div 
+                <h4 :class="publisherStatus" class="small-margin-top medium-font-size">CSAF publisher</h4>
+                <MessageLine v-for="item of publisherMessages" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
+
+                <h4 :class="providerStatus" class="small-margin-top medium-font-size">CSAF provider</h4>
+                <MessageLine v-for="item of providerMessages" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
+
+                <h4 :class="trustedProviderStatus" class="small-margin-top medium-font-size">CSAF trusted provider</h4>
+                <MessageLine v-for="item of trustedProviderMessages" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
+
+                <p class="small-margin-top">
+                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseAllMessages" role="button" aria-expanded="false" aria-controls="collapseAllMessages">
+                      Show all messages
+                    </a>
+                    &nbsp;
+                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseResultOutput" role="button" aria-expanded="false" aria-controls="collapseResultOutput">
+                      Show JSON output
+                    </a>
+                    &nbsp;
+                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseLogOutput" role="button" aria-expanded="false" aria-controls="collapseLogOutput">
+                      Show log output
+                    </a>
+                </p>
+                <div class="collapse" id="collapseAllMessages">
+                  <div class="card card-body">
+                    <h6>All messages:</h6>
+                    <MessageLine v-for="item of messagesList" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
+                  </div>
+                </div>
+                <div class="collapse" id="collapseResultOutput">
+                  <div class="card card-body">
+                    <h6>Result of the checker:</h6>
+                    <div class="d-flex justify-content-end gap-2 mb-2">
+                      <button class="btn btn-sm btn-outline-secondary" @click="copyResultToClipboard">Copy to clipboard</button>
+                      <button class="btn btn-sm btn-outline-secondary" @click="downloadJson">Download</button>
+                    </div>
+                    <pre>{{ result?.results_checker }}</pre>
+                  </div>
+                </div>
+                <div class="collapse" id="collapseLogOutput">
+                  <div class="card card-body">
+                    <h6>Log output:</h6>
+                    <div class="d-flex justify-content-end gap-2 mb-2">
+                      <button class="btn btn-sm btn-outline-secondary" @click="copyLogToClipboard">Copy to clipboard</button>
+                      <button class="btn btn-sm btn-outline-secondary" @click="downloadLog">Download</button>
+                    </div>
+                    <pre>{{ result?.runtime_output?.join('\n') }}</pre>
+                  </div>
+                </div>
+              </div>
+              <div
                 v-if="result && ['ERROR', 'UNDEFINED', 'INITIALIZED', 'RUNNING_CHECKER', 'PAUSED'].includes(result?.status)"
                 class="mt-4"
               >
@@ -134,12 +181,18 @@ interface AppData {
   loading: boolean;
   result: any;
   error: any;
-  messagesList: any;
+  messagesList: null | MessageData[];
   version: {
     csaf_checker_version: string;
     csaf_validator_version: string;
     csaf_provider_version: string;
   } | null
+}
+
+interface MessageData {
+  text: string;
+  type: number;
+  num: number;
 }
 
 export default defineComponent({
@@ -188,7 +241,90 @@ export default defineComponent({
     },
     footerText() {
       return import.meta.env.VITE_FOOTER_TEXT || ''
-    }
+    },
+    publisherMessages() {
+      if (this.messagesList) {
+        // requirements 1 (Valid CSAF document), 2 (Filename), 3 (TLS), 4 (TLP:WHITE)
+        // Show all messages
+        return this.filterMessageListByNums([1, 2, 3, 4])
+      }
+      return null
+    },
+    publisherStatus() {
+      if (this.publisherMessages) {
+        return this.publisherMessages.filter((msg: MessageData) => msg.type === 2).length === 0 ? 'text-green' : 'text-red'
+      }
+      return 'text-red'
+    },
+    providerMessages() {
+      if (this.messagesList) {
+        const providerMessages = []
+        providerMessages.push(
+          this.publisherStatus === 'text-green'
+            ? {text: 'Is a valid CSAF publisher', type: 0 }
+            : {text: 'Is not a valid CSAF publisher', type: 2 }
+        )
+
+        // requirements 5 (TLP:AMBER and TLP:RED), 6 (Redirects) and 7 (provider-metadata.json)
+        // Show all messages
+        providerMessages.push(...this.filterMessageListByNums([5, 6, 7]))
+
+        // requirements min one of 8 (security.txt), 9 (Well-known URL for provider-metadata.json), 10 (DNS path)
+        // One must succed, then show that message, else show all messages
+        const req8Messages = this.filterMessageListByNums([8])
+        const req9Messages = this.filterMessageListByNums([9])
+        const req10Messages = this.filterMessageListByNums([10])
+        if (req8Messages.length > 0  && req8Messages.filter((msg:MessageData) => msg.type === 2).length === 0) {
+          providerMessages.push(...req8Messages)
+        } else if (req9Messages.length > 0  && req9Messages.filter((msg:MessageData) => msg.type === 2).length === 0) {
+          providerMessages.push(...req9Messages)
+        } else if (req10Messages.length > 0  && req10Messages.filter((msg:MessageData) => msg.type === 2).length === 0) {
+          providerMessages.push(...req10Messages)
+        } else {
+          providerMessages.push(...req8Messages, ...req9Messages, ...req10Messages)
+        }
+
+        // requirements dir based 11 (One folder per year), 12 (index.txt), 13 (changes.csv), 14 (Directory listings)
+        //           or ROLIE based 15 (ROLIE feed), 16 (ROLIE service document), 17 (ROLIE category document)
+        // Show the dir-based messages or show the ROLIE based messages
+        const dirBaseMessages = this.filterMessageListByNums([11, 12, 13, 14])
+        const rolieBaseMessages = this.filterMessageListByNums([15, 16, 17])
+        if (rolieBaseMessages.filter((msg:MessageData) => msg.type === 2).length
+            <= dirBaseMessages.filter((msg: MessageData) => msg.type === 2).length) {
+          providerMessages.push(...rolieBaseMessages)
+        } else {
+          providerMessages.push(...dirBaseMessages)
+        }
+        return providerMessages
+      }
+      return null
+    },
+    providerStatus() {
+      if (this.providerMessages) {
+        return this.providerMessages.filter(msg => msg.type === 2).length === 0 ? 'text-green' : 'text-red'
+      }
+      return 'text-red'
+    },
+    trustedProviderMessages() {
+      if (this.messagesList) {
+        const trustedProviderMessages = []
+        trustedProviderMessages.push(
+          this.providerStatus === 'text-green' ? {text: 'Is valid CSAF provider', type: 0 }
+                                              : {text: 'Is not a valid CSAF provider', type: 2})
+
+        // requirements 18 (Integrity), 19 (Signatures), 20 (Public OpenPGP Key)
+        // Show all messages
+        trustedProviderMessages.push(...this.filterMessageListByNums([18, 19, 20]))
+        return trustedProviderMessages
+      }
+      return null
+    },
+    trustedProviderStatus() {
+      if (this.trustedProviderMessages) {
+        return this.trustedProviderMessages.filter(msg => msg.type === 2).length === 0 ? 'text-green' : 'text-red'
+      }
+      return 'text-red'
+    },
   },
   methods: {
     async startScan() {
@@ -228,13 +364,54 @@ export default defineComponent({
         this.messagesList = null
       }
     },
-    extractMessages(requirements: {messages: {text: string, type: number}[]}[]) {
+    extractMessages(requirements: {num: number, messages: {text: string, type: number}[]}[]) {
       this.messagesList = []
       for (const req of requirements) {
         for (const msg2 of req.messages ?? []) {
-          this.messagesList.push(msg2)
+          this.messagesList.push({type: msg2.type, text: msg2.text, num: req.num })
         }
       }
+    },
+    filterMessageListByNums(nums: number[]): MessageData[] {
+      return this.messagesList?.filter((msg: MessageData) => nums.includes(msg.num)) ?? []
+    },
+    copyToClipboard(text: string) {
+      if (navigator.clipboard) {
+        // This is the "normal" modern method, but does not work with HTTP (development setups)
+        navigator.clipboard.writeText(text)
+      } else {
+        // Fallback to old method for development setups using HTTP
+        const el = document.createElement('textarea')
+        el.value = text
+        document.body.appendChild(el)
+        el.select()
+        document.execCommand('copy')
+        document.body.removeChild(el)
+      }
+    },
+    copyResultToClipboard() {
+      // results_checker is a string (not a JSON object), pass it directly
+      this.copyToClipboard(this.result?.results_checker ?? '')
+    },
+    copyLogToClipboard() {
+      // runtime_output is a list, join it by newlines
+      this.copyToClipboard(this.result?.runtime_output?.join('\n') ?? '')
+    },
+    downloadJson() {
+      const blob = new Blob([this.result?.results_checker ?? ''], { type: 'application/json' })
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(blob)
+      a.download = `${this.domain}-result.json`
+      a.click()
+      URL.revokeObjectURL(a.href)
+    },
+    downloadLog() {
+      const blob = new Blob([this.result?.runtime_output?.join('\n') ?? ''], { type: 'text/plain' })
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(blob)
+      a.download = `${this.domain}-log.txt`
+      a.click()
+      URL.revokeObjectURL(a.href)
     }
   }
 })
@@ -244,5 +421,17 @@ export default defineComponent({
 #app {
   min-height: 100vh;
   background-color: #f8f9fa;
+}
+.text-green {
+  color: green;
+}
+.text-red {
+  color: red;
+}
+.small-margin-top {
+  margin-top: 15px;
+}
+.medium-font-size {
+  font-size: 1.3rem;
 }
 </style>
