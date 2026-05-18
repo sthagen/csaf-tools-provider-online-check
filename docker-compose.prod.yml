@@ -4,7 +4,7 @@ services:
       context: ./backend
       target: prod
       args:
-        - CSAF_CHECKER_VERSION=${CSAF_CHECKER_VERSION:-3.4.0}
+        - CSAF_CHECKER_VERSION=${CSAF_CHECKER_VERSION:-3.5.1}
         - CSAF_SHA256=${CSAF_SHA256}
     container_name: backend
     ports:
