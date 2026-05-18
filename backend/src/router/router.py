@@ -25,9 +25,10 @@ router = APIRouter()
 
 logger = logging.getLogger(__name__)
 
-ENV_CSAF_CHECKER_VERSION="CSAF_CHECKER_VERSION"
-ENV_CSAF_VALIDATOR_VERSION="CSAF_VALIDATOR_VERSION"
-ENV_CSAF_PROVIDER_VERSION="APP_VERSION"
+ENV_CSAF_CHECKER_VERSION = "CSAF_CHECKER_VERSION"
+ENV_CSAF_VALIDATOR_VERSION = "CSAF_VALIDATOR_VERSION"
+ENV_CSAF_PROVIDER_VERSION = "APP_VERSION"
+
 
 @router.post(
     "/scan/start",
@@ -88,7 +89,7 @@ async def start_scan(request: ScanRequest) -> Dict[str, Any]:
 
         if data is None or errorMsg != "":
             return {
-                "status": ScanResponseStatus.INITIALIZED,
+                "status": ScanResponseStatus.ERROR,
                 "domain": request.domain,
                 "error": errorMsg,
             }
