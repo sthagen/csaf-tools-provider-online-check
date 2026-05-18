@@ -36,6 +36,9 @@ class Database_Manager:
 
         return data
 
+    def load_all_tasks(self, limit: int = 15) -> list[Domain_Task_Data]:
+        return Redis_Controller().get_all_domain_tasks(limit)
+
     def load_task_by_id(self, uuid: str) -> Domain_Task_Data:
         data = Redis_Controller().get_domain_task_by_uuid(uuid)
 
