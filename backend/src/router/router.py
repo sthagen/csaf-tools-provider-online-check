@@ -21,6 +21,7 @@ from .health_response import HealthResponse
 from .information_response import InformationResponse
 from .scan_request import ScanRequest
 from .scan_response import ScanResponse, ScanResponseStatus
+from .scan_summary import ScanSummary
 
 router = APIRouter()
 
@@ -40,7 +41,7 @@ ENV_CSAF_PROVIDER_VERSION = "APP_VERSION"
     tags=["scan"],
     status_code=status.HTTP_201_CREATED,
 )
-async def start_scan(request: ScanRequest) -> Dict[str, Any]:
+async def start_scan(request: ScanRequest) -> ScanResponse:
     """
     Start a scan for the provided domain.
 
@@ -107,8 +108,8 @@ async def start_scan(request: ScanRequest) -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail=f"Failed to start scan: {str(e)}")
 
 
-@router.get("/scans", summary="List of recorded scans", tags=["scan"])
-async def list_scans(limit: int = 15) -> list[Dict[str, Any]]:
+@router.get("/scans", summary="List of recorded scans", tags=["scan"], response_model=list[ScanSummary])
+async def list_scans(limit: int = 15) -> list[ScanSummary]:
     """
     Returns a list of completed scans, most recent first.
     """
