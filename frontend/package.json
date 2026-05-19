@@ -6,6 +6,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "lint-ci": "npx eslint src",
+    "lint": "npx eslint src --fix",
     "tests": "vitest",
     "coverage": "vitest --coverage",
     "tests-single": "vitest run",
@@ -17,8 +19,13 @@
     "vue": "^3.4.0"
   },
   "devDependencies": {
-    "jsdom": "^29.1.0",
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.3.0",
+    "eslint-plugin-vue": "^10.9.1",
+    "globals": "^17.6.0",
+    "typescript-eslint": "^8.59.2",
     "vite": "^5.0.0",
+    "jsdom": "^29.1.0",
     "@vitejs/plugin-vue": "^5.0.0",
     "vitest": "^4.1.5",
     "@vitest/coverage-v8": "^4.1.5",

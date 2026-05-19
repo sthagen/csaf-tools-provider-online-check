@@ -51,13 +51,13 @@
                 </div>
 
                 <h4 :class="publisherStatus" class="small-margin-top medium-font-size">CSAF publisher</h4>
-                <Message v-for="item of publisherMessages" :text="item.text" :type="item.type"></Message>
+                <MessageLine v-for="item of publisherMessages" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
 
                 <h4 :class="providerStatus" class="small-margin-top medium-font-size">CSAF provider</h4>
-                <Message v-for="item of providerMessages" :text="item.text" :type="item.type"></Message>
+                <MessageLine v-for="item of providerMessages" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
 
                 <h4 :class="trustedProviderStatus" class="small-margin-top medium-font-size">CSAF trusted provider</h4>
-                <Message v-for="item of trustedProviderMessages" :text="item.text" :type="item.type"></Message>
+                <MessageLine v-for="item of trustedProviderMessages" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
 
                 <p class="small-margin-top">
                     <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseAllMessages" role="button" aria-expanded="false" aria-controls="collapseAllMessages">
@@ -75,7 +75,7 @@
                 <div class="collapse" id="collapseAllMessages">
                   <div class="card card-body">
                     <h6>All messages:</h6>
-                    <Message v-for="item of messagesList" :text="item.text" :type="item.type"></Message>
+                    <MessageLine v-for="item of messagesList" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
                   </div>
                 </div>
                 <div class="collapse" id="collapseResultOutput">
@@ -198,7 +198,7 @@
 <script lang="ts">
 import axios from 'axios'
 import { defineComponent } from 'vue'
-import Message from './Message.vue'
+import MessageLine from './MessageLine.vue'
 import VersionDisplay from './VersionDisplay.vue';
 
 interface RecentScan {
@@ -232,7 +232,7 @@ interface MessageData {
 
 export default defineComponent({
   name: 'App',
-  components: { Message, VersionDisplay },
+  components: { MessageLine, VersionDisplay },
   data() {
     return {
       session_id: '1',
