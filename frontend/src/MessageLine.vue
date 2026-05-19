@@ -1,5 +1,8 @@
 <template>
-    <div :class="messageClass" class="small-bottom-margin">
+    <div class="small-bottom-margin">
+        <span v-if="type === 2" :class="messageClass">ERROR</span>
+        <span v-else-if="type === 1" :class="messageClass">WARN</span>
+        <span v-else :class="messageClass">PASS</span>
         {{ text }}
     </div>
 </template>
