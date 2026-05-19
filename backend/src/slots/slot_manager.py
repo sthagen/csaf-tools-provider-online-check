@@ -75,19 +75,28 @@ class Slot_Manager:
 
         # Search for a running task that operates on the same domain
         # Return that task id, if it exists (avoid working on the same domain twice)
+        available_slot = None
         slot_with_identical_running_task = self.get_slot_by_domain(request.domain)
         if slot_with_identical_running_task is not None:
-            logger.info(
-                f"A task is already operating for {request.domain} in slot id {slot_with_identical_running_task.id}"
-            )
-            return slot_with_identical_running_task.running_task.get_data(False).uuid
+            if request.clear_any_running:
+                slot_with_identical_running_task.running_task.stop_task()
+
+                available_slot = slot_with_identical_running_task
+            else:
+                logger.info(
+                    f"A task is already operating for {request.domain} in slot id {slot_with_identical_running_task.id}"
+                )
+                return slot_with_identical_running_task.running_task.get_data(
+                    False
+                ).uuid
 
         # Find available slot
-        available_slot = self.find_first_available_slot()
         if available_slot is None:
-            # FIXME: Throw some kind of error
-            logger.info("No available slot found")
-            return ""
+            available_slot = self.find_first_available_slot()
+            if available_slot is None:
+                # FIXME: Throw some kind of error
+                logger.info("No available slot found")
+                return ""
 
         logger.info(
             f"For scan request of domain {request.domain}, slot {available_slot.id} is available"

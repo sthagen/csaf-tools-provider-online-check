@@ -10,7 +10,8 @@ client = TestClient(app)
 def mock_scan_request_variable_domain(domain: str):
     mock = {
         "session_id": "0",
-        "domain": domain
+        "domain": domain,
+        "clear_any_running": True,
     }
     return mock
 
@@ -18,7 +19,8 @@ def mock_scan_request_variable_domain(domain: str):
 def mock_scan_request_variable_session_id(session_id: str):
     mock = {
         "session_id": session_id,
-        "domain": "example.com"
+        "domain": "example.com",
+        "clear_any_running": True,
     }
     return mock
 

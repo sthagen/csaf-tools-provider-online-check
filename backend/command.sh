@@ -5,9 +5,9 @@ set -e
 pip install -r requirements.txt
 
 # Install csaf binary as well
-CSAF_CHECKER_VERSION=${CSAF_CHECKER_VERSION:-"3.4.0"}
+CSAF_CHECKER_VERSION=${CSAF_CHECKER_VERSION:-"3.5.1"}
 (
-    mkdir bin || true
+    mkdir -p bin
     cd bin || exit 1
 
     # Download from GitHub

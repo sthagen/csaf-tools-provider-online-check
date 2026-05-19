@@ -8,7 +8,10 @@ describe("Testing App...", () => {
     let app: any
     beforeEach(()=> {
         vi.spyOn(axios, "get").mockImplementation(
-            () => { return new Promise((resolve) => {return resolve({})} ) }
+            (url: string) => new Promise(resolve => resolve(
+                // for /api/scans return [], else {}
+                url.includes('/api/scans') ? { data: [] } : { data: {} }
+            ))
         )
         app = mount(App)
     })
@@ -43,7 +46,7 @@ describe("Testing App...", () => {
             ['UNDEFINED', 'alert-danger'],
             ['DONE_CHECKER', 'alert-success'],
             ['CACHED_CHECKER', 'alert-success'],
-            ['DEFAULT', 'alert-info']                    
+            ['DEFAULT', 'alert-info']
         ]
         for (const pair of test_oracle) {
             app.vm.result = { 'status': pair[0]}
