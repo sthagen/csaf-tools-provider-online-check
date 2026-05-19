@@ -8,7 +8,7 @@ import sys
 app = FastAPI(
     title="CSAF Provider Scan API",
     description="API for scanning CSAF providers",
-    version="1.0.0",
+    version=os.getenv("APP_VERSION"),
     docs_url="/api/docs",
     redoc_url="/api/redoc",
     openapi_url="/api/openapi.json",
