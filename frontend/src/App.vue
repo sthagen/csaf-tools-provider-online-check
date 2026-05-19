@@ -8,7 +8,7 @@
 
     <div class="container mt-5">
       <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-md-12">
           <div class="card shadow">
             <div class="card-body">
               <h2 class="card-title mb-4">Scan a Domain <span class="badge bg-warning ms-2" style="font-size: 0.4em; vertical-align: middle;">Experimental</span></h2>
@@ -143,7 +143,7 @@
       </div>
 
       <div v-if="recentScans.length > 0" class="row justify-content-center mt-4">
-        <div class="col-md-8">
+        <div class="col-md-12">
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">Recently Scanned</h5>
@@ -169,7 +169,7 @@
       </div>
 
       <div class="row justify-content-center mt-4">
-        <div class="col-md-8">
+        <div class="col-md-12">
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">About</h5>
