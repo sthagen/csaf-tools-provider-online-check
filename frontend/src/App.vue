@@ -353,6 +353,9 @@ export default defineComponent({
       } catch (err: any) {
         this.messagesList = null
         this.error = err.response?.data?.detail || err.message || 'An error occurred while starting the scan'
+        if (err.response?.data?.detail[0]?.msg) {
+          this.error = `${err.response?.data?.detail[0]?.input}: ${err.response?.data?.detail[0]?.msg}`
+        }
       } finally {
         if (['INITIALIZED', 'RUNNING_CHECKER'].includes(this.result?.status) ) {
           setTimeout(this.startScan, 3000)
