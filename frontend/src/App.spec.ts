@@ -22,15 +22,9 @@ describe("Testing App...", () => {
         app.vm.extractMessages([{messages: undefined}])
         expect(app.vm.messagesList).toStrictEqual([])
     })
-    test('extractMessagesFromResultsChecker with json string', () =>{
-        app.vm.extractMessagesFromResultsChecker(
-            '{ "domains": [{"requirements": [{ "messages": [{"text": "Test1", "type": 0}], "num": 11 }]}]}'
-        )
-        expect(app.vm.messagesList).toStrictEqual([{text: "Test1", type: 0, num: 11}])
-    })
     test('extractMessagesFromResultsChecker with requirements null', () => {
         app.vm.extractMessagesFromResultsChecker(
-            '{ "domains": [{"requirements": null}]}'
+            { "domains": [{"requirements": null}]}
         )
         expect(app.vm.messagesList).toBe(null)
     })
@@ -92,7 +86,7 @@ describe("Testing App...", () => {
                 return resolve({
                     data: {
                         status: "CACHED_CHECKER",
-                        results_checker: { "domains": [{ "requirements": [{ "messages": [{ "text": "Test1", "type": 0 }], "num": 12 }] }] }
+                        results_checker: '{ "domains": [{ "requirements": [{ "messages": [{ "text": "Test1", "type": 0 }], "num": 12 }] }] }'
                     }
                 }
             )}

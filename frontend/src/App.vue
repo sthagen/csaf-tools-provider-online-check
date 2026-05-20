@@ -50,6 +50,10 @@
                   <h3 class="alert-heading">Scan found in cache</h3>
                 </div>
 
+                <div v-show="scanTime">
+                  Scan Time: {{ scanTime }}
+                </div>
+
                 <h4 :class="trustedProviderStatus" class="small-margin-top medium-font-size">
                   <span v-if="trustedProviderStatus === 'text-green'">PASSED:</span>
                   <span v-else>FAILED:</span>
@@ -207,6 +211,11 @@ interface RecentScan {
   duration: number;
 }
 
+interface ResultCheckerData {
+  domains: { requirements: {num: number, messages: {text: string, type: number}[]}[]}[];
+  date: string;
+}
+
 interface AppData {
   session_id: string;
   domain: string;
@@ -214,6 +223,7 @@ interface AppData {
   result: any;
   error: any;
   messagesList: null | MessageData[];
+  scanTime: null | string;
   recentScans: RecentScan[];
   version: {
     csaf_checker_version: string;
@@ -239,6 +249,7 @@ export default defineComponent({
       result: null,
       error: null,
       messagesList: null,
+      scanTime: null,
       recentScans: [],
       version: null
     } as AppData
@@ -330,7 +341,7 @@ export default defineComponent({
         return this.trustedProviderMessages.filter(msg => msg.type === 2).length === 0 ? 'text-green' : 'text-red'
       }
       return 'text-red'
-    },
+    }
   },
   methods: {
     async startScan() {
@@ -345,13 +356,17 @@ export default defineComponent({
         })
         this.result = response.data
         if (['DONE_CHECKER', 'CACHED_CHECKER'].includes(this.result?.status)) {
-          this.extractMessagesFromResultsChecker(this.result.results_checker)
+          const parsedResultsChecker = this.parseResultsChecker(this.result.results_checker)
+          this.extractMessagesFromResultsChecker(parsedResultsChecker)
+          this.setScanTime(parsedResultsChecker)
           axios.get(`${this.backendUrl}/api/scans`).then(r => this.recentScans = r.data)
         } else {
           this.messagesList = null
+          this.scanTime = null
         }
       } catch (err: any) {
         this.messagesList = null
+        this.scanTime = null
         this.error = err.response?.data?.detail || err.message || 'An error occurred while starting the scan'
         if (err.response?.data?.detail[0]?.msg) {
           this.error = `${err.response?.data?.detail[0]?.input}: ${err.response?.data?.detail[0]?.msg}`
@@ -364,10 +379,15 @@ export default defineComponent({
         }
       }
     },
-    extractMessagesFromResultsChecker(results_checker: any) {
-      if (typeof results_checker === 'string') {
-        results_checker = JSON.parse(results_checker)
+    parseResultsChecker(results_checker: string): ResultCheckerData {
+      return JSON.parse(results_checker)
+    },
+    setScanTime(parsedResultsChecker: ResultCheckerData) {
+      if (parsedResultsChecker?.date) {
+        this.scanTime = new Date(parsedResultsChecker?.date).toLocaleString()
       }
+    },
+    extractMessagesFromResultsChecker(results_checker: ResultCheckerData) {
       if (results_checker.domains?.[0]?.requirements) {
         this.extractMessages(results_checker.domains[0].requirements)
       } else {
