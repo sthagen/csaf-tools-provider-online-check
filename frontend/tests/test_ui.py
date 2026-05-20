@@ -41,9 +41,14 @@ class TestHomePage:
         csaf_link = firefox_driver.find_element(By.LINK_TEXT, "CSAF")
         assert csaf_link.get_attribute("href") == "https://www.csaf.io/"
 
-        # Apache-2.0 license
-        page_text = firefox_driver.find_element(By.TAG_NAME, "body").text
-        assert "Apache-2.0" in page_text
+        # Source code link
+        code_link = firefox_driver.find_element(By.LINK_TEXT, "Website and Source Code")
+        assert "csaf-provider-scan" in code_link.get_attribute("href")
+
+        # API link
+        api_link = firefox_driver.find_element(By.LINK_TEXT, "API Documentation")
+        assert "/api/docs" in api_link.get_attribute("href")
+
 
 
 class TestScanForm:
