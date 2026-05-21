@@ -32,7 +32,7 @@ lint:
 	bash backend/dev/run-lint.sh -l -b
 
 lint-containerd:
-	make dev-exec "backend bash dev/run-lint.sh -l -i"
+	make dev-exec EXEC_COMMAND="backend bash dev/run-lint.sh -l -i"
 
 lint-containerd-standalone:
 	bash backend/dev/run-lint.sh
