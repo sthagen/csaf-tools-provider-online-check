@@ -230,7 +230,7 @@ class CSAF_Checker(BaseModel):
                     data.files_checked += 1
 
                     # Extract file name (with path relative to domain)
-                    data.latest_file_checked = decoded_line.split(data.domain)[-1]
+                    data.latest_file_checked = decoded_line.split("[GET]:")[-1]
 
         if exitCode != 0:
             logger.info(

@@ -35,7 +35,7 @@ class ScanResponse(BaseModel):
     results_checker: Annotated[
         str,
         Field(description="Results of CSAF Checker"),
-    ] = []
+    ] = ""
 
     files_checked: Annotated[
         int,
