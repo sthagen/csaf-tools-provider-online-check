@@ -16,13 +16,8 @@ DOMAIN_PATTERN = (
 )
 
 REQUEST_PATTERN = (
-    r"^(?:"
-    + DOMAIN_PATTERN
-    + r"|https://"
-    + DOMAIN_PATTERN
-    + r"(?:/[^/]+)*"
-    + r"/provider-metadata\.json"
-    + r")$"
+    rf"^(?:{DOMAIN_PATTERN}|https://{DOMAIN_PATTERN}"
+    rf"(?:/[^/]+)*/provider-metadata\.json)$"
 )
 
 
