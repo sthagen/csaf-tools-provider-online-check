@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Executes all linters. Should errors occur, CATCH will be set to 1, causing an erroneous exit code.
+# Executes all linters
 
 echo "Run Linters"
 
@@ -38,13 +38,12 @@ then
     trap 'if [ -z "$LOCAL" ]; then make dev-stop; fi' EXIT
 
     # Setup
-    make dev-attached
+    make dev-detached
 
-    "Linting"
     # Container Mode
-    eval "$DC exec -T backend black --check --diff ${PATHS}"
-    eval "$DC exec -T backend isort --check-only --diff ${PATHS}"
-    eval "$DC exec -T backend flake8 --ignore=E501 ${PATHS}"
+    eval "$DC exec backend black ${PATHS}"
+    eval "$DC exec backend isort ${PATHS}"
+    eval "$DC exec backend flake8 --ignore=E501 ${PATHS}"
 
 else
     # Local Mode
