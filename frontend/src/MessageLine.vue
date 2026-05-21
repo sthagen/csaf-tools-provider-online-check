@@ -33,13 +33,13 @@ export default defineComponent({
 <style scoped>
 
 .text-green {
-color: green;
+color: var(--bs-success);
 }
 .text-orange {
-color: orange;
+color: var(--bs-warning);
 }
 .text-red {
-color: red;
+color: var(--bs-danger);
 }
 .small-bottom-margin {
     margin-bottom: 12px;
