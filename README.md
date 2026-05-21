@@ -86,6 +86,20 @@ npm run coverage
 npm run coverage-single
 ```
 
+### Making a new release
+
+The version number must adhere to [semantic versioning 2.0.0](https://semver.org/).
+
+* In `.env` set `APP_VERSION` to the new release version
+* Commit
+* Make a Pull Request, request reviews
+* Merge into branch `main`
+
+Either in the GitHub web interface, or using the command line:
+
+* `git tag -s $versionnumber` (the same as `APP_VERSION`)
+* `git push`
+
 ## Architecture
 
 The application consists of three main components:
@@ -159,6 +173,14 @@ PORT_BACKEND=8080
 PORT_FRONTEND=8081
 SCAN_SLOTS=5
 FOOTER_TEXT=Hosted by <a href="https://example.com">Example Corp</a>
+```
+
+#### Version Numbering
+
+To show the correct application version number adhering to semantic versioning, run this script to set `APP_VERSION` in `.env`:
+Run
+```bash
+./dev/set-release.sh
 ```
 
 ### Reverse Proxy
@@ -278,11 +300,27 @@ sudo ip6tables -F DOCKER-USER
 
 ### Production Docker Images
 
-Production Dockerfiles are provided for both services.
-Use `docker-compose.prod.yml` to build and run them:
+Use `docker-compose.prod.yml` for production environment.
+As opposed to the development setup, the application is built statically and then only served.
+There is no hot-reloading available.
+Also, the cache uses a docker volume for persistency.
+
+To keep the downtime short, first complete all builds before the restart:
 
 ```shell
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml build
+```
+
+With application upgrades and especially also upgrades of the linked tooling (gocsaf and secvisogram), it [could be sensible](https://github.com/csaf-tools/provider-online-check/issues/38#issuecomment-4481020818) to clear the cache and statistics:
+
+```shell
+docker compose -f docker-compose.prod.yml --down --volumes
+```
+
+Then start the newly build containers:
+
+```shell
+docker compose -f docker-compose.prod.yml up -d
 ```
 
 ## License
