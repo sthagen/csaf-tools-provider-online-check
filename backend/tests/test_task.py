@@ -10,6 +10,7 @@ from src.database.domain_task_data import Domain_Task_Data
 
 test_domain_slow="redhat.com"
 test_domain_fast="intevation.de"
+test_domain_pmd="https://intevation.de/.well-known/csaf/provider-metadata.json"
 mock_session_id="1"
 
 logger = logging.getLogger(__name__)
@@ -65,6 +66,23 @@ class TestWorkingDomainTask:
     @pytest.mark.asyncio
     async def test_run_through(self):
         task = createTask(True)
+
+        await asyncio.create_task(task.run_checker())
+
+        assert task.get_status() == Domain_Task_Status.DONE
+
+        # New signals should not be successful
+        task.unpause_task()
+
+        await waitUntilLoopStepIncremented(task)
+        assert task.get_status() == Domain_Task_Status.DONE
+
+    @pytest.mark.asyncio
+    async def test_run_through_pmd(self):
+        task = createTask(True)
+
+        # Specifically use PMD as input
+        task.data.domain = test_domain_pmd
 
         await asyncio.create_task(task.run_checker())
 
