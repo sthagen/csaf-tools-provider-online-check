@@ -71,11 +71,12 @@ class TestScanIntegration:
         submit_button = firefox_driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
         submit_button.click()
 
-        # Wait
+        # Wait and get body
         wait = WebDriverWait(firefox_driver, 5)
-        body = wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+        header3 = wait.until(EC.presence_of_element_located((By.TAG_NAME, "h3")))
 
-        # error message
-        assert body.is_displayed()
-        body_text = body.text
-        assert "Scan" in body_text and "CSAF trusted provider" in body_text
+        # success message
+        assert header3.is_displayed()
+        assert "Scan Done" in header3.text or "Scan found in cache" in header3.text
+        header4 = firefox_driver.find_element(By.TAG_NAME, "h4")
+        assert "CSAF trusted provider" in header4.text
