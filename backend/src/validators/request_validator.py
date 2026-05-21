@@ -11,8 +11,18 @@ from ..database.redis import Redis_Controller
 
 # Basic domain validation pattern (same as before)
 DOMAIN_PATTERN = (
-    r"^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+"
-    r"[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$"
+    r"(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+"
+    r"[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?"
+)
+
+REQUEST_PATTERN = (
+    r"^(?:"
+    + DOMAIN_PATTERN
+    + r"|https://"
+    + DOMAIN_PATTERN
+    + r"(?:/[^/]+)*"
+    + r"/provider-metadata\.json"
+    + r")$"
 )
 
 
@@ -29,7 +39,7 @@ def validate_domain(value: str) -> str:
         raise ValueError("Domain cannot be empty")
 
     v = value.strip()
-    if not re.match(DOMAIN_PATTERN, v):
+    if not re.match(REQUEST_PATTERN, v):
         raise ValueError("Invalid domain format")
 
     return v
