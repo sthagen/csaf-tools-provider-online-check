@@ -436,10 +436,10 @@ export default defineComponent({
   background-color: #f8f9fa;
 }
 .text-green {
-  color: green;
+  color: var(--bs-success);
 }
 .text-red {
-  color: red;
+  color: var(--bs-danger);
 }
 .small-margin-top {
   margin-top: 15px;
