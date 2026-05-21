@@ -72,7 +72,7 @@ jobs:
         exit 1
 
     - name: Run Frontend Tests with coverage
-      run: make run-fe-tests-containerd
+      run: make run-fe-coverage-containerd
 
     - name: Run Frontend Linters
       run: make fe-lint-ci-containerd
