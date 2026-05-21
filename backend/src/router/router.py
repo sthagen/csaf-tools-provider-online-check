@@ -18,17 +18,21 @@ from ..csaf.csaf_checker import CSAF_BINARY_PATH, CSAF_CHECKER_BINARY
 from ..database.database import Database_Manager
 from ..database.redis import Redis_Controller
 from ..slots.slot_manager import Slot_Manager
+from .health_response import HealthResponse
+from .information_response import InformationResponse
 from .scan_request import ScanRequest
 from .scan_response import ScanResponse, ScanResponseStatus
+from .scan_summary import ScanSummary
 
 router = APIRouter()
 
 
 logger = logging.getLogger(__name__)
 
-ENV_CSAF_CHECKER_VERSION="CSAF_CHECKER_VERSION"
-ENV_CSAF_VALIDATOR_VERSION="CSAF_VALIDATOR_VERSION"
-ENV_CSAF_PROVIDER_VERSION="APP_VERSION"
+ENV_CSAF_CHECKER_VERSION = "CSAF_CHECKER_VERSION"
+ENV_CSAF_VALIDATOR_VERSION = "CSAF_VALIDATOR_VERSION"
+ENV_CSAF_PROVIDER_VERSION = "APP_VERSION"
+
 
 @router.post(
     "/scan/start",
@@ -38,7 +42,7 @@ ENV_CSAF_PROVIDER_VERSION="APP_VERSION"
     tags=["scan"],
     status_code=status.HTTP_201_CREATED,
 )
-async def start_scan(request: ScanRequest) -> Dict[str, Any]:
+async def start_scan(request: ScanRequest) -> ScanResponse:
     """
     Start a scan for the provided domain.
 
@@ -89,7 +93,7 @@ async def start_scan(request: ScanRequest) -> Dict[str, Any]:
 
         if data is None or errorMsg != "":
             return {
-                "status": ScanResponseStatus.INITIALIZED,
+                "status": ScanResponseStatus.ERROR,
                 "domain": request.domain,
                 "error": errorMsg,
             }
@@ -104,8 +108,27 @@ async def start_scan(request: ScanRequest) -> Dict[str, Any]:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to start scan: {str(e)}")
 
-@router.get("/information", summary="General Provider Information", tags=["meta"])
-async def meta_info() -> Dict[str, Any]:
+
+@router.get("/scans", summary="List of recorded scans", tags=["scan"], response_model=list[ScanSummary])
+async def list_scans(limit: int = 15) -> list[ScanSummary]:
+    """
+    Returns a list of completed scans, most recent first.
+    """
+    tasks = Database_Manager().load_all_tasks(limit=limit)
+    return [
+        {
+            "task_id": str(task.uuid),
+            "domain": task.domain,
+            "start_time": task.start_time,
+            "end_time": task.end_time,
+            "duration": task.end_time - task.start_time,
+        }
+        for task in tasks
+    ]
+
+
+@router.get("/information", summary="General Provider Information", tags=["meta"], response_model=InformationResponse)
+async def meta_info() -> InformationResponse:
     """
     Returns information about the provider and its components, such as version numbers
 
@@ -126,8 +149,8 @@ async def meta_info() -> Dict[str, Any]:
     }
 
 
-@router.get("/health", summary="Health Check", tags=["devops"])
-async def health_check():
+@router.get("/health", summary="Health Check", tags=["devops"], response_model=HealthResponse)
+async def health_check() -> HealthResponse:
     """
     Check for free slots and csaf_checker binary
     """
@@ -164,16 +187,23 @@ async def health_check():
         redis_available = False
     if not redis_available:
         errors.append("Redis is not available")
-    
+
     # Check Validator connectivity
+    validator_available = False
     try:
-        response = requests.get("http://validator:8082")
-        
-        # 404 is the expected result
-        if response.status_code != 404:
-            errors.append(f"Validator is not available. Status Code: {response.status_code}")
-    except Exception as e:
+        validator_response = requests.get("http://validator:8082/api/v1/tests", timeout=10)
+
+        # 200 is the expected result
+        if validator_response.status_code != 200:
+            errors.append(f"Validator is not available. Status Code: {validator_response.status_code}")
+        else:
+            validator_available = True
+    except requests.exceptions.Timeout:
+        errors.append(f"Validator timed out: {e}")
+    except requests.exceptions.RequestException as e:
         errors.append(f"Validator is not available: {e}")
+    if not validator_available:
+        errors.append("Validator is not available")
 
     healthy = len(errors) == 0
     response = {
@@ -182,6 +212,7 @@ async def health_check():
         "total_slots": len(slot_manager.slots),
         "csaf_checker_available": binary_available,
         "redis_available": redis_available,
+        "validator_available": validator_available,
     }
 
     if errors:
