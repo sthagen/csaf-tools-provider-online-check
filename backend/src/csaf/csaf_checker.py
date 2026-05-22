@@ -226,8 +226,10 @@ class CSAF_Checker(BaseModel):
                 data.csaf_checker_output_runtime_log.append(decoded_line)
 
         if exitCode != 0:
+            if exitCode in (-9, -137):
+                errorMsg = f"Process killed by signal {-exitCode} (likely out of memory)"
             logger.info(
-                f"{data.csaf_checker_output_runtime_log} \nTask exited with code {exitCode} and error message: {errorMsg} \nLast CSAF output has been prepended"
+                f"Task exited with code {exitCode} and error message: {errorMsg!r}",
             )
             return (exitCode, errorMsg)
 
@@ -239,9 +241,11 @@ class CSAF_Checker(BaseModel):
             # Success
             return (0, "")
         else:
+            if exitCode in (-9, -137):
+                errorMsg = f"Process killed by signal {-exitCode} (likely out of memory)"
             return (
                 1,
-                f"{data.csaf_checker_output_runtime_log} \nTask exited with code {exitCode} and error message: {errorMsg} \nLast CSAF output has been prepended",
+                f"Task exited with code {exitCode} and error message: {errorMsg!r}",
             )
 
     async def run(self, data: Domain_Task_Data) -> (int, str):

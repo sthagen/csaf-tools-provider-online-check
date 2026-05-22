@@ -94,6 +94,7 @@ async def start_scan(request: ScanRequest) -> ScanResponse:
                 "status": ScanResponseStatus.ERROR,
                 "domain": request.domain,
                 "error": errorMsg,
+                "runtime_output": data.csaf_checker_output_runtime_log if data is not None else [],
             }
 
         return {
