@@ -214,6 +214,7 @@ interface RecentScan {
 interface ResultCheckerData {
   domains: { requirements: {num: number, messages: {text: string, type: number}[]}[]}[];
   date: string;
+  passed: boolean;
 }
 
 interface AppData {
@@ -224,6 +225,7 @@ interface AppData {
   error: any;
   messagesList: null | MessageData[];
   scanTime: null | string;
+  passed: boolean;
   recentScans: RecentScan[];
   version: {
     csaf_checker_version: string;
@@ -250,6 +252,7 @@ export default defineComponent({
       error: null,
       messagesList: null,
       scanTime: null,
+      passed: false,
       recentScans: [],
       version: null
     } as AppData
@@ -337,10 +340,7 @@ export default defineComponent({
       return null
     },
     trustedProviderStatus() {
-      if (this.trustedProviderMessages) {
-        return this.trustedProviderMessages.filter(msg => msg.type === 2).length === 0 ? 'text-green' : 'text-red'
-      }
-      return 'text-red'
+      return this.passed ? 'text-green': 'text-red'
     }
   },
   methods: {
@@ -359,6 +359,7 @@ export default defineComponent({
           const parsedResultsChecker = this.parseResultsChecker(this.result.results_checker)
           this.extractMessagesFromResultsChecker(parsedResultsChecker)
           this.setScanTime(parsedResultsChecker)
+          this.setPassed(parsedResultsChecker)
           axios.get(`${this.backendUrl}/api/scans`).then(r => this.recentScans = r.data)
         } else {
           this.messagesList = null
@@ -386,6 +387,9 @@ export default defineComponent({
       if (parsedResultsChecker?.date) {
         this.scanTime = new Date(parsedResultsChecker?.date).toLocaleString()
       }
+    },
+    setPassed(parsedResultsChecker: ResultCheckerData) {
+      this.passed = parsedResultsChecker?.passed ?? false;
     },
     extractMessagesFromResultsChecker(results_checker: ResultCheckerData) {
       if (results_checker.domains?.[0]?.requirements) {
