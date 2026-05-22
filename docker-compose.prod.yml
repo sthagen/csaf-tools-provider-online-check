@@ -32,8 +32,8 @@ services:
       - redis
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
-      interval: 30s
-      timeout: 10s
+      interval: 15s
+      timeout: 2s
       retries: 3
       start_period: 10s
 
@@ -53,8 +53,8 @@ services:
     depends_on:
       - backend
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080"]
-      interval: 30s
+      test: ["CMD", "wget", "-q", "--spider", "http://0.0.0.0:8080"]
+      interval: 15s
       timeout: 10s
       retries: 3
       start_period: 10s
@@ -75,6 +75,12 @@ services:
       - redis
     networks:
       - scanner
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://0.0.0.0:8082/api/v1/tests"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
   redis:
     image: redis:alpine
@@ -83,6 +89,12 @@ services:
       - scanner
     volumes:
       - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
 volumes:
   redis-data:

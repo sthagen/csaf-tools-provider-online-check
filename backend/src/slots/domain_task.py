@@ -55,6 +55,11 @@ class Domain_Task(BaseModel):
         ),
     ] = int(os.environ.get("TASK_TIME_BEFORE_ORPHANED", "50"))
 
+    error_message: Annotated[
+        str,
+        Field(description="Error message"),
+    ] = ""
+
     database_skip_cache: Annotated[
         bool,
         Field(
@@ -167,7 +172,7 @@ class Domain_Task(BaseModel):
 
     def on_error(self, errMsg):
         self.status = Domain_Task_Status.ERROR
-
+        self.error_message = errMsg
         logger.error(f"Domain Task Error: {errMsg}")
 
     def get_status(self) -> Domain_Task_Status:
