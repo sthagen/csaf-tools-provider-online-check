@@ -1,9 +1,6 @@
-# Class representation of a CSAF checker / validator procedure
-# Runs in its own thread. Communicates progress & results with
-# a dedicated client object.
-# Invokes database caching on success
-
-# Involved in: 7, 8, 9, 12
+# Wrapper around a Domain Task
+# Interface for Slot Manager and Domain Tasks
+# May or may not have a running Domain Task
 
 import asyncio
 import logging

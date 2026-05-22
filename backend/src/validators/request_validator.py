@@ -3,8 +3,6 @@
 # Also checks if requested domain has a valid cache
 # in database -> handles cache lookup
 
-# Involved in: 4, 17, 18, 21
-
 import re
 
 from ..database.redis import Redis_Controller

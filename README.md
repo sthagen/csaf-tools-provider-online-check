@@ -163,7 +163,21 @@ Docker Compose reads this file automatically.
 |----------|---------|-------------|
 | `PORT_BACKEND` | `48090` | Host port for the backend API. |
 | `PORT_FRONTEND` | `48091` | Host port for the frontend. |
+| `PORT_VALIDATOR` | `48092` | Host port for the validator. |
+| `CSAF_CHECKER_VERSION` | `3.5.1` | Version of the CSAF Checker. |
+| `CSAF_VALIDATOR_VERSION` | `2.0.25` | Version of the CSAF Validator. |
+| `APP_VERSION` | `0.1.0` | This App's Version. |
+| `CSAF_SHA256` | `62995edf30703bed8c7fd2de4c5aec7692b47c8c66e5d8bdc04e6936b9185c60` | The expected checksum of the gocsaf tarball. |
 | `SCAN_SLOTS` | `10` | Maximum number of concurrent scans. |
+| `CSAF_CHECKER_MEMORY_LIMIT` | `120m` | Memory limit for the backend container. |
+| `CSAF_CHECKER_TIMEOUT` | `3600` | Timeout for csaf_checker in seconds, 0 for unlimited. |
+| `CACHE_TIMEOUT_SECONDS` | `604800` | Lifetime of a cached csaf_checker result. |
+| `VALIDATOR_CACHE_RESULTS` | `1` | Enables validator output to be saved as cache files. 1 is enabled, 0 disabled. |
+| `TASK_PAUSE_TIME_MAX_BEFORE_RESET` | `100` | Maximum time in seconds before a paused task is forced to stop. |
+| `TASK_PAUSE_TIME_INTERVAL` | `0.2` | Second interval where the status of a paused task is queried. |
+| `TASK_TIME_BEFORE_ORPHANED` | `50` | Time in seconds a task can run without it's status being requested by a user before being considered orphaned. |
+| `LINTER_SHELLCHECK_OPTS` | `-e SC1091 -e SC2048` | Shellcheck rules that should be ignored. |
+| `DOMAIN_BLOCKLIST` | `` | List of domains that are not to be scanned. Exmaple: DOMAIN_BLOCKLIST="example.com second.example.com" |
 | `FOOTER_TEXT` | _empty_ | Custom HTML content appended to the footer of the frontend. |
 
 Example `.env`:
