@@ -1,5 +1,8 @@
 <template>
-    <div :class="messageClass" class="small-bottom-margin">
+    <div class="small-bottom-margin">
+        <span v-if="type === 2" :class="messageClass">ERROR</span>
+        <span v-else-if="type === 1" :class="messageClass">WARN</span>
+        <span v-else :class="messageClass">PASS</span>
         {{ text }}
     </div>
 </template>
@@ -30,13 +33,13 @@ export default defineComponent({
 <style scoped>
 
 .text-green {
-color: green;
+color: var(--bs-success);
 }
 .text-orange {
-color: orange;
+color: var(--bs-warning);
 }
 .text-red {
-color: red;
+color: var(--bs-danger);
 }
 .small-bottom-margin {
     margin-bottom: 12px;
