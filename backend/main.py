@@ -12,7 +12,7 @@ app = FastAPI(
     title="CSAF Provider Scan API",
     description="API for scanning CSAF providers",
     version=os.getenv("APP_VERSION"),
-    docs_url="/api/docs",
+    docs_url=None,  # provided by the custom function custom_swagger_ui below
     redoc_url="/api/redoc",
     openapi_url="/api/openapi.json",
 )
@@ -33,6 +33,7 @@ async def custom_swagger_ui():
     return get_swagger_ui_html(
         openapi_url="/api/openapi.json",
         title="CSAF Provider Scan API",
+        swagger_favicon_url="data:,",  # disables loading the favicon from an external source
         **swagger_ui_kwargs,
     )
 

@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 import MessageLine from './MessageLine.vue'
 
 describe("Testing MessageLine...", () => {
-    let message: any
+    let message = mount(MessageLine , {props: { type: 0}})
     beforeEach(()=> {
         message = mount(MessageLine , {props: { type: 0}})
     })

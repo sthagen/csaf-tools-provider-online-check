@@ -8,7 +8,7 @@
 
     <div class="container mt-5">
       <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-md-12">
           <div class="card shadow">
             <div class="card-body">
               <h2 class="card-title mb-4">Scan a Domain <span class="badge bg-warning ms-2" style="font-size: 0.4em; vertical-align: middle;">Experimental</span></h2>
@@ -50,13 +50,15 @@
                   <h3 class="alert-heading">Scan found in cache</h3>
                 </div>
 
-                <h4 :class="publisherStatus" class="small-margin-top medium-font-size">CSAF publisher</h4>
-                <MessageLine v-for="item of publisherMessages" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
+                <div v-show="scanTime">
+                  Scan Time: {{ scanTime }}
+                </div>
 
-                <h4 :class="providerStatus" class="small-margin-top medium-font-size">CSAF provider</h4>
-                <MessageLine v-for="item of providerMessages" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
-
-                <h4 :class="trustedProviderStatus" class="small-margin-top medium-font-size">CSAF trusted provider</h4>
+                <h4 :class="trustedProviderStatus" class="small-margin-top medium-font-size">
+                  <span v-if="trustedProviderStatus === 'text-green'">PASSED:</span>
+                  <span v-else>FAILED:</span>
+                  CSAF trusted provider
+                </h4>
                 <MessageLine v-for="item of trustedProviderMessages" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
 
                 <p class="small-margin-top">
@@ -145,7 +147,7 @@
       </div>
 
       <div v-if="recentScans.length > 0" class="row justify-content-center mt-4">
-        <div class="col-md-8">
+        <div class="col-md-12">
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">Recently Scanned</h5>
@@ -171,7 +173,7 @@
       </div>
 
       <div class="row justify-content-center mt-4">
-        <div class="col-md-8">
+        <div class="col-md-12">
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">About</h5>
@@ -211,6 +213,11 @@ interface RecentScan {
   duration: number;
 }
 
+interface ResultCheckerData {
+  domains: { requirements: {num: number, messages: {text: string, type: number}[]}[]}[];
+  date: string;
+}
+
 interface AppData {
   session_id: string;
   domain: string;
@@ -218,6 +225,7 @@ interface AppData {
   result: any;
   error: any;
   messagesList: null | MessageData[];
+  scanTime: null | string;
   recentScans: RecentScan[];
   version: {
     csaf_checker_version: string;
@@ -243,6 +251,7 @@ export default defineComponent({
       result: null,
       error: null,
       messagesList: null,
+      scanTime: null,
       recentScans: [],
       version: null
     } as AppData
@@ -283,32 +292,17 @@ export default defineComponent({
     footerText() {
       return import.meta.env.VITE_FOOTER_TEXT || ''
     },
-    publisherMessages() {
+    trustedProviderMessages() {
       if (this.messagesList) {
+        const trustedProviderMessages = []
+
         // requirements 1 (Valid CSAF document), 2 (Filename), 3 (TLS), 4 (TLP:WHITE)
         // Show all messages
-        return this.filterMessageListByNums([1, 2, 3, 4])
-      }
-      return null
-    },
-    publisherStatus() {
-      if (this.publisherMessages) {
-        return this.publisherMessages.filter((msg: MessageData) => msg.type === 2).length === 0 ? 'text-green' : 'text-red'
-      }
-      return 'text-red'
-    },
-    providerMessages() {
-      if (this.messagesList) {
-        const providerMessages = []
-        providerMessages.push(
-          this.publisherStatus === 'text-green'
-            ? {text: 'Is a valid CSAF publisher', type: 0 }
-            : {text: 'Is not a valid CSAF publisher', type: 2 }
-        )
+        trustedProviderMessages.push(...this.filterMessageListByNums([1, 2, 3, 4]))
 
         // requirements 5 (TLP:AMBER and TLP:RED), 6 (Redirects) and 7 (provider-metadata.json)
         // Show all messages
-        providerMessages.push(...this.filterMessageListByNums([5, 6, 7]))
+        trustedProviderMessages.push(...this.filterMessageListByNums([5, 6, 7]))
 
         // requirements min one of 8 (security.txt), 9 (Well-known URL for provider-metadata.json), 10 (DNS path)
         // One must succed, then show that message, else show all messages
@@ -316,13 +310,13 @@ export default defineComponent({
         const req9Messages = this.filterMessageListByNums([9])
         const req10Messages = this.filterMessageListByNums([10])
         if (req8Messages.length > 0  && req8Messages.filter((msg:MessageData) => msg.type === 2).length === 0) {
-          providerMessages.push(...req8Messages)
+          trustedProviderMessages.push(...req8Messages)
         } else if (req9Messages.length > 0  && req9Messages.filter((msg:MessageData) => msg.type === 2).length === 0) {
-          providerMessages.push(...req9Messages)
+          trustedProviderMessages.push(...req9Messages)
         } else if (req10Messages.length > 0  && req10Messages.filter((msg:MessageData) => msg.type === 2).length === 0) {
-          providerMessages.push(...req10Messages)
+          trustedProviderMessages.push(...req10Messages)
         } else {
-          providerMessages.push(...req8Messages, ...req9Messages, ...req10Messages)
+          trustedProviderMessages.push(...req8Messages, ...req9Messages, ...req10Messages)
         }
 
         // requirements dir based 11 (One folder per year), 12 (index.txt), 13 (changes.csv), 14 (Directory listings)
@@ -332,26 +326,10 @@ export default defineComponent({
         const rolieBaseMessages = this.filterMessageListByNums([15, 16, 17])
         if (rolieBaseMessages.filter((msg:MessageData) => msg.type === 2).length
             <= dirBaseMessages.filter((msg: MessageData) => msg.type === 2).length) {
-          providerMessages.push(...rolieBaseMessages)
+          trustedProviderMessages.push(...rolieBaseMessages)
         } else {
-          providerMessages.push(...dirBaseMessages)
+          trustedProviderMessages.push(...dirBaseMessages)
         }
-        return providerMessages
-      }
-      return null
-    },
-    providerStatus() {
-      if (this.providerMessages) {
-        return this.providerMessages.filter(msg => msg.type === 2).length === 0 ? 'text-green' : 'text-red'
-      }
-      return 'text-red'
-    },
-    trustedProviderMessages() {
-      if (this.messagesList) {
-        const trustedProviderMessages = []
-        trustedProviderMessages.push(
-          this.providerStatus === 'text-green' ? {text: 'Is valid CSAF provider', type: 0 }
-                                              : {text: 'Is not a valid CSAF provider', type: 2})
 
         // requirements 18 (Integrity), 19 (Signatures), 20 (Public OpenPGP Key)
         // Show all messages
@@ -365,7 +343,7 @@ export default defineComponent({
         return this.trustedProviderMessages.filter(msg => msg.type === 2).length === 0 ? 'text-green' : 'text-red'
       }
       return 'text-red'
-    },
+    }
   },
   methods: {
     async startScan() {
@@ -380,14 +358,21 @@ export default defineComponent({
         })
         this.result = response.data
         if (['DONE_CHECKER', 'CACHED_CHECKER'].includes(this.result?.status)) {
-          this.extractMessagesFromResultsChecker(this.result.results_checker)
+          const parsedResultsChecker = this.parseResultsChecker(this.result.results_checker)
+          this.extractMessagesFromResultsChecker(parsedResultsChecker)
+          this.setScanTime(parsedResultsChecker)
           axios.get(`${this.backendUrl}/api/scans`).then(r => this.recentScans = r.data)
         } else {
           this.messagesList = null
+          this.scanTime = null
         }
       } catch (err: any) {
         this.messagesList = null
+        this.scanTime = null
         this.error = err.response?.data?.detail || err.message || 'An error occurred while starting the scan'
+        if (err.response?.data?.detail[0]?.msg) {
+          this.error = `${err.response?.data?.detail[0]?.input}: ${err.response?.data?.detail[0]?.msg}`
+        }
       } finally {
         if (['INITIALIZED', 'RUNNING_CHECKER'].includes(this.result?.status) ) {
           setTimeout(this.startScan, 3000)
@@ -396,10 +381,15 @@ export default defineComponent({
         }
       }
     },
-    extractMessagesFromResultsChecker(results_checker: any) {
-      if (typeof results_checker === 'string') {
-        results_checker = JSON.parse(results_checker)
+    parseResultsChecker(results_checker: string): ResultCheckerData {
+      return JSON.parse(results_checker)
+    },
+    setScanTime(parsedResultsChecker: ResultCheckerData) {
+      if (parsedResultsChecker?.date) {
+        this.scanTime = new Date(parsedResultsChecker?.date).toLocaleString()
       }
+    },
+    extractMessagesFromResultsChecker(results_checker: ResultCheckerData) {
       if (results_checker.domains?.[0]?.requirements) {
         this.extractMessages(results_checker.domains[0].requirements)
       } else {
@@ -468,10 +458,10 @@ export default defineComponent({
   background-color: #f8f9fa;
 }
 .text-green {
-  color: green;
+  color: var(--bs-success);
 }
 .text-red {
-  color: red;
+  color: var(--bs-danger);
 }
 .small-margin-top {
   margin-top: 15px;
