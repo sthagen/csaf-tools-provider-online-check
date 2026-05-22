@@ -212,9 +212,11 @@ interface RecentScan {
 }
 
 interface ResultCheckerData {
-  domains: { requirements: {num: number, messages: {text: string, type: number}[]}[]}[];
+  domains: {
+    requirements: {num: number, messages: {text: string, type: number}[]}[],
+    passed: boolean;
+  }[];
   date: string;
-  passed: boolean;
 }
 
 interface AppData {
@@ -389,7 +391,7 @@ export default defineComponent({
       }
     },
     setPassed(parsedResultsChecker: ResultCheckerData) {
-      this.passed = parsedResultsChecker?.passed ?? false;
+      this.passed = parsedResultsChecker?.domains?.[0]?.passed ?? false;
     },
     extractMessagesFromResultsChecker(results_checker: ResultCheckerData) {
       if (results_checker.domains?.[0]?.requirements) {
