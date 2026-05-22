@@ -229,7 +229,7 @@ class CSAF_Checker(BaseModel):
                 if "[GET]" in decoded_line:
                     data.files_checked += 1
 
-                    # Extract file name (with path relative to domain)
+                    # Extract URL
                     data.latest_file_checked = decoded_line.split("[GET]:")[-1]
 
         if exitCode != 0:
