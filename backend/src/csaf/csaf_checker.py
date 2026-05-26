@@ -227,7 +227,9 @@ class CSAF_Checker(BaseModel):
 
         if exitCode != 0:
             if exitCode in (-9, -137):
-                errorMsg = f"Process killed by signal {-exitCode} (likely out of memory)"
+                errorMsg = (
+                    f"Process killed by signal {-exitCode} (likely out of memory)"
+                )
             logger.info(
                 f"Task exited with code {exitCode} and error message: {errorMsg!r}",
             )
@@ -242,7 +244,9 @@ class CSAF_Checker(BaseModel):
             return (0, "")
         else:
             if exitCode in (-9, -137):
-                errorMsg = f"Process killed by signal {-exitCode} (likely out of memory)"
+                errorMsg = (
+                    f"Process killed by signal {-exitCode} (likely out of memory)"
+                )
             return (
                 1,
                 f"Task exited with code {exitCode} and error message: {errorMsg!r}",
