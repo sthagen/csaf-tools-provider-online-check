@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 German Federal Office for Information Security (BSI) <https://www.bsi.bund.de>
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Manages slots and thereby threading.
 # May start and stop running threads/slots.
 # Checks if all slots are already in use, if a requested

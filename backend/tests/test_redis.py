@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 German Federal Office for Information Security (BSI) <https://www.bsi.bund.de>
+#
+# SPDX-License-Identifier: Apache-2.0
+
 import pytest
 from src.database.redis import Redis_Controller
 from src.database.domain_task_data import Domain_Task_Data

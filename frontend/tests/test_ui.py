@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 German Federal Office for Information Security (BSI) <https://www.bsi.bund.de>
+#
+# SPDX-License-Identifier: Apache-2.0
+
 """UI tests for the CSAF Provider Scanner frontend."""
 import pytest
 from selenium.webdriver.common.by import By

@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# SPDX-FileCopyrightText: 2026 German Federal Office for Information Security (BSI) <https://www.bsi.bund.de>
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Converts a blocklist managed by the operator into Apache configuration fragments.
 # Edit the files in contrib/blocklists/, run this script and then reload Apache.
 #

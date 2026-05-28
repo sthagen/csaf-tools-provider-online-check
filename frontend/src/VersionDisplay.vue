@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2026 German Federal Office for Information Security (BSI) <https://www.bsi.bund.de>
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
 <template>
     <div class="version">Provider {{ providerVersion }} Checker {{ checkerVersion }} Validator {{ validatorVersion }}</div>
 </template>

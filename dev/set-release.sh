@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# SPDX-FileCopyrightText: 2026 German Federal Office for Information Security (BSI) <https://www.bsi.bund.de>
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Set the APP_VERSION in .env to the currently correct semantic version according to git
 # Source:
 # https://github.com/gocsaf/csaf/blob/586524a97e42c3fa5b97fbcb4e1169ad1df064da/Makefile#L50-L60

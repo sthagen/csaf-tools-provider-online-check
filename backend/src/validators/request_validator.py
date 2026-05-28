@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 German Federal Office for Information Security (BSI) <https://www.bsi.bund.de>
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Validates a domain request. Checks if requested domain
 # is valid
 # Also checks if requested domain has a valid cache
