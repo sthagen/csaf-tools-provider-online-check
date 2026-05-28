@@ -13,7 +13,6 @@ class ScanResponseStatus(Enum):
     CACHED_CHECKER = "CACHED_CHECKER"  # CSAF Checker output has been found for requested domain in database cache. No domain task has been started
     PAUSED = "PAUSED"  # Domain task is paused
 
-
 class ScanResponse(BaseModel):
     domain: Annotated[
         str,
@@ -31,10 +30,21 @@ class ScanResponse(BaseModel):
 
     runtime_output: Annotated[
         list[str],
-        str,
         Field(description="Runtime output provided by CSAF Checker in verbose mode"),
     ] = []
     results_checker: Annotated[
         str,
         Field(description="Results of CSAF Checker"),
-    ] = []
+    ] = ""
+
+    files_checked: Annotated[
+        int,
+        Field(description="Amount of files that have been checked so far")
+    ] = 0
+
+    latest_file_checked: Annotated[
+        str,
+        Field(
+            description="Name of the latest file that has been checked, including directory path"
+        )
+    ] = ""

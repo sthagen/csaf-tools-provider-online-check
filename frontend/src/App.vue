@@ -116,6 +116,8 @@
                   </div>
                   <div v-if="result.status === 'RUNNING_CHECKER'">
                     <h5 class="alert-heading">Scan Running...</h5>
+                    <h6 class="alert-heading">Files scanned - {{ result.files_checked }}</h6>
+                    <h6 class="alert-heading">Latest file scanned - {{ result.latest_file_checked }}</h6>
                     <pre>{{ result.results_checker }}</pre>
                   </div>
                   <div v-if="result.status === 'PAUSED'">

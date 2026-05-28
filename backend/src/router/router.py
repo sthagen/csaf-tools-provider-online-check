@@ -104,6 +104,8 @@ async def start_scan(request: ScanRequest) -> ScanResponse:
             "task_id": uuid,
             "runtime_output": data.csaf_checker_output_runtime_log,
             "results_checker": data.csaf_checker_output_result,
+            "files_checked": data.files_checked,
+            "latest_file_checked": data.latest_file_checked
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to start scan: {str(e)}")

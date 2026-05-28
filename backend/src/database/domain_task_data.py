@@ -51,6 +51,20 @@ class Domain_Task_Data(BaseModel):
         ),
     ] = int(os.environ.get("CACHE_TIMEOUT_SECONDS", "604800"))
 
+    files_checked: Annotated[
+        int,
+        Field(
+            description="Amount of files that have been checked"
+        )
+    ] = 0
+
+    latest_file_checked: Annotated[
+        str,
+        Field(
+            description="Name of the latest file that has been checked, including directory path"
+        )
+    ] = ""
+
     @classmethod
     def create(cls, domain: str) -> "Domain_Task_Data":
         data = {
