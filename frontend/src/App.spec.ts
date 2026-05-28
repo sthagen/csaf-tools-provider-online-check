@@ -8,10 +8,7 @@ describe("Testing App...", () => {
     let app: any
     beforeEach(()=> {
         vi.spyOn(axios, "get").mockImplementation(
-            (url: string) => new Promise(resolve => resolve(
-                // for /api/scans return [], else {}
-                url.includes('/api/scans') ? { data: [] } : { data: {} }
-            ))
+            () => new Promise(resolve => resolve({}))
         )
         app = mount(App)
     })
@@ -22,15 +19,9 @@ describe("Testing App...", () => {
         app.vm.extractMessages([{messages: undefined}])
         expect(app.vm.messagesList).toStrictEqual([])
     })
-    test('extractMessagesFromResultsChecker with json string', () =>{
-        app.vm.extractMessagesFromResultsChecker(
-            '{ "domains": [{"requirements": [{ "messages": [{"text": "Test1", "type": 0}], "num": 11 }]}]}'
-        )
-        expect(app.vm.messagesList).toStrictEqual([{text: "Test1", type: 0, num: 11}])
-    })
     test('extractMessagesFromResultsChecker with requirements null', () => {
         app.vm.extractMessagesFromResultsChecker(
-            '{ "domains": [{"requirements": null}]}'
+            { "domains": [{"requirements": null}]}
         )
         expect(app.vm.messagesList).toBe(null)
     })
@@ -46,7 +37,7 @@ describe("Testing App...", () => {
             ['UNDEFINED', 'alert-danger'],
             ['DONE_CHECKER', 'alert-success'],
             ['CACHED_CHECKER', 'alert-success'],
-            ['DEFAULT', 'alert-info']
+            ['DEFAULT', 'alert-info']                    
         ]
         for (const pair of test_oracle) {
             app.vm.result = { 'status': pair[0]}
@@ -92,7 +83,7 @@ describe("Testing App...", () => {
                 return resolve({
                     data: {
                         status: "CACHED_CHECKER",
-                        results_checker: { "domains": [{ "requirements": [{ "messages": [{ "text": "Test1", "type": 0 }], "num": 12 }] }] }
+                        results_checker: '{ "domains": [{ "requirements": [{ "messages": [{ "text": "Test1", "type": 0 }], "num": 12 }] }] }'
                     }
                 }
             )}

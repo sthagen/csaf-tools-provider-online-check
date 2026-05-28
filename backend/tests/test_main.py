@@ -269,8 +269,8 @@ class TestDomainValidation:
 
     def test_validate_domain_rejects_invalid_format(self):
         """validation rejects invalid domain format"""
-        with pytest.raises(ValueError, match="Invalid domain format"):
-            ScanRequest(domain="not a valid domain!")
+        with pytest.raises(ValueError, match="Invalid domain/PMD format. Please enter a valid Domain or PMD URL. Domains require a non-zero length extension. PMDs must start with 'https://' and end with '/provider-metadata.json'"):
+            ScanRequest(domain="not a valid domain")
 
 
 class TestOpenAPIDocumentation:

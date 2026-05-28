@@ -22,7 +22,6 @@ from .health_response import HealthResponse
 from .information_response import InformationResponse
 from .scan_request import ScanRequest
 from .scan_response import ScanResponse, ScanResponseStatus
-from .scan_summary import ScanSummary
 
 router = APIRouter()
 
@@ -96,6 +95,9 @@ async def start_scan(request: ScanRequest) -> ScanResponse:
                 "status": ScanResponseStatus.ERROR,
                 "domain": request.domain,
                 "error": errorMsg,
+                "runtime_output": (
+                    data.csaf_checker_output_runtime_log if data is not None else []
+                ),
             }
 
         return {
@@ -104,30 +106,19 @@ async def start_scan(request: ScanRequest) -> ScanResponse:
             "task_id": uuid,
             "runtime_output": data.csaf_checker_output_runtime_log,
             "results_checker": data.csaf_checker_output_result,
+            "files_checked": data.files_checked,
+            "latest_file_checked": data.latest_file_checked
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to start scan: {str(e)}")
 
 
-@router.get("/scans", summary="List of recorded scans", tags=["scan"], response_model=list[ScanSummary])
-async def list_scans(limit: int = 15) -> list[ScanSummary]:
-    """
-    Returns a list of completed scans, most recent first.
-    """
-    tasks = Database_Manager().load_all_tasks(limit=limit)
-    return [
-        {
-            "task_id": str(task.uuid),
-            "domain": task.domain,
-            "start_time": task.start_time,
-            "end_time": task.end_time,
-            "duration": task.end_time - task.start_time,
-        }
-        for task in tasks
-    ]
-
-
-@router.get("/information", summary="General Provider Information", tags=["meta"], response_model=InformationResponse)
+@router.get(
+    "/information",
+    summary="General Provider Information",
+    tags=["meta"],
+    response_model=InformationResponse,
+)
 async def meta_info() -> InformationResponse:
     """
     Returns information about the provider and its components, such as version numbers
@@ -149,7 +140,9 @@ async def meta_info() -> InformationResponse:
     }
 
 
-@router.get("/health", summary="Health Check", tags=["devops"], response_model=HealthResponse)
+@router.get(
+    "/health", summary="Health Check", tags=["devops"], response_model=HealthResponse
+)
 async def health_check() -> HealthResponse:
     """
     Check for free slots and csaf_checker binary

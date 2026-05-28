@@ -18,7 +18,6 @@ BLOCKLIST_CLIENT_DB_FIELD = "blocklist-client:"
 BLOCKLIST_DOMAIN_DB_FIELD = "blocklist-domain"
 RECORDED_DOMAIN_TASK_BY_DOMAIN = "domain-task:"
 RECORDED_DOMAIN_TASK_BY_UUID = "domain-task-id-to-domain:"
-RECORDED_DOMAIN_TASK_LIST = "domain-task-list"
 
 
 class Redis_Controller:
@@ -74,32 +73,12 @@ class Redis_Controller:
             RECORDED_DOMAIN_TASK_BY_UUID + str(task.uuid), json, ex=self._cache_lifetime
         )
 
-        # Add the new task to the task list
-        self._redis.rpush(RECORDED_DOMAIN_TASK_LIST, str(task.uuid))
-        # The lifetime for the task list is the same as the lifetime of the most current task
-        self._redis.expire(RECORDED_DOMAIN_TASK_LIST, self._cache_lifetime)
-
     def get_domain_task_by_uuid(self, uuid: str) -> Domain_Task_Data:
         if not self._redis.exists(RECORDED_DOMAIN_TASK_BY_UUID + str(uuid)):
             return None
 
         json = self._redis.get(RECORDED_DOMAIN_TASK_BY_UUID + str(uuid))
         return Domain_Task_Data.model_validate_json(json)
-
-    def get_all_domain_tasks(self, limit: int = 15) -> list[Domain_Task_Data]:
-        uuids = self._redis.lrange(RECORDED_DOMAIN_TASK_LIST, 0, -1)
-        tasks = []
-        for uuid in reversed(uuids):
-            uuid_str = uuid.decode()
-            task = self.get_domain_task_by_uuid(uuid_str)
-            if task is not None:
-                tasks.append(task)
-                if len(tasks) >= limit:
-                    break
-            else:  # the Task has expired -> remove it from the task list
-                # If the task is no longer in the list (race-conditon), the function throws no error
-                self._redis.lrem(RECORDED_DOMAIN_TASK_LIST, 0, uuid_str)
-        return tasks
 
     def get_domain_task_by_domain_hash(self, domain_hash: str) -> Domain_Task_Data:
         if not self._redis.exists(RECORDED_DOMAIN_TASK_BY_DOMAIN + domain_hash):
