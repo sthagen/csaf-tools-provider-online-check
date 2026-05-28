@@ -108,6 +108,50 @@ The application consists of three main components:
 - **Backend**: A FastAPI-based REST API that handles scan requests. It exposes endpoints for starting scans and checking status. The interactive API documentation is available at `/api/docs`.
 - **Redis**: Used as a message broker for the job queue, for asynchronous scan job processing
 
+```mermaid
+---
+config:
+  layout: dagre
+---
+graph TD
+    subgraph user[Client]
+        U[User / Browser]
+    end
+
+    subgraph frontend[Container: frontend]
+        FE[Single Page Application\nVue.js]
+    end
+
+    subgraph backend[Container: backend]
+        BE[Asynchronous backend\nPython FastAPI]
+        SM[Slot_Manager\nin-process singleton]
+        S1[Slot 0\nDomain_Task]
+        S2[Slot 1\nDomain_Task]
+        SN[Slot N\nDomain_Task]
+        C1[csaf_checker binary]
+        C2[csaf_checker binary]
+        CN[csaf_checker binary]
+        BE -->|asyncio.create_task| SM
+        SM --> S1 & S2 & SN
+        S1 -->|subprocess| C1
+        S2 -->|subprocess| C2
+        SN -->|subprocess| CN
+    end
+
+    subgraph validator[Container: validator]
+        V[secvisogram validator\nNode.js]
+    end
+
+    subgraph redis[Container: redis]
+        R[(Cache\nRedis)]
+    end
+
+    U -->|HTTP requests| FE
+    FE -->|POST /api/scan/start| BE
+    BE -->|cache read/write| R
+    C1 & C2 & CN --> V
+```
+
 ## Security Considerations
 
 The CSAF Provider Online check tool retrieves lots of documents from remote locations.
