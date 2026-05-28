@@ -29,6 +29,11 @@ class HealthResponse(BaseModel):
         Field(description="Whether Redis is available"),
     ]
 
+    validator_available: Annotated[
+        bool,
+        Field(description="Whether Validator is available"),
+    ]
+
     errors: Annotated[
         Optional[list[str]],
         Field(default=None, description="List of error messages if unhealthy"),

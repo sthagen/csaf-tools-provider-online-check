@@ -9,6 +9,7 @@ import asyncio
 import logging
 import os
 
+import httpx
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
 
@@ -105,7 +106,7 @@ async def start_scan(request: ScanRequest) -> ScanResponse:
             "runtime_output": data.csaf_checker_output_runtime_log,
             "results_checker": data.csaf_checker_output_result,
             "files_checked": data.files_checked,
-            "latest_file_checked": data.latest_file_checked
+            "latest_file_checked": data.latest_file_checked,
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to start scan: {str(e)}")
@@ -179,6 +180,28 @@ async def health_check() -> HealthResponse:
     if not redis_available:
         errors.append("Redis is not available")
 
+    # Check Validator connectivity
+    validator_available = False
+    try:
+        async with httpx.AsyncClient() as client:
+            validator_response = await client.get(
+                "http://validator:8082/api/v1/tests", timeout=10
+            )
+
+        # 200 is the expected result
+        if validator_response.status_code != 200:
+            errors.append(
+                f"Validator is not available. Status Code: {validator_response.status_code}"
+            )
+        else:
+            validator_available = True
+    except httpx.TimeoutException as e:
+        errors.append(f"Validator timed out: {e}")
+    except httpx.RequestError as e:
+        errors.append(f"Validator is not available: {e}")
+    if not validator_available:
+        errors.append("Validator is not available")
+
     healthy = len(errors) == 0
     response = {
         "status": "healthy" if healthy else "unhealthy",
@@ -186,6 +209,7 @@ async def health_check() -> HealthResponse:
         "total_slots": len(slot_manager.slots),
         "csaf_checker_available": binary_available,
         "redis_available": redis_available,
+        "validator_available": validator_available,
     }
 
     if errors:
