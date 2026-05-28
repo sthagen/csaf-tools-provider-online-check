@@ -11,6 +11,9 @@ Response from backend to frontend after payload has been sent
 
         verbose_output: string[] // Continuous output provided by CSAF Checker in verbose mode
         results_checker: string    // Results of CSAF Checker
+
+        files_checked: int
+        latest_file_checked: str
     }
 
 Status can be one of the following:

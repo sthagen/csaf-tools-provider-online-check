@@ -214,6 +214,7 @@ class CSAF_Checker(BaseModel):
 
             if not line:
                 break
+
             decoded_line = line.decode(errors="replace").rstrip("\n")
 
             # Once a single '{' is read, it is assumed that the csaf results are printed out
@@ -224,10 +225,18 @@ class CSAF_Checker(BaseModel):
             else:
                 # Runtime Line
                 data.csaf_checker_output_runtime_log.append(decoded_line)
+                # Check if log line references a file
+                if "[GET]" in decoded_line:
+                    data.files_checked += 1
+
+                    # Extract URL
+                    data.latest_file_checked = decoded_line.split("[GET]:")[-1]
 
         if exitCode != 0:
             if exitCode in (-9, -137):
-                errorMsg = f"Process killed by signal {-exitCode} (likely out of memory)"
+                errorMsg = (
+                    f"Process killed by signal {-exitCode} (likely out of memory)"
+                )
             logger.info(
                 f"Task exited with code {exitCode} and error message: {errorMsg!r}",
             )
@@ -242,7 +251,9 @@ class CSAF_Checker(BaseModel):
             return (0, "")
         else:
             if exitCode in (-9, -137):
-                errorMsg = f"Process killed by signal {-exitCode} (likely out of memory)"
+                errorMsg = (
+                    f"Process killed by signal {-exitCode} (likely out of memory)"
+                )
             return (
                 1,
                 f"Task exited with code {exitCode} and error message: {errorMsg!r}",

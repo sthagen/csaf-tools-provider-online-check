@@ -2,17 +2,19 @@
 # is valid
 # Also checks if requested domain has a valid cache
 # in database -> handles cache lookup
-
-# Involved in: 4, 17, 18, 21
-
 import re
 
 from ..database.redis import Redis_Controller
 
 # Basic domain validation pattern (same as before)
 DOMAIN_PATTERN = (
-    r"^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+"
-    r"[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$"
+    r"(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+"
+    r"[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?"
+)
+
+REQUEST_PATTERN = (
+    rf"^(?:{DOMAIN_PATTERN}|https://{DOMAIN_PATTERN}"
+    rf"(?:/[^/]+)*/provider-metadata\.json)$"
 )
 
 
@@ -29,8 +31,10 @@ def validate_domain(value: str) -> str:
         raise ValueError("Domain cannot be empty")
 
     v = value.strip()
-    if not re.match(DOMAIN_PATTERN, v):
-        raise ValueError("Invalid domain format")
+    if not re.match(REQUEST_PATTERN, v):
+        raise ValueError(
+            "Invalid domain/PMD format. Please enter a valid Domain or PMD URL. Domains require a non-zero length extension. PMDs must start with 'https://' and end with '/provider-metadata.json'"
+        )
 
     return v
 

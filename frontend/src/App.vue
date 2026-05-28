@@ -116,6 +116,8 @@
                   </div>
                   <div v-if="result.status === 'RUNNING_CHECKER'">
                     <h5 class="alert-heading">Scan Running...</h5>
+                    <h6 class="alert-heading">Files scanned - {{ result.files_checked }}</h6>
+                    <h6 class="alert-heading">Latest file scanned - {{ result.latest_file_checked }}</h6>
                     <pre>{{ result.results_checker }}</pre>
                   </div>
                   <div v-if="result.status === 'PAUSED'">
@@ -139,32 +141,6 @@
                   <p class="mb-0">{{ error }}</p>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="recentScans.length > 0" class="row justify-content-center mt-4">
-        <div class="col-md-12">
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Recently Scanned</h5>
-              <table class="table table-sm table-hover mb-0">
-                <thead>
-                  <tr>
-                    <th>Domain</th>
-                    <th>Scan Time</th>
-                    <th>Scan Duration</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="scan in recentScans" :key="scan.task_id" style="cursor:pointer" @click="domain = scan.domain">
-                    <td>{{ scan.domain }}</td>
-                    <td>{{ formatTime(scan.end_time) }}</td>
-                    <td>{{ scan.duration }}s</td>
-                  </tr>
-                </tbody>
-              </table>
             </div>
           </div>
         </div>
@@ -203,14 +179,6 @@ import { defineComponent } from 'vue'
 import MessageLine from './MessageLine.vue'
 import VersionDisplay from './VersionDisplay.vue';
 
-interface RecentScan {
-  task_id: string;
-  domain: string;
-  start_time: number;
-  end_time: number;
-  duration: number;
-}
-
 interface ResultCheckerData {
   domains: {
     requirements: {num: number, messages: {text: string, type: number}[]}[],
@@ -228,7 +196,6 @@ interface AppData {
   messagesList: null | MessageData[];
   scanTime: null | string;
   passed: boolean;
-  recentScans: RecentScan[];
   version: {
     csaf_checker_version: string;
     csaf_validator_version: string;
@@ -255,7 +222,6 @@ export default defineComponent({
       messagesList: null,
       scanTime: null,
       passed: false,
-      recentScans: [],
       version: null
     } as AppData
   },
@@ -263,9 +229,6 @@ export default defineComponent({
     axios
       .get(`${this.backendUrl}/api/information/`)
       .then(response => this.version = response.data)
-    axios
-      .get(`${this.backendUrl}/api/scans`)
-      .then(response => this.recentScans = response.data)
   },
   computed: {
     resultClass() {
@@ -362,7 +325,6 @@ export default defineComponent({
           this.extractMessagesFromResultsChecker(parsedResultsChecker)
           this.setScanTime(parsedResultsChecker)
           this.setPassed(parsedResultsChecker)
-          axios.get(`${this.backendUrl}/api/scans`).then(r => this.recentScans = r.data)
         } else {
           this.messagesList = null
           this.scanTime = null
