@@ -8,7 +8,7 @@
 import asyncio
 import logging
 import os
-import requests
+import httpx
 from typing import Any, Dict
 
 from fastapi import APIRouter, HTTPException, status
@@ -184,16 +184,17 @@ async def health_check() -> HealthResponse:
     # Check Validator connectivity
     validator_available = False
     try:
-        validator_response = requests.get("http://validator:8082/api/v1/tests", timeout=10)
+        async with httpx.AsyncClient() as client:
+            validator_response = await client.get("http://validator:8082/api/v1/tests", timeout=10)
 
         # 200 is the expected result
         if validator_response.status_code != 200:
             errors.append(f"Validator is not available. Status Code: {validator_response.status_code}")
         else:
             validator_available = True
-    except requests.exceptions.Timeout:
+    except httpx.TimeoutException:
         errors.append(f"Validator timed out: {e}")
-    except requests.exceptions.RequestException as e:
+    except httpx.RequestError as e:
         errors.append(f"Validator is not available: {e}")
     if not validator_available:
         errors.append("Validator is not available")
