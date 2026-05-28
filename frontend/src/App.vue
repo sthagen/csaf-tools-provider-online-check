@@ -353,7 +353,7 @@ export default defineComponent({
     },
     setScanTime(parsedResultsChecker: ResultCheckerData) {
       if (parsedResultsChecker?.date) {
-        this.scanTime = new Date(parsedResultsChecker?.date).toLocaleString()
+        this.scanTime = new Date(parsedResultsChecker?.date).toLocaleString(undefined, { timeZoneName: 'short' })
       }
     },
     setPassed(parsedResultsChecker: ResultCheckerData) {
