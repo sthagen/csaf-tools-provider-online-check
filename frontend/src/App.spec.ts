@@ -170,13 +170,19 @@ describe("Testing App...", () => {
         ])
     })
     test("trustedProviderStatus", () => {
-        app.vm.messagesList = [
-            { text: "Test1", type: 0, num: 1 }
-        ]
+        app.vm.passed = true
         expect(app.vm.trustedProviderStatus).toBe('text-green')
-        app.vm.messagesList = [
-            { text: "Test1", type: 2, num: 1 }
-        ]
+        app.vm.passed = false
         expect(app.vm.trustedProviderStatus).toBe('text-red')
+    })
+    test("setScanTime", () => {
+        const data = { passed: true, date:"2026-05-22T08:00:00", requirements: [] }
+        app.vm.setScanTime(data)
+        expect(app.vm.scanTime).toBe("5/22/2026, 8:00:00 AM")
+    })
+    test("setPassed", () => {
+        const data = { date:"2026-05-22", domains: [{ passed: true }] }
+        app.vm.setPassed(data)
+        expect(app.vm.passed).toBe(true)
     })
 })
