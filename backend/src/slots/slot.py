@@ -78,7 +78,10 @@ class Slot(BaseModel):
         elif self.running_task.is_paused():
             return ScanResponseStatus.PAUSED, ""
         elif self.running_task.get_status() == Domain_Task_Status.ERROR:
-            return ScanResponseStatus.ERROR, self.running_task.error_message or "A backend error occurred"
+            return (
+                ScanResponseStatus.ERROR,
+                self.running_task.error_message or "A backend error occurred",
+            )
         elif self.running_task.get_status() == Domain_Task_Status.INTERRUPTED:
             return ScanResponseStatus.ERROR, "Task has been stopped manually"
         elif self.running_task.get_status() == Domain_Task_Status.DONE:
