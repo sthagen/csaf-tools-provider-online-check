@@ -41,8 +41,8 @@ class Redis_Controller:
             return
         self._initialized = True
 
-        # Setup Redis
-        self._redis = redis.Redis(host="redis", port=6379, db=0)
+        # Setup Valkey
+        self._redis = redis.Redis(host="valkey", port=6379, db=0)
 
         # Clear blocked domains
         if self._redis.exists(BLOCKLIST_DOMAIN_DB_FIELD):

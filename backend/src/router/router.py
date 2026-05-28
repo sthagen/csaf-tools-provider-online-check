@@ -171,14 +171,14 @@ async def health_check() -> HealthResponse:
     if not binary_available:
         errors.append("csaf_checker binary is not available")
 
-    # Check Redis connectivity
+    # Check Valkey connectivity
     redis_available = False
     try:
         redis_available = Redis_Controller()._redis.ping()
     except Exception:
         redis_available = False
     if not redis_available:
-        errors.append("Redis is not available")
+        errors.append("Valkey is not available")
 
     # Check Validator connectivity
     validator_available = False

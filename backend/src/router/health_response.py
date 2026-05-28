@@ -26,7 +26,7 @@ class HealthResponse(BaseModel):
 
     redis_available: Annotated[
         bool,
-        Field(description="Whether Redis is available"),
+        Field(description="Whether Valkey is available"),
     ]
 
     validator_available: Annotated[

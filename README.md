@@ -109,7 +109,7 @@ The application consists of three main components:
 
 - **Frontend**: A Vue.js 3 single-page application using Bootstrap for styling. It provides the user interface for initiating scans and viewing results.
 - **Backend**: A FastAPI-based REST API that handles scan requests. It exposes endpoints for starting scans and checking status. The interactive API documentation is available at `/api/docs`.
-- **Redis**: Used as a message broker for the job queue, for asynchronous scan job processing
+- **Valkey**: Used as a message broker for the job queue, for asynchronous scan job processing.
 
 ```mermaid
 ---
@@ -145,8 +145,8 @@ graph TD
         V[secvisogram validator\nNode.js]
     end
 
-    subgraph redis[Container: redis]
-        R[(Cache\nRedis)]
+    subgraph valkey[Container: valkey]
+        R[(Cache\nValkey)]
     end
 
     U -->|HTTP requests| FE
@@ -191,7 +191,7 @@ This repository uses the [Conventional Commits](https://www.conventionalcommits.
 
 #### Backend
 - Python 3.10+
-- Redis
+- Valkey
 - Python packages: FastAPI, uvicorn, pydantic, redis, rq (see [backend/requirements.txt](backend/requirements.txt))
 
 #### Frontend
