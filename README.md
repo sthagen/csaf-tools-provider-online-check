@@ -91,6 +91,7 @@ npm run coverage-single
 The version number must adhere to [semantic versioning 2.0.0](https://semver.org/).
 
 * In `.env` set `APP_VERSION` to the new release version
+* In `frontend/package.json` set the version (line 3) to the new release version
 * Commit
 * Make a Pull Request, request reviews
 * Merge into branch `main`
@@ -99,6 +100,8 @@ Either in the GitHub web interface, or using the command line:
 
 * `git tag -s $versionnumber` (the same as `APP_VERSION`)
 * `git push`
+
+Finally, create a release from the tag on GitHub.
 
 ## Architecture
 
