@@ -180,7 +180,7 @@ describe("Testing App...", () => {
         app.vm.setScanTime(data)
         expect(app.vm.scanTime).toBe("5/22/2026, 8:00:00 AM")
     })
-    test("setPasssed", () => {
+    test("setPassed", () => {
         const data = { date:"2026-05-22", domains: [{ passed: true }] }
         app.vm.setPassed(data)
         expect(app.vm.passed).toBe(true)
