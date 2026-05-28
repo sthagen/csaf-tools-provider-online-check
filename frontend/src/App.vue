@@ -180,7 +180,10 @@ import MessageLine from './MessageLine.vue'
 import VersionDisplay from './VersionDisplay.vue';
 
 interface ResultCheckerData {
-  domains: { requirements: {num: number, messages: {text: string, type: number}[]}[]}[];
+  domains: {
+    requirements: {num: number, messages: {text: string, type: number}[]}[],
+    passed: boolean;
+  }[];
   date: string;
 }
 
@@ -192,6 +195,7 @@ interface AppData {
   error: any;
   messagesList: null | MessageData[];
   scanTime: null | string;
+  passed: boolean;
   version: {
     csaf_checker_version: string;
     csaf_validator_version: string;
@@ -217,6 +221,7 @@ export default defineComponent({
       error: null,
       messagesList: null,
       scanTime: null,
+      passed: false,
       version: null
     } as AppData
   },
@@ -300,10 +305,7 @@ export default defineComponent({
       return null
     },
     trustedProviderStatus() {
-      if (this.trustedProviderMessages) {
-        return this.trustedProviderMessages.filter(msg => msg.type === 2).length === 0 ? 'text-green' : 'text-red'
-      }
-      return 'text-red'
+      return this.passed ? 'text-green': 'text-red'
     }
   },
   methods: {
@@ -322,6 +324,7 @@ export default defineComponent({
           const parsedResultsChecker = this.parseResultsChecker(this.result.results_checker)
           this.extractMessagesFromResultsChecker(parsedResultsChecker)
           this.setScanTime(parsedResultsChecker)
+          this.setPassed(parsedResultsChecker)
         } else {
           this.messagesList = null
           this.scanTime = null
@@ -348,6 +351,9 @@ export default defineComponent({
       if (parsedResultsChecker?.date) {
         this.scanTime = new Date(parsedResultsChecker?.date).toLocaleString()
       }
+    },
+    setPassed(parsedResultsChecker: ResultCheckerData) {
+      this.passed = parsedResultsChecker?.domains?.[0]?.passed ?? false;
     },
     extractMessagesFromResultsChecker(results_checker: ResultCheckerData) {
       if (results_checker.domains?.[0]?.requirements) {
