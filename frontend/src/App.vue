@@ -57,7 +57,7 @@
                 <h4 :class="trustedProviderStatus" class="small-margin-top medium-font-size">
                   <span v-if="trustedProviderStatus === 'text-green'">PASSED:</span>
                   <span v-else>FAILED:</span>
-                  CSAF trusted provider
+                  {{ role }}
                 </h4>
                 <MessageLine v-for="item of trustedProviderMessages" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
 
@@ -183,6 +183,7 @@ interface ResultCheckerData {
   domains: {
     requirements: {num: number, messages: {text: string, type: number}[]}[],
     passed: boolean;
+    role: string;
   }[];
   date: string;
 }
@@ -196,6 +197,7 @@ interface AppData {
   messagesList: null | MessageData[];
   scanTime: null | string;
   passed: boolean;
+  role: string;
   version: {
     csaf_checker_version: string;
     csaf_validator_version: string;
@@ -222,6 +224,7 @@ export default defineComponent({
       messagesList: null,
       scanTime: null,
       passed: false,
+      role: null,
       version: null
     } as AppData
   },
@@ -325,6 +328,7 @@ export default defineComponent({
           this.extractMessagesFromResultsChecker(parsedResultsChecker)
           this.setScanTime(parsedResultsChecker)
           this.setPassed(parsedResultsChecker)
+          this.setRole(parsedResultsChecker)
         } else {
           this.messagesList = null
           this.scanTime = null
@@ -349,11 +353,16 @@ export default defineComponent({
     },
     setScanTime(parsedResultsChecker: ResultCheckerData) {
       if (parsedResultsChecker?.date) {
-        this.scanTime = new Date(parsedResultsChecker?.date).toLocaleString()
+        this.scanTime = new Date(parsedResultsChecker?.date).toLocaleString(undefined, { timeZoneName: 'short' })
       }
     },
     setPassed(parsedResultsChecker: ResultCheckerData) {
       this.passed = parsedResultsChecker?.domains?.[0]?.passed ?? false;
+    },
+    setRole(parsedResultsChecker: ResultCheckerData) {
+      this.role = parsedResultsChecker?.domains?.[0]?.role ?? "Unknown Role";
+      this.role = this.role.replace('csaf', 'CSAF').replaceAll('_', ' ');
+      this.role = this.role.replace(/\b\w/g, (c: string) => c.toUpperCase());
     },
     extractMessagesFromResultsChecker(results_checker: ResultCheckerData) {
       if (results_checker.domains?.[0]?.requirements) {
