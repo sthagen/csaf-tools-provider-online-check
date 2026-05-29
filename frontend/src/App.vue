@@ -156,7 +156,7 @@
                 provider metadata and checks its validity. Results may vary.
               </p>
               <p>
-                <a href="https://github.com/Intevation/csaf-provider-scan/" target="_blank">
+                <a href="https://github.com/csaf-tools/provider-online-check/" target="_blank">
                   Website and Source Code
                 </a>
                 &nbsp;
