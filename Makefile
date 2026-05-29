@@ -32,7 +32,7 @@ run-fe-tests-containerd:
 run-fe-coverage-containerd:
 	make dev-exec frontend EXEC_COMMAND="frontend npm run coverage-single"
 
-lint:
+lint: | lint-reuse
 	bash backend/dev/run-lint.sh -l -b
 
 lint-containerd:
@@ -40,6 +40,9 @@ lint-containerd:
 
 lint-containerd-standalone:
 	bash backend/dev/run-lint.sh
+
+lint-reuse:
+	reuse lint
 
 coverage:
 	PYTHONPATH=backend/ coverage run -m pytest --log-cli-level=INFO --timeout=50 backend/tests/
