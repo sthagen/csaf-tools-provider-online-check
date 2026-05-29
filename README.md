@@ -97,6 +97,7 @@ npm run coverage-single
 The version number must adhere to [semantic versioning 2.0.0](https://semver.org/).
 
 * In `.env` set `APP_VERSION` to the new release version
+* In `frontend/package.json` set the version (line 3) to the new release version
 * Commit
 * Make a Pull Request, request reviews
 * Merge into branch `main`
@@ -106,6 +107,8 @@ Either in the GitHub web interface, or using the command line:
 * `git tag -s $versionnumber` (the same as `APP_VERSION`)
 * `git push`
 
+Finally, create a release from the tag on GitHub.
+
 ## Architecture
 
 The application consists of three main components:
@@ -113,6 +116,50 @@ The application consists of three main components:
 - **Frontend**: A Vue.js 3 single-page application using Bootstrap for styling. It provides the user interface for initiating scans and viewing results.
 - **Backend**: A FastAPI-based REST API that handles scan requests. It exposes endpoints for starting scans and checking status. The interactive API documentation is available at `/api/docs`.
 - **Redis**: Used as a message broker for the job queue, for asynchronous scan job processing
+
+```mermaid
+---
+config:
+  layout: dagre
+---
+graph TD
+    subgraph user[Client]
+        U[User / Browser]
+    end
+
+    subgraph frontend[Container: frontend]
+        FE[Single Page Application\nVue.js]
+    end
+
+    subgraph backend[Container: backend]
+        BE[Asynchronous backend\nPython FastAPI]
+        SM[Slot_Manager\nin-process singleton]
+        S1[Slot 0\nDomain_Task]
+        S2[Slot 1\nDomain_Task]
+        SN[Slot N\nDomain_Task]
+        C1[csaf_checker binary]
+        C2[csaf_checker binary]
+        CN[csaf_checker binary]
+        BE -->|asyncio.create_task| SM
+        SM --> S1 & S2 & SN
+        S1 -->|subprocess| C1
+        S2 -->|subprocess| C2
+        SN -->|subprocess| CN
+    end
+
+    subgraph validator[Container: validator]
+        V[secvisogram validator\nNode.js]
+    end
+
+    subgraph redis[Container: redis]
+        R[(Cache\nRedis)]
+    end
+
+    U -->|HTTP requests| FE
+    FE -->|POST /api/scan/start| BE
+    BE -->|cache read/write| R
+    C1 & C2 & CN --> V
+```
 
 ## Security Considerations
 
