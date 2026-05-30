@@ -4,7 +4,7 @@ from src.database.domain_task_data import Domain_Task_Data
 from src.database.domain_name_hash_wrapper import Domain_Name_Hash_Wrapper
 
 class TestValkeyController:
-    """Tests for writting and reading from Valkey Controller"""
+    """Tests for writing and reading from Valkey Controller"""
 
     def test_domain_blocking(self):
         domain = "test.com"

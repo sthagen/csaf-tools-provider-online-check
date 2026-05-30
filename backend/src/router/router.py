@@ -59,7 +59,7 @@ async def start_scan(request: ScanRequest) -> ScanResponse:
         #   - Domain already processed by a slotted domain task (Return UUID + Running domain task data)
         #   - Domain not processed, but recently cached (Return Cached domain task data)
         #   - Domain not processed, but no slots available (Return Error)
-        #   - Domain not processed and slot avaialable. (Return UUID + Running domain task data)
+        #   - Domain not processed and slot available. (Return UUID + Running domain task data)
         #
         # Either start_scan should display data or redirect to get_data (in case no error has been returned)
         # ------------------------------------------------------
