@@ -103,6 +103,9 @@ Either in the GitHub web interface, or using the command line:
 
 Finally, create a release from the tag on GitHub.
 
+* Generate the SBOMs with `make generate-sboms`.
+* Upload them as attachments to the release.
+
 ## Architecture
 
 The application consists of three main components:
