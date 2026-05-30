@@ -23,3 +23,5 @@ jobs:
       uses: actions/checkout@v6
     - name: REUSE compliance check
       uses: fsfe/reuse-action@v6
+    - name: Software-Engineering line check
+      run: dev/reuse-annotate.sh --check
