@@ -15,7 +15,7 @@ from fastapi.responses import JSONResponse
 
 from ..csaf.csaf_checker import CSAF_BINARY_PATH, CSAF_CHECKER_BINARY
 from ..database.database import Database_Manager
-from ..database.redis import Redis_Controller
+from ..database.valkey import Valkey_Controller
 from ..slots.slot_manager import Slot_Manager
 from .health_response import HealthResponse
 from .information_response import InformationResponse
@@ -172,12 +172,12 @@ async def health_check() -> HealthResponse:
         errors.append("csaf_checker binary is not available")
 
     # Check Valkey connectivity
-    redis_available = False
+    valkey_available = False
     try:
-        redis_available = Redis_Controller()._redis.ping()
+        valkey_available = Valkey_Controller()._valkey.ping()
     except Exception:
-        redis_available = False
-    if not redis_available:
+        valkey_available = False
+    if not valkey_available:
         errors.append("Valkey is not available")
 
     # Check Validator connectivity
@@ -208,7 +208,7 @@ async def health_check() -> HealthResponse:
         "free_slots": free_slots,
         "total_slots": len(slot_manager.slots),
         "csaf_checker_available": binary_available,
-        "redis_available": redis_available,
+        "valkey_available": valkey_available,
         "validator_available": validator_available,
     }
 
