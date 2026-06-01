@@ -21,7 +21,7 @@ class ScanRequest(BaseModel):
     ]
 
     start_at_line: Annotated[
-        int, Field(description="Shortens the runtime output of all preceding entries")
+        int, Field(description="Earliest output entry to retrieve")
     ] = 0
 
     max_lines: Annotated[
@@ -32,7 +32,7 @@ class ScanRequest(BaseModel):
     ] = int(os.environ.get("VERBOSE_OUTPUT_MAX_LINES_DEFAULT", "10"))
 
     priotize_newest_lines: Annotated[
-        bool, Field(description="Priotize newer runtime output when shortening")
+        bool, Field(description="Prioritize newer runtime output when shortening")
     ] = True
 
     skip_cache: Annotated[

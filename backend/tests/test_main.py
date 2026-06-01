@@ -27,14 +27,14 @@ def mock_scan_request_variable_session_id(session_id: str):
     }
     return mock
 
-def mock_scan_request_variable_shortening_options(start_at, max_lines: int, priotize_newest_lines: bool):
+def mock_scan_request_variable_shortening_options(start_at, max_lines: int, prioritize_newest_lines: bool):
     mock = {
         "session_id": "0",
         "domain": "example2.com",
         "clear_any_running": True,
         "start_at_line": start_at,
         "max_lines": max_lines,
-        "priotize_newest_lines": priotize_newest_lines,
+        "prioritize_newest_lines": prioritize_newest_lines,
     }
     return mock
 
@@ -288,7 +288,7 @@ class TestOutputOptions:
         assert normalResponseData["runtime_output"][5] == offsetResponseData["runtime_output"][0]
 
     @pytest.mark.asyncio
-    async def test_priotize_latest(self):
+    async def test_prioritize_latest(self):
         await scan_example_domain()
 
         """Testing priotization parameter"""
@@ -298,27 +298,27 @@ class TestOutputOptions:
         )
         fullResponseData = fullResponse.json()
 
-        priotizeNewestResponse = client.post(
+        prioritizeNewestResponse = client.post(
             "/api/scan/start",
             json=mock_scan_request_variable_shortening_options(0, 1, True)
         )
-        priotizeNewestResponseData = priotizeNewestResponse.json()
+        prioritizeNewestResponseData = prioritizeNewestResponse.json()
 
-        priotizeOldestResponse = client.post(
+        prioritizeOldestResponse = client.post(
             "/api/scan/start",
             json=mock_scan_request_variable_shortening_options(0, 1, False)
         )
-        priotizeOldestResponseData = priotizeOldestResponse.json()
+        prioritizeOldestResponseData = prioritizeOldestResponse.json()
 
         assert fullResponse.status_code == 201
-        assert priotizeNewestResponse.status_code == 201
-        assert priotizeOldestResponse.status_code == 201
+        assert prioritizeNewestResponse.status_code == 201
+        assert prioritizeOldestResponse.status_code == 201
         assert len(fullResponseData["runtime_output"]) < 1000 ## If this fails, test another domain with shorter output
         assert len(fullResponseData["runtime_output"]) > 0 ## If this fails, test another domain with output
-        assert fullResponseData["runtime_output"][0] == priotizeOldestResponseData["runtime_output"][0]
-        assert fullResponseData["runtime_output"][0] != priotizeNewestResponseData["runtime_output"][0]
-        assert priotizeOldestResponseData["runtime_output"][0] != priotizeNewestResponseData["runtime_output"][0]
-        assert fullResponseData["runtime_output"][len(fullResponseData["runtime_output"]) - 1] == priotizeNewestResponseData["runtime_output"][0]
+        assert fullResponseData["runtime_output"][0] == prioritizeOldestResponseData["runtime_output"][0]
+        assert fullResponseData["runtime_output"][0] != prioritizeNewestResponseData["runtime_output"][0]
+        assert prioritizeOldestResponseData["runtime_output"][0] != prioritizeNewestResponseData["runtime_output"][0]
+        assert fullResponseData["runtime_output"][len(fullResponseData["runtime_output"]) - 1] == prioritizeNewestResponseData["runtime_output"][0]
 
     @pytest.mark.asyncio
     async def test_max_lines(self):

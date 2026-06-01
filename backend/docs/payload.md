@@ -16,5 +16,5 @@ Send from frontend to backend
         // Output Shortening
         start_at_line: int  // Earliest output entry to retrieve. Default: 0
         max_lines: int      // Maximum entries to output. Default: 10
-        priotize_newest_lines: bool // Output newest lines first. Default: True
+        prioritize_newest_lines: bool // Output newest lines first. Default: True
     }
