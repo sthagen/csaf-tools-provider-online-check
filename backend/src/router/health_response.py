@@ -24,9 +24,9 @@ class HealthResponse(BaseModel):
         Field(description="Whether the csaf_checker binary is available"),
     ]
 
-    redis_available: Annotated[
+    valkey_available: Annotated[
         bool,
-        Field(description="Whether Redis is available"),
+        Field(description="Whether Valkey is available"),
     ]
 
     validator_available: Annotated[
