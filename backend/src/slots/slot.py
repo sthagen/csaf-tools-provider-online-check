@@ -92,29 +92,3 @@ class Slot(BaseModel):
             return ScanResponseStatus.INITIALIZED, ""
 
         return ScanResponseStatus.RUNNING_CHECKER, ""
-
-    # Returns the entries beginning from start_at capped by entries_count
-    def getRuntimeOutput(self, start_at, entries_count) -> list[str]:
-        if self.running_task is None:
-            return []
-
-        full_output = self.running_task.get_data(True).csaf_checker_output_runtime_log
-
-        shortened_output = full_output[start_at: start_at + entries_count] # Slicing is boundary safe
-
-        return shortened_output
-
-    # Returns the newest entries of the runtime output. Will ignore entries before start_at
-    def getRuntimeOutputPriotizeNewest(self, start_at, entries_count) -> list[str]:
-        if self.running_task is None:
-            return []
-
-        full_output = self.running_task.get_data(True).csaf_checker_output_runtime_log
-
-        lower_boundary = len(full_output) - entries_count
-        if start_at > lower_boundary:
-            lower_boundary = start_at
-
-        shortened_output = full_output[lower_boundary:] # Slicing is boundary safe
-
-        return shortened_output

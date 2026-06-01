@@ -109,10 +109,11 @@ async def start_scan(request: ScanRequest) -> ScanResponse:
             if request.start_at_line > lower_boundary:
                 lower_boundary = request.start_at_line
 
-            displayed_output = full_output[lower_boundary:] # Slicing is boundary safe
+            displayed_output = full_output[lower_boundary:]  # Slicing is boundary safe
         else:
             # max_lines entries starting from start_at_line
-            displayed_output = full_output[request.start_at_line: request.start_at_line + request.max_lines] # Slicing is boundary safe
+            # fmt: off
+            displayed_output = full_output[request.start_at_line:(request.start_at_line + request.max_lines)]  # Slicing is boundary safe
 
         return {
             "status": status,
