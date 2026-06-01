@@ -1,3 +1,5 @@
+import os
+
 from typing import Annotated
 
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -18,6 +20,21 @@ class ScanRequest(BaseModel):
         Field(description="Domain to scan for CSAF provider metadata"),
         Field(json_schema_extra={"example": "example.com"}),
     ]
+
+    start_at_line: Annotated[
+        int,
+        Field(description="Shortens the runtime output of all preceding entries")
+    ] = 0
+
+    max_lines: Annotated[
+        int,
+        Field(description="The maximum amount of runtime output lines that should be returned in the response")
+    ] = int(os.environ.get("VERBOSE_OUTPUT_MAX_LINES_DEFAULT", "10"))
+
+    priotize_newest_lines: Annotated[
+        bool,
+        Field(description="Priotize newer runtime output when shortening")
+    ] = True
 
     skip_cache: Annotated[
         bool,
