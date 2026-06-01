@@ -4,7 +4,7 @@
 $(.SERVICE_TARGETS):
 	@echo ""
 
-.FLAGS := no-cache capsule compose-local-branch
+.FLAGS := no-cache compose-local-branch
 
 $(.FLAGS):
 	@echo ""
