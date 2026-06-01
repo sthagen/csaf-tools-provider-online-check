@@ -4,7 +4,7 @@
 # in database -> handles cache lookup
 import re
 
-from ..database.redis import Redis_Controller
+from ..database.valkey import Valkey_Controller
 
 # Basic domain validation pattern (same as before)
 DOMAIN_PATTERN = (
@@ -53,8 +53,8 @@ def validate_domain_blocklist_check(domain: str) -> str:
 
     v = domain.strip()
 
-    # Redis blocklist check
-    if Redis_Controller().is_domain_in_domain_blocklist(domain):
+    # Valkey blocklist check
+    if Valkey_Controller().is_domain_in_domain_blocklist(domain):
         raise ValueError("Session ID is blocked")
 
     return v
