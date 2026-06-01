@@ -31,7 +31,7 @@ class ScanRequest(BaseModel):
         ),
     ] = int(os.environ.get("VERBOSE_OUTPUT_MAX_LINES_DEFAULT", "10"))
 
-    priotize_newest_lines: Annotated[
+    prioritize_newest_lines: Annotated[
         bool, Field(description="Prioritize newer runtime output when shortening")
     ] = True
 
