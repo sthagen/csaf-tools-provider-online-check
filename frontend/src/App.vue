@@ -22,6 +22,7 @@
                     id="domainInput"
                     v-model="domain"
                     placeholder="example.com"
+                    :disabled="isDisabled"
                     required
                   >
                   <div class="form-text">Enter a domain to scan a CSAF provider</div>
@@ -191,13 +192,14 @@ interface ResultCheckerData {
 interface AppData {
   session_id: string;
   domain: string;
+  domainRescan: string | null;
   loading: boolean;
   result: any;
   error: any;
   messagesList: null | MessageData[];
   scanTime: null | string;
   passed: boolean;
-  role: string;
+  role: string | null;
   version: {
     csaf_checker_version: string;
     csaf_validator_version: string;
@@ -218,6 +220,7 @@ export default defineComponent({
     return {
       session_id: '1',
       domain: '',
+      domainRescan: null,
       loading: false,
       result: null,
       error: null,
@@ -234,6 +237,9 @@ export default defineComponent({
       .then(response => this.version = response.data)
   },
   computed: {
+    isDisabled(): boolean {
+      return this.domainRescan !== null
+    },
     resultClass() {
       switch(this.result?.status) {
         case 'ERROR':
@@ -313,13 +319,17 @@ export default defineComponent({
   },
   methods: {
     async startScan() {
-      this.loading = true
-      this.result = null
-      this.error = null
+      if (!this.domainRescan) {
+        this.domainRescan = this.domain
+        this.loading = true
+        this.result = null
+        this.messagesList = null
+        this.error = null
+      }
 
       try {
         const response = await axios.post(`${this.backendUrl}/api/scan/start`, {
-          domain: this.domain,
+          domain: this.domainRescan,
           session_id: this.session_id
         })
         this.result = response.data
@@ -345,6 +355,7 @@ export default defineComponent({
           setTimeout(this.startScan, 3000)
         } else {
           this.loading = false
+          this.domainRescan = null
         }
       }
     },
