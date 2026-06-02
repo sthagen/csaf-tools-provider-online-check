@@ -29,7 +29,7 @@ services:
     networks:
       - scanner
     depends_on:
-      - redis
+      - valkey
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
       interval: 15s
@@ -74,7 +74,7 @@ services:
     networks:
       - scanner
     depends_on:
-      - redis
+      - valkey
     networks:
       - scanner
     healthcheck:
@@ -84,22 +84,22 @@ services:
       retries: 3
       start_period: 10s
 
-  redis:
-    image: redis:alpine
+  valkey:
+    image: valkey/valkey:8-alpine
     restart: unless-stopped
     networks:
       - scanner
     volumes:
-      - redis-data:/data
+      - valkey-data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "valkey-cli", "ping"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 10s
 
 volumes:
-  redis-data:
+  valkey-data:
 
 networks:
   scanner:

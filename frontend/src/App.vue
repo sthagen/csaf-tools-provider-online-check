@@ -289,7 +289,7 @@ export default defineComponent({
         trustedProviderMessages.push(...this.filterMessageListByNums([5, 6, 7]))
 
         // requirements min one of 8 (security.txt), 9 (Well-known URL for provider-metadata.json), 10 (DNS path)
-        // One must succed, then show that message, else show all messages
+        // One must succeed, then show that message, else show all messages
         const req8Messages = this.filterMessageListByNums([8])
         const req9Messages = this.filterMessageListByNums([9])
         const req10Messages = this.filterMessageListByNums([10])

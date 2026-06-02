@@ -21,7 +21,7 @@ Considerations:
 
  * It is planned to offer this as a service (with limited resources).
 
- * Large CSAF providers will run this for themselfes, e.g. using a prepared
+ * Large CSAF providers will run this for themselves, e.g. using a prepared
    image for deployment.
 
  * When in doubt, too much stress on the CSAF Providers will be prevented.
@@ -103,13 +103,16 @@ Either in the GitHub web interface, or using the command line:
 
 Finally, create a release from the tag on GitHub.
 
+* Generate the SBOMs with `make generate-sboms`.
+* Upload them as attachments to the release.
+
 ## Architecture
 
 The application consists of three main components:
 
 - **Frontend**: A Vue.js 3 single-page application using Bootstrap for styling. It provides the user interface for initiating scans and viewing results.
 - **Backend**: A FastAPI-based REST API that handles scan requests. It exposes endpoints for starting scans and checking status. The interactive API documentation is available at `/api/docs`.
-- **Redis**: Used as a message broker for the job queue, for asynchronous scan job processing
+- **Valkey**: Used as a message broker for the job queue, for asynchronous scan job processing.
 
 ```mermaid
 ---
@@ -145,8 +148,8 @@ graph TD
         V[secvisogram validator\nNode.js]
     end
 
-    subgraph redis[Container: redis]
-        R[(Cache\nRedis)]
+    subgraph valkey[Container: valkey]
+        R[(Cache\nValkey)]
     end
 
     U -->|HTTP requests| FE
@@ -169,7 +172,7 @@ The CSAF Provider Online Check tool provides SBOMs in both CycloneDX and SPDX fo
 It covers dependencies for the backend, frontend and validator image.
 The files are generated using syft (https://github.com/anchore/syft)
 
-The files are regularily updated with each release.
+The files are regularly updated with each release.
 
 To manually generate them, call the make target `make generate-sboms`.
 The environment variable `GENERATED_FILE_PATH` determines the relative output directory (default is `./sboms/`, relative to the root directory).
@@ -191,8 +194,8 @@ This repository uses the [Conventional Commits](https://www.conventionalcommits.
 
 #### Backend
 - Python 3.10+
-- Redis
-- Python packages: FastAPI, uvicorn, pydantic, redis, rq (see [backend/requirements.txt](backend/requirements.txt))
+- Valkey
+- Python packages: FastAPI, uvicorn, pydantic, valkey, rq (see [backend/requirements.txt](backend/requirements.txt))
 
 #### Frontend
 - Node.js 18+
