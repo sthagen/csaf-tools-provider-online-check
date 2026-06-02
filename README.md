@@ -21,7 +21,7 @@ Considerations:
 
  * It is planned to offer this as a service (with limited resources).
 
- * Large CSAF providers will run this for themselfes, e.g. using a prepared
+ * Large CSAF providers will run this for themselves, e.g. using a prepared
    image for deployment.
 
  * When in doubt, too much stress on the CSAF Providers will be prevented.
@@ -103,6 +103,9 @@ Either in the GitHub web interface, or using the command line:
 
 Finally, create a release from the tag on GitHub.
 
+* Generate the SBOMs with `make generate-sboms`.
+* Upload them as attachments to the release.
+
 ## Architecture
 
 The application consists of three main components:
@@ -169,7 +172,7 @@ The CSAF Provider Online Check tool provides SBOMs in both CycloneDX and SPDX fo
 It covers dependencies for the backend, frontend and validator image.
 The files are generated using syft (https://github.com/anchore/syft)
 
-The files are regularily updated with each release.
+The files are regularly updated with each release.
 
 To manually generate them, call the make target `make generate-sboms`.
 The environment variable `GENERATED_FILE_PATH` determines the relative output directory (default is `./sboms/`, relative to the root directory).

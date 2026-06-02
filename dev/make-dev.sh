@@ -127,7 +127,7 @@ attach()
     then
         # Compose
 
-        # Determine container to enter, in case no container was specified as a paramater
+        # Determine container to enter, in case no container was specified as a parameter
         if [ -z "$SERVICE" ] && [ -z "$TARGET_CONTAINER" ]
         then
             # Main repository case, use input prompt to determine container
