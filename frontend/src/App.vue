@@ -74,13 +74,13 @@
                       Show log output
                     </a>
                 </p>
-                <div class="collapse" id="collapseAllMessages">
+                <div class="collapse log-card-size overflow-scroll" id="collapseAllMessages">
                   <div class="card card-body">
                     <h6>All messages:</h6>
                     <MessageLine v-for="item of messagesList" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
                   </div>
                 </div>
-                <div class="collapse" id="collapseResultOutput">
+                <div class="collapse log-card-size overflow-scroll" id="collapseResultOutput">
                   <div class="card card-body">
                     <h6>Result of the checker:</h6>
                     <div class="d-flex justify-content-end gap-2 mb-2">
@@ -90,7 +90,7 @@
                     <pre>{{ result?.results_checker }}</pre>
                   </div>
                 </div>
-                <div class="collapse" id="collapseLogOutput">
+                <div class="collapse log-card-size overflow-scroll" id="collapseLogOutput">
                   <div class="card card-body">
                     <h6>Log output:</h6>
                     <div class="d-flex justify-content-end gap-2 mb-2">
@@ -197,7 +197,7 @@ interface AppData {
   messagesList: null | MessageData[];
   scanTime: null | string;
   passed: boolean;
-  role: string;
+  role: string | null;
   version: {
     csaf_checker_version: string;
     csaf_validator_version: string;
@@ -443,5 +443,8 @@ export default defineComponent({
 }
 .medium-font-size {
   font-size: 1.3rem;
+}
+.log-card-size {
+  max-height: 500px;
 }
 </style>
