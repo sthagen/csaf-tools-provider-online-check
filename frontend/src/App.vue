@@ -62,16 +62,10 @@
                 <MessageLine v-for="item of trustedProviderMessages" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
 
                 <p class="small-margin-top">
-                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseAllMessages" role="button" aria-expanded="false" aria-controls="collapseAllMessages">
-                      Show all messages
-                    </a>
-                    &nbsp;
-                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseResultOutput" role="button" aria-expanded="false" aria-controls="collapseResultOutput">
-                      Show JSON output
-                    </a>
-                    &nbsp;
-                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseLogOutput" role="button" aria-expanded="false" aria-controls="collapseLogOutput">
-                      Show log output
+                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseAllMessages" role="button" aria-expanded="false" aria-controls="collapseAllMessages"
+                      :key="displayAllMessagesTitle"
+                    >
+                      {{  displayAllMessagesTitle }}
                     </a>
                 </p>
                 <div class="collapse" id="collapseAllMessages">
@@ -80,6 +74,13 @@
                     <MessageLine v-for="item of messagesList" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
                   </div>
                 </div>
+                <p>
+                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseResultOutput" role="button" aria-expanded="false" aria-controls="collapseResultOutput"
+                      :key="displayResultOutputTitle"
+                    >
+                      {{ displayResultOutputTitle }}
+                    </a>
+                </p>
                 <div class="collapse" id="collapseResultOutput">
                   <div class="card card-body">
                     <h6>Result of the checker:</h6>
@@ -90,6 +91,12 @@
                     <pre>{{ result?.results_checker }}</pre>
                   </div>
                 </div>
+                <p>
+                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseLogOutput" role="button" aria-expanded="false" aria-controls="collapseLogOutput"
+                      :key="displayLogOutputTitle">
+                      {{ displayLogOutputTitle }}
+                    </a>
+                </p>
                 <div class="collapse" id="collapseLogOutput">
                   <div class="card card-body">
                     <h6>Log output:</h6>
@@ -192,12 +199,16 @@ interface AppData {
   session_id: string;
   domain: string;
   loading: boolean;
+  inited: boolean;
   result: any;
   error: any;
   messagesList: null | MessageData[];
   scanTime: null | string;
   passed: boolean;
-  role: string;
+  role: string | null;
+  isShowAllMessages: boolean;
+  isShowResultOutput: boolean;
+  isShowLogOutput: boolean;
   version: {
     csaf_checker_version: string;
     csaf_validator_version: string;
@@ -219,13 +230,17 @@ export default defineComponent({
       session_id: '1',
       domain: '',
       loading: false,
+      inited: false,
       result: null,
       error: null,
       messagesList: null,
       scanTime: null,
       passed: false,
       role: null,
-      version: null
+      version: null,
+      isShowAllMessages: false,
+      isShowResultOutput: false,
+      isShowLogOutput: false
     } as AppData
   },
   async mounted() {
@@ -309,6 +324,15 @@ export default defineComponent({
     },
     trustedProviderStatus() {
       return this.passed ? 'text-green': 'text-red'
+    },
+    displayAllMessagesTitle(): string {
+      return this.isShowAllMessages ? 'Hide all messages' : 'Show all messages'
+    },
+    displayResultOutputTitle(): string {
+      return this.isShowResultOutput ? 'Hide JSON output' : 'Show JSON output'
+    },
+    displayLogOutputTitle(): string {
+      return this.isShowLogOutput ? 'Hide log output' : 'Show log output'
     }
   },
   methods: {
@@ -329,6 +353,11 @@ export default defineComponent({
           this.setScanTime(parsedResultsChecker)
           this.setPassed(parsedResultsChecker)
           this.setRole(parsedResultsChecker)
+          if (!this.inited) {
+            setTimeout(() => {
+              this.initListeners()
+            }, 500)
+          }
         } else {
           this.messagesList = null
           this.scanTime = null
@@ -363,6 +392,17 @@ export default defineComponent({
       this.role = parsedResultsChecker?.domains?.[0]?.role ?? "Unknown Role";
       this.role = this.role.replace('csaf', 'CSAF').replaceAll('_', ' ');
       this.role = this.role.replace(/\b\w/g, (c: string) => c.toUpperCase());
+    },
+    initListeners() {
+      const allMessagesEl = document.getElementById('collapseAllMessages')
+      allMessagesEl?.addEventListener('shown.bs.collapse', () => { this.isShowAllMessages = true })
+      allMessagesEl?.addEventListener('hidden.bs.collapse', () => { this.isShowAllMessages = false })
+      const resultOutputEl = document.getElementById('collapseResultOutput')
+      resultOutputEl?.addEventListener('shown.bs.collapse', () => { this.isShowResultOutput = true })
+      resultOutputEl?.addEventListener('hidden.bs.collapse', () => { this.isShowResultOutput = false })
+      const logOutputEl = document.getElementById('collapseLogOutput')
+      logOutputEl?.addEventListener('shown.bs.collapse', () => { this.isShowLogOutput = true })
+      logOutputEl?.addEventListener('hidden.bs.collapse', () => { this.isShowLogOutput = false })
     },
     extractMessagesFromResultsChecker(results_checker: ResultCheckerData) {
       if (results_checker.domains?.[0]?.requirements) {
