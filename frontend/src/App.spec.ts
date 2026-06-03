@@ -221,5 +221,6 @@ describe("Testing App...", () => {
         expect(app.vm.isShowAllMessages).toBe(false)
         expect(app.vm.isShowResultOutput).toBe(false)
         expect(app.vm.isShowLogOutput).toBe(false)
+        expect(app.vm.initializedListeners).toBe(true)
     })
 })
