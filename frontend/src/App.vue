@@ -340,6 +340,7 @@ export default defineComponent({
       this.loading = true
       this.result = null
       this.error = null
+      this.clearFields()
 
       try {
         const response = await axios.post(`${this.backendUrl}/api/scan/start`, {
@@ -359,12 +360,10 @@ export default defineComponent({
             })
           }
         } else {
-          this.messagesList = null
-          this.scanTime = null
+          this.clearFields()
         }
       } catch (err: any) {
-        this.messagesList = null
-        this.scanTime = null
+        this.clearFields()
         this.error = err.response?.data?.detail || err.message || 'An error occurred while starting the scan'
         if (err.response?.data?.detail[0]?.msg) {
           this.error = `${err.response?.data?.detail[0]?.input}: ${err.response?.data?.detail[0]?.msg}`
@@ -376,6 +375,11 @@ export default defineComponent({
           this.loading = false
         }
       }
+    },
+    clearFields() {
+      this.messagesList = null
+      this.scanTime = null
+      this.passed = false
     },
     parseResultsChecker(results_checker: string): ResultCheckerData {
       return JSON.parse(results_checker)
