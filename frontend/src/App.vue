@@ -68,42 +68,46 @@
                       {{  displayAllMessagesTitle }}
                     </a>
                 </p>
-                <div class="collapse log-card-size overflow-scroll" id="collapseAllMessages" ref="allMessagesRef">
-                  <div class="card card-body">
-                    <h6>All messages:</h6>
+                <div class="collapse" id="collapseAllMessages" ref="allMessagesRef">
+                  <div>
+                    <h5 class="log-header">All messages:</h5>
+                  </div>
+                  <div class="card card-body log-card-size overflow-scroll">
                     <MessageLine v-for="item of messagesList" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
                   </div>
                 </div>
-                <p>
+                <p class="small-margin-top">
                     <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseResultOutput" role="button" aria-expanded="false" aria-controls="collapseResultOutput"
                       :key="displayResultOutputTitle"
                     >
                       {{ displayResultOutputTitle }}
                     </a>
                 </p>
-                <div class="collapse log-card-size overflow-scroll" id="collapseResultOutput" ref="resultOutputRef">
-                  <div class="card card-body">
-                    <h6>Result of the checker:</h6>
-                    <div class="d-flex justify-content-end gap-2 mb-2">
-                      <button class="btn btn-sm btn-outline-secondary" @click="copyResultToClipboard">Copy to clipboard</button>
-                      <button class="btn btn-sm btn-outline-secondary" @click="downloadJson">Download</button>
-                    </div>
+                <div class="collapse" id="collapseResultOutput" ref="resultOutputRef">
+                  <div class="d-flex gap-2 mb-2">
+                    <h5 class="me-auto log-header">Result of the checker:</h5>
+                    <button class="btn btn-sm btn-outline-secondary" @click="copyResultToClipboard">Copy to clipboard</button>
+                    <button class="btn btn-sm btn-outline-secondary" @click="downloadJson">Download</button>
+                  </div>
+                  <div class="card card-body log-card-size overflow-scroll">
                     <pre>{{ result?.results_checker }}</pre>
                   </div>
                 </div>
-                <p>
+                <p class="small-margin-top">
                     <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseLogOutput" role="button" aria-expanded="false" aria-controls="collapseLogOutput"
                       :key="displayLogOutputTitle">
                       {{ displayLogOutputTitle }}
                     </a>
                 </p>
-                <div class="collapse log-card-size overflow-scroll" id="collapseLogOutput" ref="logOutputRef">
-                  <div class="card card-body">
-                    <h6>Log output:</h6>
-                    <div class="d-flex justify-content-end gap-2 mb-2">
+                <div class="collapse" id="collapseLogOutput" ref="logOutputRef">
+                  <div>
+                    <div class="d-flex gap-2 mb-2">
+                      <h5 class="me-auto log-header">Log output:</h5>
                       <button class="btn btn-sm btn-outline-secondary" @click="copyLogToClipboard">Copy to clipboard</button>
                       <button class="btn btn-sm btn-outline-secondary" @click="downloadLog">Download</button>
                     </div>
+                  </div>
+                  <div class="card card-body log-card-size overflow-scroll">
                     <pre>{{ result?.runtime_output?.join('\n') }}</pre>
                   </div>
                 </div>
@@ -486,10 +490,13 @@ export default defineComponent({
 .small-margin-top {
   margin-top: 15px;
 }
+.log-header {
+  margin-top: 7px;
+}
 .medium-font-size {
   font-size: 1.3rem;
 }
 .log-card-size {
-  max-height: 500px;
+  max-height: 510px;
 }
 </style>
