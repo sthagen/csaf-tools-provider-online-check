@@ -68,7 +68,7 @@
                       {{  displayAllMessagesTitle }}
                     </a>
                 </p>
-                <div class="collapse" id="collapseAllMessages">
+                <div class="collapse" id="collapseAllMessages" ref="allMessagesRef">
                   <div class="card card-body">
                     <h6>All messages:</h6>
                     <MessageLine v-for="item of messagesList" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
@@ -81,7 +81,7 @@
                       {{ displayResultOutputTitle }}
                     </a>
                 </p>
-                <div class="collapse" id="collapseResultOutput">
+                <div class="collapse" id="collapseResultOutput" ref="resultOutputRef">
                   <div class="card card-body">
                     <h6>Result of the checker:</h6>
                     <div class="d-flex justify-content-end gap-2 mb-2">
@@ -97,7 +97,7 @@
                       {{ displayLogOutputTitle }}
                     </a>
                 </p>
-                <div class="collapse" id="collapseLogOutput">
+                <div class="collapse" id="collapseLogOutput" ref="logOutputRef">
                   <div class="card card-body">
                     <h6>Log output:</h6>
                     <div class="d-flex justify-content-end gap-2 mb-2">
@@ -398,15 +398,15 @@ export default defineComponent({
       this.role = this.role.replace(/\b\w/g, (c: string) => c.toUpperCase());
     },
     initializeListeners() {
-      const allMessagesEl = document.getElementById('collapseAllMessages')
-      allMessagesEl?.addEventListener('show.bs.collapse', () => { this.isShowAllMessages = true })
-      allMessagesEl?.addEventListener('hide.bs.collapse', () => { this.isShowAllMessages = false })
-      const resultOutputEl = document.getElementById('collapseResultOutput')
-      resultOutputEl?.addEventListener('show.bs.collapse', () => { this.isShowResultOutput = true })
-      resultOutputEl?.addEventListener('hide.bs.collapse', () => { this.isShowResultOutput = false })
-      const logOutputEl = document.getElementById('collapseLogOutput')
-      logOutputEl?.addEventListener('show.bs.collapse', () => { this.isShowLogOutput = true })
-      logOutputEl?.addEventListener('hide.bs.collapse', () => { this.isShowLogOutput = false })
+      const allMessagesRef = this.$refs.allMessagesRef as HTMLElement
+      allMessagesRef?.addEventListener('show.bs.collapse', () => { this.isShowAllMessages = true })
+      allMessagesRef?.addEventListener('hide.bs.collapse', () => { this.isShowAllMessages = false })
+      const resultOutputRef = this.$refs.resultOutputRef as HTMLElement
+      resultOutputRef?.addEventListener('show.bs.collapse', () => { this.isShowResultOutput = true })
+      resultOutputRef?.addEventListener('hide.bs.collapse', () => { this.isShowResultOutput = false })
+      const logOutputRef = this.$refs.logOutputRef as HTMLElement
+      logOutputRef?.addEventListener('show.bs.collapse', () => { this.isShowLogOutput = true })
+      logOutputRef?.addEventListener('hide.bs.collapse', () => { this.isShowLogOutput = false })
       this.initializedListeners = true
     },
     extractMessagesFromResultsChecker(results_checker: ResultCheckerData) {
