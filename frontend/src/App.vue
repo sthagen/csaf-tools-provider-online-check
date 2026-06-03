@@ -199,7 +199,7 @@ interface AppData {
   session_id: string;
   domain: string;
   loading: boolean;
-  inited: boolean;
+  initializedListeners: boolean;
   result: any;
   error: any;
   messagesList: null | MessageData[];
@@ -230,7 +230,7 @@ export default defineComponent({
       session_id: '1',
       domain: '',
       loading: false,
-      inited: false,
+      initializedListeners: false,
       result: null,
       error: null,
       messagesList: null,
@@ -353,10 +353,10 @@ export default defineComponent({
           this.setScanTime(parsedResultsChecker)
           this.setPassed(parsedResultsChecker)
           this.setRole(parsedResultsChecker)
-          if (!this.inited) {
+          if (!this.initializedListeners) {
             setTimeout(() => {
-              this.initListeners()
-            }, 500)
+              this.initializeListeners()
+            })
           }
         } else {
           this.messagesList = null
@@ -393,16 +393,17 @@ export default defineComponent({
       this.role = this.role.replace('csaf', 'CSAF').replaceAll('_', ' ');
       this.role = this.role.replace(/\b\w/g, (c: string) => c.toUpperCase());
     },
-    initListeners() {
+    initializeListeners() {
       const allMessagesEl = document.getElementById('collapseAllMessages')
-      allMessagesEl?.addEventListener('shown.bs.collapse', () => { this.isShowAllMessages = true })
-      allMessagesEl?.addEventListener('hidden.bs.collapse', () => { this.isShowAllMessages = false })
+      allMessagesEl?.addEventListener('show.bs.collapse', () => { this.isShowAllMessages = true })
+      allMessagesEl?.addEventListener('hide.bs.collapse', () => { this.isShowAllMessages = false })
       const resultOutputEl = document.getElementById('collapseResultOutput')
-      resultOutputEl?.addEventListener('shown.bs.collapse', () => { this.isShowResultOutput = true })
-      resultOutputEl?.addEventListener('hidden.bs.collapse', () => { this.isShowResultOutput = false })
+      resultOutputEl?.addEventListener('show.bs.collapse', () => { this.isShowResultOutput = true })
+      resultOutputEl?.addEventListener('hide.bs.collapse', () => { this.isShowResultOutput = false })
       const logOutputEl = document.getElementById('collapseLogOutput')
-      logOutputEl?.addEventListener('shown.bs.collapse', () => { this.isShowLogOutput = true })
-      logOutputEl?.addEventListener('hidden.bs.collapse', () => { this.isShowLogOutput = false })
+      logOutputEl?.addEventListener('show.bs.collapse', () => { this.isShowLogOutput = true })
+      logOutputEl?.addEventListener('hide.bs.collapse', () => { this.isShowLogOutput = false })
+      this.initializedListeners = true
     },
     extractMessagesFromResultsChecker(results_checker: ResultCheckerData) {
       if (results_checker.domains?.[0]?.requirements) {

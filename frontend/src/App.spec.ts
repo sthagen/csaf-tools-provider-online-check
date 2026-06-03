@@ -216,8 +216,8 @@ describe("Testing App...", () => {
         app.vm.isShowLogOutput = true
         expect(app.vm.displayLogOutputTitle).toBe('Hide log output')
     })
-    test("initListeners", () => {
-        app.vm.initListeners()
+    test("initializeListeners", () => {
+        app.vm.initializeListeners()
         expect(app.vm.isShowAllMessages).toBe(false)
         expect(app.vm.isShowResultOutput).toBe(false)
         expect(app.vm.isShowLogOutput).toBe(false)
