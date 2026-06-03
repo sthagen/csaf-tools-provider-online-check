@@ -18,7 +18,7 @@
                     class="form-control"
                     id="domainInput"
                     v-model="domain"
-                    placeholder="example.com"
+                    :placeholder="placeholder"
                     required
                   >
                 </div>
@@ -197,6 +197,11 @@ interface ResultCheckerData {
   date: string;
 }
 
+const PLACEHOLDERS = [
+  'example.com',
+  'https://example.com/.well-known/csaf/provider-metadata.json',
+]
+
 interface AppData {
   session_id: string;
   domain: string;
@@ -216,6 +221,8 @@ interface AppData {
     csaf_validator_version: string;
     csaf_provider_version: string;
   } | null
+  placeholderIndex: number;
+  placeholderTimer: ReturnType<typeof setInterval> | null;
 }
 
 interface MessageData {
@@ -242,15 +249,26 @@ export default defineComponent({
       version: null,
       isShowAllMessages: false,
       isShowResultOutput: false,
-      isShowLogOutput: false
+      isShowLogOutput: false,
+      placeholderIndex: 0,
+      placeholderTimer: null as ReturnType<typeof setInterval> | null
     } as AppData
   },
   async mounted() {
     axios
       .get(`${this.backendUrl}/api/information/`)
       .then(response => this.version = response.data)
+    this.placeholderTimer = setInterval(() => {
+      this.placeholderIndex = (this.placeholderIndex + 1) % PLACEHOLDERS.length
+    }, 3000)
+  },
+  unmounted() {
+    if (this.placeholderTimer) clearInterval(this.placeholderTimer)
   },
   computed: {
+    placeholder() {
+      return PLACEHOLDERS[this.placeholderIndex ?? 0]
+    },
     resultClass() {
       switch(this.result?.status) {
         case 'ERROR':
