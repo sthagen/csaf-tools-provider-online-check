@@ -1,21 +1,18 @@
 <template>
   <div id="app">
-    <nav class="navbar navbar-dark bg-dark">
-      <div class="container-fluid">
-        <span class="navbar-brand mb-0 h1">CSAF Provider Scan <span class="badge bg-warning text-dark ms-2">Beta</span></span>
-      </div>
-    </nav>
-
-    <div class="container mt-5">
+    <div class="container pt-4">
       <div class="row justify-content-center">
         <div class="col-md-12">
           <div class="card shadow">
             <div class="card-body">
-              <h2 class="card-title mb-4">Scan a Domain <span class="badge bg-warning ms-2" style="font-size: 0.4em; vertical-align: middle;">Experimental</span></h2>
+              <h2 class="card-title mb-4">CSAF Provider Check <span class="badge bg-warning text-dark ms-2">Beta</span></h2>
+
+              <p>Check a CSAF Provider's metadata and all its documents for validity.<br />
+                Learn more about CSAF (Common Security Advisory Framework) at <a href="https://csaf.io" target="_blank">csaf.io</a>.</p>
 
               <form @submit.prevent="startScan">
                 <div class="mb-3">
-                  <label for="domainInput" class="form-label">Domain</label>
+                  <label for="domainInput" class="form-label">Enter a domain name or <a href="https://docs.oasis-open.org/csaf/csaf/v2.1/csaf-v2.1.html#717-requirement-7-provider-metadatajson-" title="Provider Metadata File" target="_blank">PMD</a> JSON URL to start the check:</label>
                   <input
                     type="text"
                     class="form-control"
@@ -24,11 +21,6 @@
                     placeholder="example.com"
                     required
                   >
-                  <div class="form-text">Enter a domain to scan a CSAF provider</div>
-                  <VersionDisplay :checkerVersion="version?.csaf_checker_version"
-                                  :provider-version="version?.csaf_provider_version"
-                                  :validator-version="version?.csaf_validator_version"
-                  />
                 </div>
 
                 <button
@@ -37,21 +29,21 @@
                   :disabled="loading"
                 >
                   <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  <span v-else>{{ 'Start Scan' }}</span>
+                  <span v-else>{{ 'Start Check' }}</span>
                 </button>
               </form>
 
               <!-- display of requirements messages -->
               <div v-if="messagesList" class="mt-4">
                 <div v-if="result?.status === 'DONE_CHECKER'">
-                  <h3 class="alert-heading">Scan Done</h3>
+                  <h3 class="alert-heading">Check completed</h3>
                 </div>
                 <div v-else-if="result?.status === 'CACHED_CHECKER'">
-                  <h3 class="alert-heading">Scan found in cache</h3>
+                  <h3 class="alert-heading">Check result found in cache</h3>
                 </div>
 
                 <div v-show="scanTime">
-                  Scan Time: {{ scanTime }}
+                  Start time of the check: {{ scanTime }}
                 </div>
 
                 <h4 :class="trustedProviderStatus" class="small-margin-top medium-font-size">
@@ -124,17 +116,17 @@
                     <p class="mb-0">{{ result.error }}</p>
                   </div>
                   <div v-if="result.status === 'INITIALIZED'">
-                    <h5 class="alert-heading">Scan started...</h5>
+                    <h5 class="alert-heading">Check started...</h5>
                     <pre>{{ result.results_checker }}</pre>
                   </div>
                   <div v-if="result.status === 'RUNNING_CHECKER'">
-                    <h5 class="alert-heading">Scan Running...</h5>
-                    <h6 class="alert-heading">Files scanned - {{ result.files_checked }}</h6>
-                    <h6 class="alert-heading">Latest file scanned - {{ result.latest_file_checked }}</h6>
+                    <h5 class="alert-heading">Check running...</h5>
+                    <h6 class="alert-heading">Files checked: {{ result.files_checked }}</h6>
+                    <h6 class="alert-heading">Latest file checked: {{ result.latest_file_checked }}</h6>
                     <pre>{{ result.results_checker }}</pre>
                   </div>
                   <div v-if="result.status === 'PAUSED'">
-                    <h5 class="alert-heading">Scan paused</h5>
+                    <h5 class="alert-heading">Check paused</h5>
                     <pre>{{ result.results_checker }}</pre>
                   </div>
                 </div>
@@ -159,14 +151,14 @@
         </div>
       </div>
 
-      <div class="row justify-content-center mt-4">
+      <div class="row justify-content-center mt-4 pb-4">
         <div class="col-md-12">
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">About</h5>
               <p class="card-text">
-                This is an experimental tool that scans domains for <a href="https://www.csaf.io" target="_blank">CSAF</a> (Common Security Advisory Framework)
-                provider metadata and checks its validity. Results may vary.
+                This is an experimental tool that checks a CSAF provider's metadata and documents for validity.
+                It uses <a href="https://github.com/gocsaf/csaf/blob/main/docs/csaf_checker.md"><code>csaf_checker</code></a> of the gocsaf toolsuite under the hood.
               </p>
               <p>
                 <a href="https://github.com/csaf-tools/provider-online-check/" target="_blank">
@@ -178,6 +170,10 @@
                 </a>
               </p>
               <p v-if="footerText" v-html="footerText"></p>
+              <VersionDisplay :checkerVersion="version?.csaf_checker_version"
+                                  :provider-version="version?.csaf_provider_version"
+                                  :validator-version="version?.csaf_validator_version"
+                />
             </div>
           </div>
         </div>
@@ -479,10 +475,12 @@ export default defineComponent({
 </script>
 
 <style scoped>
-#app {
-  min-height: 100vh;
-  background-color: #f8f9fa;
-}
+  #app {
+    background-color: #f1f1f1;
+    /* from csaf.io without the external "Darker Grotesque" */
+    font-family: Arial, Helvetica, sans-serif;
+    min-height: 100vh;
+  }
 .text-green {
   color: var(--bs-success);
 }
