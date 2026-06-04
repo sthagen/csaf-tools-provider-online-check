@@ -9,7 +9,7 @@ from pydantic import Field
 
 from ..database.domain_task_data import Domain_Task_Data
 from .domain_name_hash_wrapper import Domain_Name_Hash_Wrapper
-from .redis import Redis_Controller
+from .valkey import Valkey_Controller
 
 logger = logging.getLogger(__name__)
 
@@ -25,19 +25,16 @@ class Database_Manager:
         return cls._instance
 
     def write_task(self, task: Domain_Task_Data):
-        Redis_Controller().record_domain_task(task)
+        Valkey_Controller().record_domain_task(task)
 
     def load_task_by_domain(self, domain: str) -> Domain_Task_Data:
-        data = Redis_Controller().get_domain_task_by_domain_hash(
+        data = Valkey_Controller().get_domain_task_by_domain_hash(
             Domain_Name_Hash_Wrapper().domain_hash(domain)
         )
 
         return data
 
-    def load_all_tasks(self, limit: int = 15) -> list[Domain_Task_Data]:
-        return Redis_Controller().get_all_domain_tasks(limit)
-
     def load_task_by_id(self, uuid: str) -> Domain_Task_Data:
-        data = Redis_Controller().get_domain_task_by_uuid(uuid)
+        data = Valkey_Controller().get_domain_task_by_uuid(uuid)
 
         return data

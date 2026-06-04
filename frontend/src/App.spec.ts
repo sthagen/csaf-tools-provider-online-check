@@ -8,10 +8,7 @@ describe("Testing App...", () => {
     let app: any
     beforeEach(()=> {
         vi.spyOn(axios, "get").mockImplementation(
-            (url: string) => new Promise(resolve => resolve(
-                // for /api/scans return [], else {}
-                url.includes('/api/scans') ? { data: [] } : { data: {} }
-            ))
+            () => new Promise(resolve => resolve({}))
         )
         app = mount(App)
     })
@@ -40,7 +37,7 @@ describe("Testing App...", () => {
             ['UNDEFINED', 'alert-danger'],
             ['DONE_CHECKER', 'alert-success'],
             ['CACHED_CHECKER', 'alert-success'],
-            ['DEFAULT', 'alert-info']
+            ['DEFAULT', 'alert-info']                    
         ]
         for (const pair of test_oracle) {
             app.vm.result = { 'status': pair[0]}
@@ -97,6 +94,20 @@ describe("Testing App...", () => {
         expect(app.vm.loading).toBe(false)
         expect(app.vm.result?.status).toBe('CACHED_CHECKER')
         expect(app.vm.messagesList).toStrictEqual([{text: 'Test1', type: 0, num: 12}])
+
+    })
+    test('startScan ERROR', async () => {
+        vi.spyOn(axios, 'post').mockImplementation(
+            () => new Promise(() =>
+            {
+                throw new Error("Test error A")
+            }
+        ))
+        app.vm.domain = "Test"
+        app.vm.startScan()
+        await flushPromises()
+        expect(app.vm.loading).toBe(false)
+        expect(app.vm.error).toBe('Test error A')
 
     })
     test('filterMessageListByNums', () => {
@@ -171,15 +182,45 @@ describe("Testing App...", () => {
         expect(app.vm.trustedProviderMessages).toStrictEqual([
             { text: "Test15", type: 0, num: 15 }
         ])
+        app.vm.messagesList = null;
+        expect(app.vm.trustedProviderMessages).toBe(null)
     })
     test("trustedProviderStatus", () => {
-        app.vm.messagesList = [
-            { text: "Test1", type: 0, num: 1 }
-        ]
+        app.vm.passed = true
         expect(app.vm.trustedProviderStatus).toBe('text-green')
-        app.vm.messagesList = [
-            { text: "Test1", type: 2, num: 1 }
-        ]
+        app.vm.passed = false
         expect(app.vm.trustedProviderStatus).toBe('text-red')
+    })
+    test("setScanTime", () => {
+        const data = { passed: true, date:"2026-05-22T08:00:00", requirements: [] }
+        app.vm.setScanTime(data)
+        expect(app.vm.scanTime).toBe("5/22/2026, 8:00:00 AM UTC")
+    })
+    test("setPassed", () => {
+        const data = { date:"2026-05-22", domains: [{ passed: true }] }
+        app.vm.setPassed(data)
+        expect(app.vm.passed).toBe(true)
+    })
+    test("displayAllMessagesTitle", () => {
+        expect(app.vm.displayAllMessagesTitle).toBe('Show all messages')
+        app.vm.isShowAllMessages = true
+        expect(app.vm.displayAllMessagesTitle).toBe('Hide all messages')
+    })
+    test("displayResultOutputTitle", () => {
+        expect(app.vm.displayResultOutputTitle).toBe('Show JSON output')
+        app.vm.isShowResultOutput = true
+        expect(app.vm.displayResultOutputTitle).toBe('Hide JSON output')
+    })
+    test("displayLogOutputTitle", () => {
+        expect(app.vm.displayLogOutputTitle).toBe('Show log output')
+        app.vm.isShowLogOutput = true
+        expect(app.vm.displayLogOutputTitle).toBe('Hide log output')
+    })
+    test("initializeListeners", () => {
+        app.vm.initializeListeners()
+        expect(app.vm.isShowAllMessages).toBe(false)
+        expect(app.vm.isShowResultOutput).toBe(false)
+        expect(app.vm.isShowLogOutput).toBe(false)
+        expect(app.vm.initializedListeners).toBe(true)
     })
 })

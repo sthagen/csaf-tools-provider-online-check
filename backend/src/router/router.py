@@ -9,18 +9,18 @@ import asyncio
 import logging
 import os
 
+import httpx
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
 
 from ..csaf.csaf_checker import CSAF_BINARY_PATH, CSAF_CHECKER_BINARY
 from ..database.database import Database_Manager
-from ..database.redis import Redis_Controller
+from ..database.valkey import Valkey_Controller
 from ..slots.slot_manager import Slot_Manager
 from .health_response import HealthResponse
 from .information_response import InformationResponse
 from .scan_request import ScanRequest
 from .scan_response import ScanResponse, ScanResponseStatus
-from .scan_summary import ScanSummary
 
 router = APIRouter()
 
@@ -59,7 +59,7 @@ async def start_scan(request: ScanRequest) -> ScanResponse:
         #   - Domain already processed by a slotted domain task (Return UUID + Running domain task data)
         #   - Domain not processed, but recently cached (Return Cached domain task data)
         #   - Domain not processed, but no slots available (Return Error)
-        #   - Domain not processed and slot avaialable. (Return UUID + Running domain task data)
+        #   - Domain not processed and slot available. (Return UUID + Running domain task data)
         #
         # Either start_scan should display data or redirect to get_data (in case no error has been returned)
         # ------------------------------------------------------
@@ -94,7 +94,9 @@ async def start_scan(request: ScanRequest) -> ScanResponse:
                 "status": ScanResponseStatus.ERROR,
                 "domain": request.domain,
                 "error": errorMsg,
-                "runtime_output": data.csaf_checker_output_runtime_log if data is not None else [],
+                "runtime_output": (
+                    data.csaf_checker_output_runtime_log if data is not None else []
+                ),
             }
 
         return {
@@ -103,30 +105,19 @@ async def start_scan(request: ScanRequest) -> ScanResponse:
             "task_id": uuid,
             "runtime_output": data.csaf_checker_output_runtime_log,
             "results_checker": data.csaf_checker_output_result,
+            "files_checked": data.files_checked,
+            "latest_file_checked": data.latest_file_checked,
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to start scan: {str(e)}")
 
 
-@router.get("/scans", summary="List of recorded scans", tags=["scan"], response_model=list[ScanSummary])
-async def list_scans(limit: int = 15) -> list[ScanSummary]:
-    """
-    Returns a list of completed scans, most recent first.
-    """
-    tasks = Database_Manager().load_all_tasks(limit=limit)
-    return [
-        {
-            "task_id": str(task.uuid),
-            "domain": task.domain,
-            "start_time": task.start_time,
-            "end_time": task.end_time,
-            "duration": task.end_time - task.start_time,
-        }
-        for task in tasks
-    ]
-
-
-@router.get("/information", summary="General Provider Information", tags=["meta"], response_model=InformationResponse)
+@router.get(
+    "/information",
+    summary="General Provider Information",
+    tags=["meta"],
+    response_model=InformationResponse,
+)
 async def meta_info() -> InformationResponse:
     """
     Returns information about the provider and its components, such as version numbers
@@ -148,7 +139,9 @@ async def meta_info() -> InformationResponse:
     }
 
 
-@router.get("/health", summary="Health Check", tags=["devops"], response_model=HealthResponse)
+@router.get(
+    "/health", summary="Health Check", tags=["devops"], response_model=HealthResponse
+)
 async def health_check() -> HealthResponse:
     """
     Check for free slots and csaf_checker binary
@@ -178,14 +171,36 @@ async def health_check() -> HealthResponse:
     if not binary_available:
         errors.append("csaf_checker binary is not available")
 
-    # Check Redis connectivity
-    redis_available = False
+    # Check Valkey connectivity
+    valkey_available = False
     try:
-        redis_available = Redis_Controller()._redis.ping()
+        valkey_available = Valkey_Controller()._valkey.ping()
     except Exception:
-        redis_available = False
-    if not redis_available:
-        errors.append("Redis is not available")
+        valkey_available = False
+    if not valkey_available:
+        errors.append("Valkey is not available")
+
+    # Check Validator connectivity
+    validator_available = False
+    try:
+        async with httpx.AsyncClient() as client:
+            validator_response = await client.get(
+                "http://validator:8082/api/v1/tests", timeout=10
+            )
+
+        # 200 is the expected result
+        if validator_response.status_code != 200:
+            errors.append(
+                f"Validator is not available. Status Code: {validator_response.status_code}"
+            )
+        else:
+            validator_available = True
+    except httpx.TimeoutException as e:
+        errors.append(f"Validator timed out: {e}")
+    except httpx.RequestError as e:
+        errors.append(f"Validator is not available: {e}")
+    if not validator_available:
+        errors.append("Validator is not available")
 
     healthy = len(errors) == 0
     response = {
@@ -193,7 +208,8 @@ async def health_check() -> HealthResponse:
         "free_slots": free_slots,
         "total_slots": len(slot_manager.slots),
         "csaf_checker_available": binary_available,
-        "redis_available": redis_available,
+        "valkey_available": valkey_available,
+        "validator_available": validator_available,
     }
 
     if errors:

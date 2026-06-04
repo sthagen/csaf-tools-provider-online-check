@@ -5,12 +5,17 @@
 
 import re
 
-from ..database.redis import Redis_Controller
+from ..database.valkey import Valkey_Controller
 
 # Basic domain validation pattern (same as before)
 DOMAIN_PATTERN = (
-    r"^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+"
-    r"[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$"
+    r"(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+"
+    r"[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?"
+)
+
+REQUEST_PATTERN = (
+    rf"^(?:{DOMAIN_PATTERN}|https://{DOMAIN_PATTERN}"
+    rf"(?:/[^/]+)*/provider-metadata\.json)$"
 )
 
 
@@ -27,8 +32,10 @@ def validate_domain(value: str) -> str:
         raise ValueError("Domain cannot be empty")
 
     v = value.strip()
-    if not re.match(DOMAIN_PATTERN, v):
-        raise ValueError("Invalid domain format")
+    if not re.match(REQUEST_PATTERN, v):
+        raise ValueError(
+            "Invalid domain/PMD format. Please enter a valid Domain or PMD URL. Domains require a non-zero length extension. PMDs must start with 'https://' and end with '/provider-metadata.json'"
+        )
 
     return v
 
@@ -47,8 +54,8 @@ def validate_domain_blocklist_check(domain: str) -> str:
 
     v = domain.strip()
 
-    # Redis blocklist check
-    if Redis_Controller().is_domain_in_domain_blocklist(domain):
+    # Valkey blocklist check
+    if Valkey_Controller().is_domain_in_domain_blocklist(domain):
         raise ValueError("Session ID is blocked")
 
     return v

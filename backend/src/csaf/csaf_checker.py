@@ -51,7 +51,7 @@ class CSAF_Checker(BaseModel):
 
     _running_task_checker: Annotated[
         Optional[asyncio.subprocess.Process],
-        Field(description="Asynchronious task running csaf checker"),
+        Field(description="Asynchronous task running csaf checker"),
     ] = None
 
     _max_wait_time: Annotated[
@@ -96,14 +96,14 @@ class CSAF_Checker(BaseModel):
             args.append("--validator=http://validator:8082")
 
             if data.enable_validator_cache:
-                # Create cache folder if it doesnt exist yet
+                # Create cache folder if it doesn't exist yet
                 cache_path = Path(CACHE_PATH_VALIDATOR)
                 cache_path.mkdir(parents=True, exist_ok=True)
                 args.append(
                     f"--validator_cache={CACHE_PATH_VALIDATOR}{data.validator_cache_file}"
                 )
 
-        # Run task asynchroniously
+        # Run task asynchronously
         self._running_task_checker = await asyncio.create_subprocess_exec(
             os.path.abspath(self.__csaf_checker_path()),
             *args,
@@ -214,6 +214,7 @@ class CSAF_Checker(BaseModel):
 
             if not line:
                 break
+
             decoded_line = line.decode(errors="replace").rstrip("\n")
 
             # Once a single '{' is read, it is assumed that the csaf results are printed out
@@ -224,10 +225,18 @@ class CSAF_Checker(BaseModel):
             else:
                 # Runtime Line
                 data.csaf_checker_output_runtime_log.append(decoded_line)
+                # Check if log line references a file
+                if "[GET]" in decoded_line:
+                    data.files_checked += 1
+
+                    # Extract URL
+                    data.latest_file_checked = decoded_line.split("[GET]:")[-1]
 
         if exitCode != 0:
             if exitCode in (-9, -137):
-                errorMsg = f"Process killed by signal {-exitCode} (likely out of memory)"
+                errorMsg = (
+                    f"Process killed by signal {-exitCode} (likely out of memory)"
+                )
             logger.info(
                 f"Task exited with code {exitCode} and error message: {errorMsg!r}",
             )
@@ -242,7 +251,9 @@ class CSAF_Checker(BaseModel):
             return (0, "")
         else:
             if exitCode in (-9, -137):
-                errorMsg = f"Process killed by signal {-exitCode} (likely out of memory)"
+                errorMsg = (
+                    f"Process killed by signal {-exitCode} (likely out of memory)"
+                )
             return (
                 1,
                 f"Task exited with code {exitCode} and error message: {errorMsg!r}",

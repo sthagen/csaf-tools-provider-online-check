@@ -4,7 +4,7 @@ import logging
 import os
 from typing import Annotated, Optional
 
-import redis
+import valkey
 from pydantic import Field
 
 from .domain_task_data import Domain_Task_Data
@@ -18,17 +18,16 @@ BLOCKLIST_CLIENT_DB_FIELD = "blocklist-client:"
 BLOCKLIST_DOMAIN_DB_FIELD = "blocklist-domain"
 RECORDED_DOMAIN_TASK_BY_DOMAIN = "domain-task:"
 RECORDED_DOMAIN_TASK_BY_UUID = "domain-task-id-to-domain:"
-RECORDED_DOMAIN_TASK_LIST = "domain-task-list"
 
 
-class Redis_Controller:
+class Valkey_Controller:
     _instance: Annotated[
-        Optional[Redis_Controller], Field(description="Singleton instance")
+        Optional[Valkey_Controller], Field(description="Singleton instance")
     ] = None
 
     _cache_lifetime: Annotated[
         int,
-        Field(description="Lifetime of a redis cache entry before expiry"),
+        Field(description="Lifetime of a valkey cache entry before expiry"),
     ] = int(os.environ.get("CACHE_TIMEOUT_SECONDS", "604800"))
 
     def __new__(cls, *args, **kwargs):
@@ -42,12 +41,12 @@ class Redis_Controller:
             return
         self._initialized = True
 
-        # Setup Redis
-        self._redis = redis.Redis(host="redis", port=6379, db=0)
+        # Setup Valkey, use RESP 3 features (https://valkey-py.readthedocs.io/en/latest/resp3_features.html)
+        self._valkey = valkey.Valkey(host="valkey", port=6379, db=0, protocol=3)
 
         # Clear blocked domains
-        if self._redis.exists(BLOCKLIST_DOMAIN_DB_FIELD):
-            self._redis.delete(BLOCKLIST_DOMAIN_DB_FIELD)
+        if self._valkey.exists(BLOCKLIST_DOMAIN_DB_FIELD):
+            self._valkey.delete(BLOCKLIST_DOMAIN_DB_FIELD)
 
         # Inject blocked domains from env file
         blocked_domains = os.getenv(ENV_DOMAIN_BLOCKLIST, "")
@@ -65,75 +64,55 @@ class Redis_Controller:
         json = task.model_dump_json()
 
         # Connect json with task uuid and hashed domain name
-        self._redis.set(
+        self._valkey.set(
             RECORDED_DOMAIN_TASK_BY_DOMAIN + task.get_domain_hash(),
             json,
             ex=self._cache_lifetime,
         )
-        self._redis.set(
+        self._valkey.set(
             RECORDED_DOMAIN_TASK_BY_UUID + str(task.uuid), json, ex=self._cache_lifetime
         )
 
-        # Add the new task to the task list
-        self._redis.rpush(RECORDED_DOMAIN_TASK_LIST, str(task.uuid))
-        # The lifetime for the task list is the same as the lifetime of the most current task
-        self._redis.expire(RECORDED_DOMAIN_TASK_LIST, self._cache_lifetime)
-
     def get_domain_task_by_uuid(self, uuid: str) -> Domain_Task_Data:
-        if not self._redis.exists(RECORDED_DOMAIN_TASK_BY_UUID + str(uuid)):
+        if not self._valkey.exists(RECORDED_DOMAIN_TASK_BY_UUID + str(uuid)):
             return None
 
-        json = self._redis.get(RECORDED_DOMAIN_TASK_BY_UUID + str(uuid))
+        json = self._valkey.get(RECORDED_DOMAIN_TASK_BY_UUID + str(uuid))
         return Domain_Task_Data.model_validate_json(json)
 
-    def get_all_domain_tasks(self, limit: int = 15) -> list[Domain_Task_Data]:
-        uuids = self._redis.lrange(RECORDED_DOMAIN_TASK_LIST, 0, -1)
-        tasks = []
-        for uuid in reversed(uuids):
-            uuid_str = uuid.decode()
-            task = self.get_domain_task_by_uuid(uuid_str)
-            if task is not None:
-                tasks.append(task)
-                if len(tasks) >= limit:
-                    break
-            else:  # the Task has expired -> remove it from the task list
-                # If the task is no longer in the list (race-conditon), the function throws no error
-                self._redis.lrem(RECORDED_DOMAIN_TASK_LIST, 0, uuid_str)
-        return tasks
-
     def get_domain_task_by_domain_hash(self, domain_hash: str) -> Domain_Task_Data:
-        if not self._redis.exists(RECORDED_DOMAIN_TASK_BY_DOMAIN + domain_hash):
+        if not self._valkey.exists(RECORDED_DOMAIN_TASK_BY_DOMAIN + domain_hash):
             return None
 
-        json = self._redis.get(RECORDED_DOMAIN_TASK_BY_DOMAIN + domain_hash)
+        json = self._valkey.get(RECORDED_DOMAIN_TASK_BY_DOMAIN + domain_hash)
         return Domain_Task_Data.model_validate_json(json)
 
     # Client Blocklist
 
     def is_session_id_in_client_blocklist(self, session_id: str, domain: str) -> bool:
         return (
-            self._redis.sismember(BLOCKLIST_CLIENT_DB_FIELD + domain, session_id) == 1
+            self._valkey.sismember(BLOCKLIST_CLIENT_DB_FIELD + domain, session_id) == 1
         )
 
     def block_session_id_for_domain(self, session_id: str, domain: str) -> bool:
         if self.is_session_id_in_client_blocklist(session_id, domain):
             return False
-        self._redis.sadd(BLOCKLIST_CLIENT_DB_FIELD + domain, session_id)
+        self._valkey.sadd(BLOCKLIST_CLIENT_DB_FIELD + domain, session_id)
         return True
 
     def unblock_session_id_for_domain(self, session_id: str, domain: str):
-        self._redis.srem(BLOCKLIST_CLIENT_DB_FIELD + domain, session_id)
+        self._valkey.srem(BLOCKLIST_CLIENT_DB_FIELD + domain, session_id)
 
     # Domain Blocklist
 
     def is_domain_in_domain_blocklist(self, domain: str) -> bool:
-        return self._redis.sismember(BLOCKLIST_DOMAIN_DB_FIELD, domain) == 1
+        return self._valkey.sismember(BLOCKLIST_DOMAIN_DB_FIELD, domain) == 1
 
     def block_domain(self, domain: str) -> bool:
         if self.is_domain_in_domain_blocklist(domain):
             return False
-        self._redis.sadd(BLOCKLIST_DOMAIN_DB_FIELD, domain)
+        self._valkey.sadd(BLOCKLIST_DOMAIN_DB_FIELD, domain)
         return True
 
     def unblock_domain(self, domain: str):
-        self._redis.srem(BLOCKLIST_DOMAIN_DB_FIELD, domain)
+        self._valkey.srem(BLOCKLIST_DOMAIN_DB_FIELD, domain)

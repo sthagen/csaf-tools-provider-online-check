@@ -8,7 +8,7 @@ from typing import Annotated
 
 from pydantic import BaseModel, Field
 
-# from ..router.redis import get_redis
+# from ..router.valkey import get_valkey
 from ..router.scan_request import ScanRequest
 from ..router.scan_response import ScanResponseStatus
 from .domain_task import Domain_Task, Domain_Task_Status
@@ -75,7 +75,10 @@ class Slot(BaseModel):
         elif self.running_task.is_paused():
             return ScanResponseStatus.PAUSED, ""
         elif self.running_task.get_status() == Domain_Task_Status.ERROR:
-            return ScanResponseStatus.ERROR, self.running_task.error_message or "A backend error occurred"
+            return (
+                ScanResponseStatus.ERROR,
+                self.running_task.error_message or "A backend error occurred",
+            )
         elif self.running_task.get_status() == Domain_Task_Status.INTERRUPTED:
             return ScanResponseStatus.ERROR, "Task has been stopped manually"
         elif self.running_task.get_status() == Domain_Task_Status.DONE:
