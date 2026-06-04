@@ -407,12 +407,15 @@ export default defineComponent({
       const allMessagesRef = this.$refs.allMessagesRef as HTMLElement
       allMessagesRef?.addEventListener('show.bs.collapse', () => { this.isShowAllMessages = true })
       allMessagesRef?.addEventListener('hide.bs.collapse', () => { this.isShowAllMessages = false })
+      allMessagesRef?.addEventListener('shown.bs.collapse', () => { allMessagesRef.scrollIntoView({ behavior: 'smooth', block: 'nearest' }) })
       const resultOutputRef = this.$refs.resultOutputRef as HTMLElement
       resultOutputRef?.addEventListener('show.bs.collapse', () => { this.isShowResultOutput = true })
       resultOutputRef?.addEventListener('hide.bs.collapse', () => { this.isShowResultOutput = false })
+      resultOutputRef?.addEventListener('shown.bs.collapse', () => { resultOutputRef.scrollIntoView({ behavior: 'smooth', block: 'nearest' }) })
       const logOutputRef = this.$refs.logOutputRef as HTMLElement
       logOutputRef?.addEventListener('show.bs.collapse', () => { this.isShowLogOutput = true })
       logOutputRef?.addEventListener('hide.bs.collapse', () => { this.isShowLogOutput = false })
+      logOutputRef?.addEventListener('shown.bs.collapse', () => { logOutputRef.scrollIntoView({ behavior: 'smooth', block: 'nearest' }) })
       this.initializedListeners = true
     },
     extractMessagesFromResultsChecker(results_checker: ResultCheckerData) {
