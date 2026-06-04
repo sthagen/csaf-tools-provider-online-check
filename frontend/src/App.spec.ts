@@ -96,6 +96,20 @@ describe("Testing App...", () => {
         expect(app.vm.messagesList).toStrictEqual([{text: 'Test1', type: 0, num: 12}])
 
     })
+    test('startScan ERROR', async () => {
+        vi.spyOn(axios, 'post').mockImplementation(
+            () => new Promise(() =>
+            {
+                throw new Error("Test error A")
+            }
+        ))
+        app.vm.domain = "Test"
+        app.vm.startScan()
+        await flushPromises()
+        expect(app.vm.loading).toBe(false)
+        expect(app.vm.error).toBe('Test error A')
+
+    })
     test('filterMessageListByNums', () => {
         app.vm.messagesList = [{ text: "Test1", type: 0, num: 1 },
                             { text: "Test2", type: 2, num: 2 },
@@ -168,6 +182,8 @@ describe("Testing App...", () => {
         expect(app.vm.trustedProviderMessages).toStrictEqual([
             { text: "Test15", type: 0, num: 15 }
         ])
+        app.vm.messagesList = null;
+        expect(app.vm.trustedProviderMessages).toBe(null)
     })
     test("trustedProviderStatus", () => {
         app.vm.passed = true
@@ -184,5 +200,27 @@ describe("Testing App...", () => {
         const data = { date:"2026-05-22", domains: [{ passed: true }] }
         app.vm.setPassed(data)
         expect(app.vm.passed).toBe(true)
+    })
+    test("displayAllMessagesTitle", () => {
+        expect(app.vm.displayAllMessagesTitle).toBe('Show all messages')
+        app.vm.isShowAllMessages = true
+        expect(app.vm.displayAllMessagesTitle).toBe('Hide all messages')
+    })
+    test("displayResultOutputTitle", () => {
+        expect(app.vm.displayResultOutputTitle).toBe('Show JSON output')
+        app.vm.isShowResultOutput = true
+        expect(app.vm.displayResultOutputTitle).toBe('Hide JSON output')
+    })
+    test("displayLogOutputTitle", () => {
+        expect(app.vm.displayLogOutputTitle).toBe('Show log output')
+        app.vm.isShowLogOutput = true
+        expect(app.vm.displayLogOutputTitle).toBe('Hide log output')
+    })
+    test("initializeListeners", () => {
+        app.vm.initializeListeners()
+        expect(app.vm.isShowAllMessages).toBe(false)
+        expect(app.vm.isShowResultOutput).toBe(false)
+        expect(app.vm.isShowLogOutput).toBe(false)
+        expect(app.vm.initializedListeners).toBe(true)
     })
 })

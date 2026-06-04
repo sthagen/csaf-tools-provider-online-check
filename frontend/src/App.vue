@@ -63,42 +63,55 @@
                 <MessageLine v-for="item of trustedProviderMessages" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
 
                 <p class="small-margin-top">
-                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseAllMessages" role="button" aria-expanded="false" aria-controls="collapseAllMessages">
-                      Show all messages
-                    </a>
-                    &nbsp;
-                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseResultOutput" role="button" aria-expanded="false" aria-controls="collapseResultOutput">
-                      Show JSON output
-                    </a>
-                    &nbsp;
-                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseLogOutput" role="button" aria-expanded="false" aria-controls="collapseLogOutput">
-                      Show log output
+                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseAllMessages" role="button" aria-expanded="false" aria-controls="collapseAllMessages"
+                      :key="displayAllMessagesTitle"
+                    >
+                      {{  displayAllMessagesTitle }}
                     </a>
                 </p>
-                <div class="collapse" id="collapseAllMessages">
+                <div class="collapse" id="collapseAllMessages" ref="allMessagesRef">
                   <div class="card card-body">
-                    <h6>All messages:</h6>
-                    <MessageLine v-for="item of messagesList" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
+                    <h5 class="card-title">All messages:</h5>
+                    <div class="card-text log-card-size overflow-scroll">
+                      <MessageLine v-for="item of messagesList" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
+                    </div>
                   </div>
                 </div>
-                <div class="collapse" id="collapseResultOutput">
+                <p class="small-margin-top">
+                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseResultOutput" role="button" aria-expanded="false" aria-controls="collapseResultOutput"
+                      :key="displayResultOutputTitle"
+                    >
+                      {{ displayResultOutputTitle }}
+                    </a>
+                </p>
+                <div class="collapse" id="collapseResultOutput" ref="resultOutputRef">
                   <div class="card card-body">
-                    <h6>Result of the checker:</h6>
-                    <div class="d-flex justify-content-end gap-2 mb-2">
+                    <div class="card-title d-flex gap-2 mb-2">
+                      <h5 class="me-auto log-header">Result of the checker:</h5>
                       <button class="btn btn-sm btn-outline-secondary" @click="copyResultToClipboard">Copy to clipboard</button>
                       <button class="btn btn-sm btn-outline-secondary" @click="downloadJson">Download</button>
                     </div>
-                    <pre>{{ result?.results_checker }}</pre>
+                    <div class="card-text log-card-size overflow-scroll">
+                      <pre>{{ result?.results_checker }}</pre>
+                    </div>
                   </div>
                 </div>
-                <div class="collapse" id="collapseLogOutput">
+                <p class="small-margin-top">
+                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseLogOutput" role="button" aria-expanded="false" aria-controls="collapseLogOutput"
+                      :key="displayLogOutputTitle">
+                      {{ displayLogOutputTitle }}
+                    </a>
+                </p>
+                <div class="collapse" id="collapseLogOutput" ref="logOutputRef">
                   <div class="card card-body">
-                    <h6>Log output:</h6>
-                    <div class="d-flex justify-content-end gap-2 mb-2">
+                    <div class="cart-title d-flex gap-2 mb-2">
+                      <h5 class="me-auto log-header">Log output:</h5>
                       <button class="btn btn-sm btn-outline-secondary" @click="copyLogToClipboard">Copy to clipboard</button>
                       <button class="btn btn-sm btn-outline-secondary" @click="downloadLog">Download</button>
                     </div>
-                    <pre>{{ result?.runtime_output?.join('\n') }}</pre>
+                    <div class="card-text log-card-size overflow-scroll">
+                      <pre>{{ result?.runtime_output?.join('\n') }}</pre>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -169,7 +182,7 @@
             </div>
           </div>
         </div>
-      </div>
+    </div>
     </div>
   </div>
 </template>
@@ -194,12 +207,16 @@ interface AppData {
   domain: string;
   domainRescan: string | null;
   loading: boolean;
+  initializedListeners: boolean;
   result: any;
   error: any;
   messagesList: null | MessageData[];
   scanTime: null | string;
   passed: boolean;
   role: string | null;
+  isShowAllMessages: boolean;
+  isShowResultOutput: boolean;
+  isShowLogOutput: boolean;
   version: {
     csaf_checker_version: string;
     csaf_validator_version: string;
@@ -222,13 +239,17 @@ export default defineComponent({
       domain: '',
       domainRescan: null,
       loading: false,
+      initializedListeners: false,
       result: null,
       error: null,
       messagesList: null,
       scanTime: null,
       passed: false,
       role: null,
-      version: null
+      version: null,
+      isShowAllMessages: false,
+      isShowResultOutput: false,
+      isShowLogOutput: false
     } as AppData
   },
   async mounted() {
@@ -315,6 +336,15 @@ export default defineComponent({
     },
     trustedProviderStatus() {
       return this.passed ? 'text-green': 'text-red'
+    },
+    displayAllMessagesTitle(): string {
+      return this.isShowAllMessages ? 'Hide all messages' : 'Show all messages'
+    },
+    displayResultOutputTitle(): string {
+      return this.isShowResultOutput ? 'Hide JSON output' : 'Show JSON output'
+    },
+    displayLogOutputTitle(): string {
+      return this.isShowLogOutput ? 'Hide log output' : 'Show log output'
     }
   },
   methods: {
@@ -325,6 +355,7 @@ export default defineComponent({
         this.result = null
         this.messagesList = null
         this.error = null
+        this.clearFields()
       }
 
       try {
@@ -339,13 +370,16 @@ export default defineComponent({
           this.setScanTime(parsedResultsChecker)
           this.setPassed(parsedResultsChecker)
           this.setRole(parsedResultsChecker)
+          if (!this.initializedListeners) {
+            setTimeout(() => {
+              this.initializeListeners()
+            })
+          }
         } else {
-          this.messagesList = null
-          this.scanTime = null
+          this.clearFields()
         }
       } catch (err: any) {
-        this.messagesList = null
-        this.scanTime = null
+        this.clearFields()
         this.error = err.response?.data?.detail || err.message || 'An error occurred while starting the scan'
         if (err.response?.data?.detail[0]?.msg) {
           this.error = `${err.response?.data?.detail[0]?.input}: ${err.response?.data?.detail[0]?.msg}`
@@ -358,6 +392,11 @@ export default defineComponent({
           this.domainRescan = null
         }
       }
+    },
+    clearFields() {
+      this.messagesList = null
+      this.scanTime = null
+      this.passed = false
     },
     parseResultsChecker(results_checker: string): ResultCheckerData {
       return JSON.parse(results_checker)
@@ -374,6 +413,18 @@ export default defineComponent({
       this.role = parsedResultsChecker?.domains?.[0]?.role ?? "Unknown Role";
       this.role = this.role.replace('csaf', 'CSAF').replaceAll('_', ' ');
       this.role = this.role.replace(/\b\w/g, (c: string) => c.toUpperCase());
+    },
+    initializeListeners() {
+      const allMessagesRef = this.$refs.allMessagesRef as HTMLElement
+      allMessagesRef?.addEventListener('show.bs.collapse', () => { this.isShowAllMessages = true })
+      allMessagesRef?.addEventListener('hide.bs.collapse', () => { this.isShowAllMessages = false })
+      const resultOutputRef = this.$refs.resultOutputRef as HTMLElement
+      resultOutputRef?.addEventListener('show.bs.collapse', () => { this.isShowResultOutput = true })
+      resultOutputRef?.addEventListener('hide.bs.collapse', () => { this.isShowResultOutput = false })
+      const logOutputRef = this.$refs.logOutputRef as HTMLElement
+      logOutputRef?.addEventListener('show.bs.collapse', () => { this.isShowLogOutput = true })
+      logOutputRef?.addEventListener('hide.bs.collapse', () => { this.isShowLogOutput = false })
+      this.initializedListeners = true
     },
     extractMessagesFromResultsChecker(results_checker: ResultCheckerData) {
       if (results_checker.domains?.[0]?.requirements) {
@@ -452,7 +503,13 @@ export default defineComponent({
 .small-margin-top {
   margin-top: 15px;
 }
+.log-header {
+  margin-top: 7px;
+}
 .medium-font-size {
   font-size: 1.3rem;
+}
+.log-card-size {
+  max-height: 510px;
 }
 </style>
