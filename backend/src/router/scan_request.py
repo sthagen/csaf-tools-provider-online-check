@@ -21,13 +21,14 @@ class ScanRequest(BaseModel):
     ]
 
     start_at_line: Annotated[
-        int, Field(description="Earliest output entry to retrieve")
+        int, Field(description="Earliest output entry to retrieve", ge=0)
     ] = 0
 
     max_lines: Annotated[
         int,
         Field(
-            description="The maximum amount of runtime output lines that should be returned in the response"
+            description="The maximum amount of runtime output lines that should be returned in the response",
+            ge=0,
         ),
     ] = int(os.environ.get("VERBOSE_OUTPUT_MAX_LINES_DEFAULT", "10"))
 

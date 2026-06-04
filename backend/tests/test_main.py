@@ -1,6 +1,5 @@
 import pytest
 import asyncio
-import time
 from main import app
 from src.router.scan_request import ScanRequest
 from fastapi.testclient import TestClient
