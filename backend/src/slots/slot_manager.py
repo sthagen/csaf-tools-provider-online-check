@@ -1,6 +1,6 @@
-# Interface between router and individual slots. 
-# Propagates requests, finds available or already running tasks in
-# slots or fetches data from cache if possible
+# Interface between router and running tasks.
+# Manages slots, directs requests and returns user relevant data.
+# Either fetches data from cache or starts a new domain task.
 
 from __future__ import annotations
 
