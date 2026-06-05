@@ -413,7 +413,11 @@ export default defineComponent({
     },
     setScanTime(parsedResultsChecker: ResultCheckerData) {
       if (parsedResultsChecker?.date) {
-        this.scanTime = new Date(parsedResultsChecker?.date).toLocaleString(undefined, { timeZoneName: 'short' })
+        // toISOString always return UTC, but that is not well readable for anyone not living close to UTC
+        // the use-case is: user starts a scan or gets it from the cache and wants to recognize if thats the result of a scan just started, or how old it is
+        // d.toLocaleString('sv') results an ISO format string in the local time zone (a widely used method)
+        const d = new Date(parsedResultsChecker.date)
+        this.scanTime = d.toLocaleString('sv', {timeZoneName: 'longOffset'}).replace(' GMT', '')
       }
     },
     setPassed(parsedResultsChecker: ResultCheckerData) {
