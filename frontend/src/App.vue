@@ -13,14 +13,16 @@
               <form @submit.prevent="startScan">
                 <div class="mb-3">
                   <label for="domainInput" class="form-label">Enter a domain name or <a href="https://docs.oasis-open.org/csaf/csaf/v2.1/csaf-v2.1.html#717-requirement-7-provider-metadatajson-" title="Provider Metadata File" target="_blank">PMD</a> to start the check:</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="domainInput"
-                    v-model="domain"
-                    :placeholder="placeholder"
-                    required
-                  >
+                  <div class="input-placeholder-wrapper">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="domainInput"
+                      v-model="domain"
+                      required
+                    >
+                    <span class="fake-placeholder" :class="{ 'fade-out': !(placeholderVisible as any) }" v-show="!domain">{{ placeholder }}</span>
+                  </div>
                 </div>
 
                 <button
@@ -232,6 +234,7 @@ interface AppData {
   } | null
   placeholderIndex: number;
   placeholderTimer: ReturnType<typeof setInterval> | null;
+  placeholderVisible: boolean;
 }
 
 interface MessageData {
@@ -261,7 +264,8 @@ export default defineComponent({
       isShowResultOutput: false,
       isShowLogOutput: false,
       placeholderIndex: 0,
-      placeholderTimer: null as ReturnType<typeof setInterval> | null
+      placeholderTimer: null,
+      placeholderVisible: true
     } as AppData
   },
   async mounted() {
@@ -269,16 +273,17 @@ export default defineComponent({
       .get(`${this.backendUrl}/api/information/`)
       .then(response => this.version = response.data)
     this.placeholderTimer = setInterval(() => {
-      this.placeholderIndex = (this.placeholderIndex + 1) % PLACEHOLDERS.length
+      ;this.placeholderVisible = false
+      setTimeout(() => {
+        ;this.placeholderIndex = (this.placeholderIndex + 1) % PLACEHOLDERS.length
+        ;this.placeholderVisible = true
+      }, 400)
     }, 3000)
   },
   unmounted() {
     if (this.placeholderTimer) clearInterval(this.placeholderTimer)
   },
   computed: {
-    placeholder() {
-      return PLACEHOLDERS[this.placeholderIndex ?? 0]
-    },
     resultClass() {
       switch(this.result?.status) {
         case 'ERROR':
@@ -363,6 +368,9 @@ export default defineComponent({
     },
     displayLogOutputTitle(): string {
       return this.isShowLogOutput ? 'Hide log output' : 'Show log output'
+    },
+    placeholder(): string {
+      return PLACEHOLDERS[this.placeholderIndex ?? 0]
     }
   },
   methods: {
@@ -524,6 +532,22 @@ export default defineComponent({
 }
 .text-red {
   color: var(--bs-danger);
+}
+.input-placeholder-wrapper {
+  position: relative;
+}
+.fake-placeholder {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  color: #6c757d;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  opacity: 1;
+}
+.fake-placeholder.fade-out {
+  opacity: 0;
 }
 .small-margin-top {
   margin-top: 15px;
