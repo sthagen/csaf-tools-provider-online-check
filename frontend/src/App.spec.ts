@@ -223,4 +223,21 @@ describe("Testing App...", () => {
         expect(app.vm.isShowLogOutput).toBe(false)
         expect(app.vm.initializedListeners).toBe(true)
     })
+    test("downloadJson triggers download with correct filename and content", async () => {
+        // mock to intercept the click event of the new a element
+        const anchor = document.createElement('a')
+        vi.spyOn(anchor, 'click').mockImplementation(() => {})
+        vi.spyOn(document, 'createElement').mockReturnValue(anchor)
+        // required to capture the output
+        vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock')
+
+        app.vm.domainRescan = 'example.com'
+        app.vm.result = { results_checker: '{"version": "3.5.1}' }
+        app.vm.downloadJson()
+
+        expect(anchor.download).toBe('example.com-result.json')
+        expect(anchor.click).toHaveBeenCalled()
+        const blob = vi.mocked(URL.createObjectURL).mock.calls[0][0] as Blob
+        expect(await blob.text()).toBe('{"version": "3.5.1}')
+    })
 })
