@@ -72,8 +72,6 @@ services:
       - scanner
     depends_on:
       - valkey
-    networks:
-      - scanner
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://0.0.0.0:8082/api/v1/tests"]
       interval: 15s
