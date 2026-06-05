@@ -12,7 +12,7 @@
 
               <form @submit.prevent="startScan">
                 <div class="mb-3">
-                  <label for="domainInput" class="form-label">Enter a domain name or <a href="https://docs.oasis-open.org/csaf/csaf/v2.1/csaf-v2.1.html#717-requirement-7-provider-metadatajson-" title="Provider Metadata File" target="_blank">PMD</a> JSON URL to start the check:</label>
+                  <label for="domainInput" class="form-label">Enter a domain name or <a href="https://docs.oasis-open.org/csaf/csaf/v2.1/csaf-v2.1.html#717-requirement-7-provider-metadatajson-" title="Provider Metadata File" target="_blank">PMD</a> to start the check:</label>
                   <input
                     type="text"
                     class="form-control"
@@ -32,18 +32,22 @@
               </form>
 
               <div class="alert alert-light mt-4" role="alert" v-show="domainRescan">
-                  {{ loading ? 'Scanning': 'Done'}} domain or PMD: {{ domainRescan }}
-                  <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  <span v-else>✔</span>
+                  {{ loading ? 'Running check on target': 'Completed the check of'}} <code>{{ domainRescan }}</code>
+                  <span v-if="loading" class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
+                  <span v-else class="ms-2">✓</span>
               </div>
 
               <!-- display of requirements messages -->
               <div v-if="messagesList" class="alert alert-light mt-4">
-                <div v-if="result?.status === 'DONE_CHECKER'">
-                  <h3 class="alert-heading">Check completed</h3>
-                </div>
-                <div v-else-if="result?.status === 'CACHED_CHECKER'">
-                  <h3 class="alert-heading">Check result found in cache</h3>
+                <h3 class="alert-heading">Check results</h3>
+                <div v-if="result?.status === 'CACHED_CHECKER'" class="alert alert-info" role="alert">
+                  <h4 class="alert-heading">Result loaded from cache</h4>
+                  <p class="mb-0">
+                    This domain was checked previously.
+                    To reduce load on this service and the targeted CSAF provider, recent results are cached and reused.
+                    The result below may not reflect the current state of the provider.
+                    For up-to-date results, you can <a href="https://github.com/csaf-tools/provider-online-check/" target="_blank">run your own instance</a> of this service or use the <a href="https://github.com/gocsaf/csaf/blob/main/docs/csaf_checker.md" target="_blank">csaf_checker</a> command-line tool directly.
+                  </p>
                 </div>
 
                 <div v-show="scanTime">
@@ -513,8 +517,6 @@ export default defineComponent({
 <style scoped>
   #app {
     background-color: #f1f1f1;
-    /* from csaf.io without the external "Darker Grotesque" */
-    font-family: Arial, Helvetica, sans-serif;
     min-height: 100vh;
   }
 .text-green {
