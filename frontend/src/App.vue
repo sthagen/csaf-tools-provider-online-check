@@ -11,11 +11,10 @@
         <div class="col-md-12">
           <div class="card shadow">
             <div class="card-body">
-              <h2 class="card-title mb-4">Scan a Domain <span class="badge bg-warning ms-2" style="font-size: 0.4em; vertical-align: middle;">Experimental</span></h2>
+              <h2 class="card-title mb-4">Scan a Domain or PMD<span class="badge bg-warning ms-2" style="font-size: 0.4em; vertical-align: middle;">Experimental</span></h2>
 
               <form @submit.prevent="startScan">
                 <div class="mb-3">
-                  <label for="domainInput" class="form-label">Domain</label>
                   <input
                     type="text"
                     class="form-control"
@@ -34,15 +33,19 @@
                 <button
                   type="submit"
                   class="btn btn-primary"
-                  :disabled="loading"
                 >
-                  <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  <span v-else>{{ 'Start Scan' }}</span>
+                  Start Scan
                 </button>
               </form>
 
+              <div class="alert alert-light mt-4" role="alert" v-show="domainRescan">
+                  {{ loading ? 'Scanning': 'Done'}} domain or PMD: {{ domainRescan }}
+                  <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  <span v-else>✔</span>
+              </div>
+
               <!-- display of requirements messages -->
-              <div v-if="messagesList" class="mt-4">
+              <div v-if="messagesList" class="alert alert-light mt-4">
                 <div v-if="result?.status === 'DONE_CHECKER'">
                   <h3 class="alert-heading">Scan Done</h3>
                 </div>
@@ -204,6 +207,7 @@ interface ResultCheckerData {
 interface AppData {
   session_id: string;
   domain: string;
+  domainRescan: string | null;
   loading: boolean;
   initializedListeners: boolean;
   result: any;
@@ -235,6 +239,7 @@ export default defineComponent({
     return {
       session_id: '1',
       domain: '',
+      domainRescan: null,
       loading: false,
       initializedListeners: false,
       result: null,
@@ -343,14 +348,23 @@ export default defineComponent({
   },
   methods: {
     async startScan() {
-      this.loading = true
-      this.result = null
-      this.error = null
-      this.clearFields()
+      this.domainRescan = null
+      this.scanWork()
+    },
+    async scanWork() {
+      if (!this.domainRescan) {
+        this.domainRescan = this.domain
+        this.domain = ''
+        this.loading = true
+        this.result = null
+        this.messagesList = null
+        this.error = null
+        this.clearFields()
+      }
 
       try {
         const response = await axios.post(`${this.backendUrl}/api/scan/start`, {
-          domain: this.domain,
+          domain: this.domainRescan,
           session_id: this.session_id
         })
         this.result = response.data
@@ -376,7 +390,7 @@ export default defineComponent({
         }
       } finally {
         if (['INITIALIZED', 'RUNNING_CHECKER'].includes(this.result?.status) ) {
-          setTimeout(this.startScan, 3000)
+          setTimeout(this.scanWork, 3000)
         } else {
           this.loading = false
         }
