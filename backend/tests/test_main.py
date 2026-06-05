@@ -367,6 +367,16 @@ class TestDomainValidation:
         with pytest.raises(ValueError, match="Invalid domain/PMD format. Please enter a valid Domain or PMD URL. Domains require a non-zero length extension. PMDs must start with 'https://' and end with '/provider-metadata.json'"):
             ScanRequest(domain="not a valid domain")
 
+    def test_validate_pmd_url_normalizes_hostname_only(self):
+        """validation lowercases PMD hostname but preserves path case"""
+        request = ScanRequest(session_id="0", domain="HTTPS://Example.COM/CSAF/provider-metadata.json")
+        assert request.domain == "https://example.com/CSAF/provider-metadata.json"
+
+    def test_validate_pmd_url_normalizes_idn_hostname(self):
+        """validation converts IDN hostname in PMD to Punycode"""
+        request = ScanRequest(session_id="0", domain="https://püñi.example/strange/path/provider-metadata.json")
+        assert request.domain == "https://xn--pi-zja7b.example/strange/path/provider-metadata.json"
+
 
 class TestOpenAPIDocumentation:
     """Tests for OpenAPI/Swagger documentation"""
