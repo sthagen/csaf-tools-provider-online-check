@@ -18,11 +18,10 @@ SPDX-License-Identifier: Apache-2.0
         <div class="col-md-12">
           <div class="card shadow">
             <div class="card-body">
-              <h2 class="card-title mb-4">Scan a Domain <span class="badge bg-warning ms-2" style="font-size: 0.4em; vertical-align: middle;">Experimental</span></h2>
+              <h2 class="card-title mb-4">Scan a Domain or PMD<span class="badge bg-warning ms-2" style="font-size: 0.4em; vertical-align: middle;">Experimental</span></h2>
 
               <form @submit.prevent="startScan">
                 <div class="mb-3">
-                  <label for="domainInput" class="form-label">Domain</label>
                   <input
                     type="text"
                     class="form-control"
@@ -41,15 +40,19 @@ SPDX-License-Identifier: Apache-2.0
                 <button
                   type="submit"
                   class="btn btn-primary"
-                  :disabled="loading"
                 >
-                  <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  <span v-else>{{ 'Start Scan' }}</span>
+                  Start Scan
                 </button>
               </form>
 
+              <div class="alert alert-light mt-4" role="alert" v-show="domainRescan">
+                  {{ loading ? 'Scanning': 'Done'}} domain or PMD: {{ domainRescan }}
+                  <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  <span v-else>✔</span>
+              </div>
+
               <!-- display of requirements messages -->
-              <div v-if="messagesList" class="mt-4">
+              <div v-if="messagesList" class="alert alert-light mt-4">
                 <div v-if="result?.status === 'DONE_CHECKER'">
                   <h3 class="alert-heading">Scan Done</h3>
                 </div>
@@ -69,42 +72,55 @@ SPDX-License-Identifier: Apache-2.0
                 <MessageLine v-for="item of trustedProviderMessages" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
 
                 <p class="small-margin-top">
-                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseAllMessages" role="button" aria-expanded="false" aria-controls="collapseAllMessages">
-                      Show all messages
-                    </a>
-                    &nbsp;
-                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseResultOutput" role="button" aria-expanded="false" aria-controls="collapseResultOutput">
-                      Show JSON output
-                    </a>
-                    &nbsp;
-                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseLogOutput" role="button" aria-expanded="false" aria-controls="collapseLogOutput">
-                      Show log output
+                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseAllMessages" role="button" aria-expanded="false" aria-controls="collapseAllMessages"
+                      :key="displayAllMessagesTitle"
+                    >
+                      {{  displayAllMessagesTitle }}
                     </a>
                 </p>
-                <div class="collapse" id="collapseAllMessages">
+                <div class="collapse" id="collapseAllMessages" ref="allMessagesRef">
                   <div class="card card-body">
-                    <h6>All messages:</h6>
-                    <MessageLine v-for="item of messagesList" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
+                    <h5 class="card-title">All messages:</h5>
+                    <div class="card-text log-card-size overflow-scroll">
+                      <MessageLine v-for="item of messagesList" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
+                    </div>
                   </div>
                 </div>
-                <div class="collapse" id="collapseResultOutput">
+                <p class="small-margin-top">
+                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseResultOutput" role="button" aria-expanded="false" aria-controls="collapseResultOutput"
+                      :key="displayResultOutputTitle"
+                    >
+                      {{ displayResultOutputTitle }}
+                    </a>
+                </p>
+                <div class="collapse" id="collapseResultOutput" ref="resultOutputRef">
                   <div class="card card-body">
-                    <h6>Result of the checker:</h6>
-                    <div class="d-flex justify-content-end gap-2 mb-2">
+                    <div class="card-title d-flex gap-2 mb-2">
+                      <h5 class="me-auto log-header">Result of the checker:</h5>
                       <button class="btn btn-sm btn-outline-secondary" @click="copyResultToClipboard">Copy to clipboard</button>
                       <button class="btn btn-sm btn-outline-secondary" @click="downloadJson">Download</button>
                     </div>
-                    <pre>{{ result?.results_checker }}</pre>
+                    <div class="card-text log-card-size overflow-scroll">
+                      <pre>{{ result?.results_checker }}</pre>
+                    </div>
                   </div>
                 </div>
-                <div class="collapse" id="collapseLogOutput">
+                <p class="small-margin-top">
+                    <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseLogOutput" role="button" aria-expanded="false" aria-controls="collapseLogOutput"
+                      :key="displayLogOutputTitle">
+                      {{ displayLogOutputTitle }}
+                    </a>
+                </p>
+                <div class="collapse" id="collapseLogOutput" ref="logOutputRef">
                   <div class="card card-body">
-                    <h6>Log output:</h6>
-                    <div class="d-flex justify-content-end gap-2 mb-2">
+                    <div class="cart-title d-flex gap-2 mb-2">
+                      <h5 class="me-auto log-header">Log output:</h5>
                       <button class="btn btn-sm btn-outline-secondary" @click="copyLogToClipboard">Copy to clipboard</button>
                       <button class="btn btn-sm btn-outline-secondary" @click="downloadLog">Download</button>
                     </div>
-                    <pre>{{ result?.runtime_output?.join('\n') }}</pre>
+                    <div class="card-text log-card-size overflow-scroll">
+                      <pre>{{ result?.runtime_output?.join('\n') }}</pre>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -175,7 +191,7 @@ SPDX-License-Identifier: Apache-2.0
             </div>
           </div>
         </div>
-      </div>
+    </div>
     </div>
   </div>
 </template>
@@ -198,13 +214,18 @@ interface ResultCheckerData {
 interface AppData {
   session_id: string;
   domain: string;
+  domainRescan: string | null;
   loading: boolean;
+  initializedListeners: boolean;
   result: any;
   error: any;
   messagesList: null | MessageData[];
   scanTime: null | string;
   passed: boolean;
-  role: string;
+  role: string | null;
+  isShowAllMessages: boolean;
+  isShowResultOutput: boolean;
+  isShowLogOutput: boolean;
   version: {
     csaf_checker_version: string;
     csaf_validator_version: string;
@@ -225,14 +246,19 @@ export default defineComponent({
     return {
       session_id: '1',
       domain: '',
+      domainRescan: null,
       loading: false,
+      initializedListeners: false,
       result: null,
       error: null,
       messagesList: null,
       scanTime: null,
       passed: false,
       role: null,
-      version: null
+      version: null,
+      isShowAllMessages: false,
+      isShowResultOutput: false,
+      isShowLogOutput: false
     } as AppData
   },
   async mounted() {
@@ -281,7 +307,7 @@ export default defineComponent({
         trustedProviderMessages.push(...this.filterMessageListByNums([5, 6, 7]))
 
         // requirements min one of 8 (security.txt), 9 (Well-known URL for provider-metadata.json), 10 (DNS path)
-        // One must succed, then show that message, else show all messages
+        // One must succeed, then show that message, else show all messages
         const req8Messages = this.filterMessageListByNums([8])
         const req9Messages = this.filterMessageListByNums([9])
         const req10Messages = this.filterMessageListByNums([10])
@@ -316,17 +342,36 @@ export default defineComponent({
     },
     trustedProviderStatus() {
       return this.passed ? 'text-green': 'text-red'
+    },
+    displayAllMessagesTitle(): string {
+      return this.isShowAllMessages ? 'Hide all messages' : 'Show all messages'
+    },
+    displayResultOutputTitle(): string {
+      return this.isShowResultOutput ? 'Hide JSON output' : 'Show JSON output'
+    },
+    displayLogOutputTitle(): string {
+      return this.isShowLogOutput ? 'Hide log output' : 'Show log output'
     }
   },
   methods: {
     async startScan() {
-      this.loading = true
-      this.result = null
-      this.error = null
+      this.domainRescan = null
+      this.scanWork()
+    },
+    async scanWork() {
+      if (!this.domainRescan) {
+        this.domainRescan = this.domain
+        this.domain = ''
+        this.loading = true
+        this.result = null
+        this.messagesList = null
+        this.error = null
+        this.clearFields()
+      }
 
       try {
         const response = await axios.post(`${this.backendUrl}/api/scan/start`, {
-          domain: this.domain,
+          domain: this.domainRescan,
           session_id: this.session_id
         })
         this.result = response.data
@@ -336,24 +381,32 @@ export default defineComponent({
           this.setScanTime(parsedResultsChecker)
           this.setPassed(parsedResultsChecker)
           this.setRole(parsedResultsChecker)
+          if (!this.initializedListeners) {
+            setTimeout(() => {
+              this.initializeListeners()
+            })
+          }
         } else {
-          this.messagesList = null
-          this.scanTime = null
+          this.clearFields()
         }
       } catch (err: any) {
-        this.messagesList = null
-        this.scanTime = null
+        this.clearFields()
         this.error = err.response?.data?.detail || err.message || 'An error occurred while starting the scan'
         if (err.response?.data?.detail[0]?.msg) {
           this.error = `${err.response?.data?.detail[0]?.input}: ${err.response?.data?.detail[0]?.msg}`
         }
       } finally {
         if (['INITIALIZED', 'RUNNING_CHECKER'].includes(this.result?.status) ) {
-          setTimeout(this.startScan, 3000)
+          setTimeout(this.scanWork, 3000)
         } else {
           this.loading = false
         }
       }
+    },
+    clearFields() {
+      this.messagesList = null
+      this.scanTime = null
+      this.passed = false
     },
     parseResultsChecker(results_checker: string): ResultCheckerData {
       return JSON.parse(results_checker)
@@ -370,6 +423,21 @@ export default defineComponent({
       this.role = parsedResultsChecker?.domains?.[0]?.role ?? "Unknown Role";
       this.role = this.role.replace('csaf', 'CSAF').replaceAll('_', ' ');
       this.role = this.role.replace(/\b\w/g, (c: string) => c.toUpperCase());
+    },
+    initializeListeners() {
+      const allMessagesRef = this.$refs.allMessagesRef as HTMLElement
+      allMessagesRef?.addEventListener('show.bs.collapse', () => { this.isShowAllMessages = true })
+      allMessagesRef?.addEventListener('hide.bs.collapse', () => { this.isShowAllMessages = false })
+      allMessagesRef?.addEventListener('shown.bs.collapse', () => { allMessagesRef.scrollIntoView({ behavior: 'smooth', block: 'nearest' }) })
+      const resultOutputRef = this.$refs.resultOutputRef as HTMLElement
+      resultOutputRef?.addEventListener('show.bs.collapse', () => { this.isShowResultOutput = true })
+      resultOutputRef?.addEventListener('hide.bs.collapse', () => { this.isShowResultOutput = false })
+      resultOutputRef?.addEventListener('shown.bs.collapse', () => { resultOutputRef.scrollIntoView({ behavior: 'smooth', block: 'nearest' }) })
+      const logOutputRef = this.$refs.logOutputRef as HTMLElement
+      logOutputRef?.addEventListener('show.bs.collapse', () => { this.isShowLogOutput = true })
+      logOutputRef?.addEventListener('hide.bs.collapse', () => { this.isShowLogOutput = false })
+      logOutputRef?.addEventListener('shown.bs.collapse', () => { logOutputRef.scrollIntoView({ behavior: 'smooth', block: 'nearest' }) })
+      this.initializedListeners = true
     },
     extractMessagesFromResultsChecker(results_checker: ResultCheckerData) {
       if (results_checker.domains?.[0]?.requirements) {
@@ -448,7 +516,13 @@ export default defineComponent({
 .small-margin-top {
   margin-top: 15px;
 }
+.log-header {
+  margin-top: 7px;
+}
 .medium-font-size {
   font-size: 1.3rem;
+}
+.log-card-size {
+  max-height: 510px;
 }
 </style>

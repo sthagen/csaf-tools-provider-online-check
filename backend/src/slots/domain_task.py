@@ -43,7 +43,7 @@ class Domain_Task(BaseModel):
 
     csaf_checker: Annotated[
         Optional[CSAF_Checker],
-        Field(description="Wrapper for asynchroniously running csaf checker task"),
+        Field(description="Wrapper for asynchronously running csaf checker task"),
     ] = None
 
     latest_visit: Annotated[

@@ -33,7 +33,6 @@ Example: make   dev-exec   backend   EXEC_COMMAND='vote ls'
 
 Flags:
     no-cache             : Prevents use of cache when building docker images
-    capsule              : Enables encapsulation of docker build output
 
 Available dev functions:
     dev             : Builds and starts development images
@@ -57,59 +56,18 @@ Available dev functions:
     "
 }
 
-build_capsuled()
-{
-    local FUNC=$1
-
-    # Record time
-    local PRE_TIMESTAMP=$(date +%s)
-
-    # Build Image
-    info "Building image"
-    capsule "$FUNC"
-    local RESPONSE=$?
-
-    local POST_TIMESTAMP=$(date +%s)
-    local BUILD_TIME=$(( POST_TIMESTAMP - PRE_TIMESTAMP ))
-    # Output
-    if [ "$RESPONSE" != 0 ]
-    then
-        error "Building image failed: $ERROR"
-    elif [ "$BUILD_TIME" -le 3 ]
-    then
-        success "Image found in cache"
-    else
-        success "Build image successfully"
-    fi
-}
-
 build()
 {
     local BUILD_ARGS="";
 
     if [ -n "$NO_CACHE" ]; then local BUILD_ARGS="--no-cache"; fi
 
-    (
-        cd backend || exit 1
-
-        if [ -n "$BUILD_ARGS" ]
-        then
-            docker build ./ "$BUILD_ARGS" --tag "csaf-checker-dev-backend"
-        else
-            docker build ./ --tag "csaf-checker-dev-backend"
-        fi
-    )
-
-    (
-        cd frontend || exit 1
-
-        if [ -n "$BUILD_ARGS" ]
-        then
-            docker build ./ "$BUILD_ARGS" --tag "csaf-checker-dev-frontend"
-        else
-            docker build ./ --tag "csaf-checker-dev-frontend"
-        fi
-    )
+    if [ -n "$BUILD_ARGS" ]
+    then
+        docker compose build "$BUILD_ARGS"
+    else
+        docker compose build
+    fi
 }
 
 clean()
@@ -174,7 +132,7 @@ attach()
     then
         # Compose
 
-        # Determine container to enter, in case no container was specified as a paramater
+        # Determine container to enter, in case no container was specified as a parameter
         if [ -z "$SERVICE" ] && [ -z "$TARGET_CONTAINER" ]
         then
             # Main repository case, use input prompt to determine container
@@ -265,10 +223,9 @@ TEMP_SERVICE=$SERVICE
 SERVICE=""
 for CMD in $TEMP_SERVICE; do
     case "$CMD" in
-        "no-cache")     NO_CACHE=true ;;
-        "capsule")      CAPSULE=true ;;
+        "no-cache")             NO_CACHE=true ;;
         "compose-local-branch") USE_LOCAL_BRANCH_FOR_COMPOSE=true ;;
-        *)              SERVICE="$CMD" ;;
+        *)                      SERVICE="$CMD" ;;
     esac
 done
 

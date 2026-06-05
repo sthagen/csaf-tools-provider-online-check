@@ -56,7 +56,7 @@ class CSAF_Checker(BaseModel):
 
     _running_task_checker: Annotated[
         Optional[asyncio.subprocess.Process],
-        Field(description="Asynchronious task running csaf checker"),
+        Field(description="Asynchronous task running csaf checker"),
     ] = None
 
     _max_wait_time: Annotated[
@@ -101,14 +101,14 @@ class CSAF_Checker(BaseModel):
             args.append("--validator=http://validator:8082")
 
             if data.enable_validator_cache:
-                # Create cache folder if it doesnt exist yet
+                # Create cache folder if it doesn't exist yet
                 cache_path = Path(CACHE_PATH_VALIDATOR)
                 cache_path.mkdir(parents=True, exist_ok=True)
                 args.append(
                     f"--validator_cache={CACHE_PATH_VALIDATOR}{data.validator_cache_file}"
                 )
 
-        # Run task asynchroniously
+        # Run task asynchronously
         self._running_task_checker = await asyncio.create_subprocess_exec(
             os.path.abspath(self.__csaf_checker_path()),
             *args,

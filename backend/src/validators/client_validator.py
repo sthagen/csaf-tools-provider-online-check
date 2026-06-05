@@ -8,7 +8,7 @@
 
 # Involved in: 4, 19, 20, 21
 
-from ..database.redis import Redis_Controller
+from ..database.valkey import Valkey_Controller
 
 
 def validate_client_blocklist_check(session_id: str, domain: str) -> str:
@@ -25,8 +25,8 @@ def validate_client_blocklist_check(session_id: str, domain: str) -> str:
     if not isinstance(session_id, str) or not session_id.strip():
         raise ValueError("Session ID cannot be empty")
 
-    # Redis blocklist check
-    if Redis_Controller().is_session_id_in_client_blocklist(session_id, domain):
+    # Valkey blocklist check
+    if Valkey_Controller().is_session_id_in_client_blocklist(session_id, domain):
         raise ValueError("Session ID is blocked")
 
     return session_id

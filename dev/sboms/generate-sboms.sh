@@ -33,7 +33,7 @@ CONTAINER_NAME_SYFT="syft-sboms-active-container"
 IMAGE_TAG_BACKEND="csaf-provider-online-check-backend"
 IMAGE_TAG_FRONTEND="csaf-provider-online-check-frontend"
 IMAGE_TAG_VALIDATOR="csaf-provider-online-check-validator"
-IMAGE_TAG_REDIS="redis:alpine"
+IMAGE_TAG_VALKEY="valkey/valkey:8-alpine"
 
 # Build Images
 docker build -t "$IMAGE_TAG_SYFT" ./dev/sboms/
@@ -67,6 +67,6 @@ info "Generating SBOMs for validator"
 docker exec "$CONTAINER_NAME_SYFT" syft "$IMAGE_TAG_VALIDATOR" -o cyclonedx-json="$GENERATED_FILE_PATH"sbom-validator-cyclonedx.json
 docker exec "$CONTAINER_NAME_SYFT" syft "$IMAGE_TAG_VALIDATOR" -o spdx-json="$GENERATED_FILE_PATH"sbom-validator-spdx.json
 
-info "Generating SBOMs for redis"
-docker exec "$CONTAINER_NAME_SYFT" syft "$IMAGE_TAG_REDIS" -o cyclonedx-json="$GENERATED_FILE_PATH"sbom-redis-cyclonedx.json
-docker exec "$CONTAINER_NAME_SYFT" syft "$IMAGE_TAG_REDIS" -o spdx-json="$GENERATED_FILE_PATH"sbom-redis-spdx.json
+info "Generating SBOMs for valkey"
+docker exec "$CONTAINER_NAME_SYFT" syft "$IMAGE_TAG_VALKEY" -o cyclonedx-json="$GENERATED_FILE_PATH"sbom-valkey-cyclonedx.json
+docker exec "$CONTAINER_NAME_SYFT" syft "$IMAGE_TAG_VALKEY" -o spdx-json="$GENERATED_FILE_PATH"sbom-valkey-spdx.json
