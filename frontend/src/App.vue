@@ -26,15 +26,19 @@
                 <button
                   type="submit"
                   class="btn btn-primary"
-                  :disabled="loading"
                 >
-                  <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  <span v-else>{{ 'Start Check' }}</span>
+                  Start Check
                 </button>
               </form>
 
+              <div class="alert alert-light mt-4" role="alert" v-show="domainRescan">
+                  {{ loading ? 'Scanning': 'Done'}} domain or PMD: {{ domainRescan }}
+                  <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  <span v-else>✔</span>
+              </div>
+
               <!-- display of requirements messages -->
-              <div v-if="messagesList" class="mt-4">
+              <div v-if="messagesList" class="alert alert-light mt-4">
                 <div v-if="result?.status === 'DONE_CHECKER'">
                   <h3 class="alert-heading">Check completed</h3>
                 </div>
@@ -205,6 +209,7 @@ const PLACEHOLDERS = [
 interface AppData {
   session_id: string;
   domain: string;
+  domainRescan: string | null;
   loading: boolean;
   initializedListeners: boolean;
   result: any;
@@ -238,6 +243,7 @@ export default defineComponent({
     return {
       session_id: '1',
       domain: '',
+      domainRescan: null,
       loading: false,
       initializedListeners: false,
       result: null,
@@ -357,14 +363,23 @@ export default defineComponent({
   },
   methods: {
     async startScan() {
-      this.loading = true
-      this.result = null
-      this.error = null
-      this.clearFields()
+      this.domainRescan = null
+      this.scanWork()
+    },
+    async scanWork() {
+      if (!this.domainRescan) {
+        this.domainRescan = this.domain
+        this.domain = ''
+        this.loading = true
+        this.result = null
+        this.messagesList = null
+        this.error = null
+        this.clearFields()
+      }
 
       try {
         const response = await axios.post(`${this.backendUrl}/api/scan/start`, {
-          domain: this.domain,
+          domain: this.domainRescan,
           session_id: this.session_id
         })
         this.result = response.data
@@ -390,7 +405,7 @@ export default defineComponent({
         }
       } finally {
         if (['INITIALIZED', 'RUNNING_CHECKER'].includes(this.result?.status) ) {
-          setTimeout(this.startScan, 3000)
+          setTimeout(this.scanWork, 3000)
         } else {
           this.loading = false
         }
@@ -421,12 +436,15 @@ export default defineComponent({
       const allMessagesRef = this.$refs.allMessagesRef as HTMLElement
       allMessagesRef?.addEventListener('show.bs.collapse', () => { this.isShowAllMessages = true })
       allMessagesRef?.addEventListener('hide.bs.collapse', () => { this.isShowAllMessages = false })
+      allMessagesRef?.addEventListener('shown.bs.collapse', () => { allMessagesRef.scrollIntoView({ behavior: 'smooth', block: 'nearest' }) })
       const resultOutputRef = this.$refs.resultOutputRef as HTMLElement
       resultOutputRef?.addEventListener('show.bs.collapse', () => { this.isShowResultOutput = true })
       resultOutputRef?.addEventListener('hide.bs.collapse', () => { this.isShowResultOutput = false })
+      resultOutputRef?.addEventListener('shown.bs.collapse', () => { resultOutputRef.scrollIntoView({ behavior: 'smooth', block: 'nearest' }) })
       const logOutputRef = this.$refs.logOutputRef as HTMLElement
       logOutputRef?.addEventListener('show.bs.collapse', () => { this.isShowLogOutput = true })
       logOutputRef?.addEventListener('hide.bs.collapse', () => { this.isShowLogOutput = false })
+      logOutputRef?.addEventListener('shown.bs.collapse', () => { logOutputRef.scrollIntoView({ behavior: 'smooth', block: 'nearest' }) })
       this.initializedListeners = true
     },
     extractMessagesFromResultsChecker(results_checker: ResultCheckerData) {
