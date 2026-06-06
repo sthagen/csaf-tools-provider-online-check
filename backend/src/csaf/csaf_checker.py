@@ -89,8 +89,8 @@ class CSAF_Checker(BaseModel):
         # Handle non-null running task
         await self.__terminate_asyncio_task()
 
-        # Write args
-        args = ["--verbose", data.domain]
+        # Write args. Everything after the `--` is not a flag but a positional argument (the scan target)
+        args = ["--verbose", "--", data.domain]
 
         if data.enable_validator:
             args.append("--validator=http://validator:8082")
