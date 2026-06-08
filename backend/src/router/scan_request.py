@@ -32,7 +32,7 @@ class ScanRequest(BaseModel):
     max_lines: Annotated[
         int,
         Field(
-            description="The maximum amount of runtime output lines that should be returned in the response",
+            description="The maximum amount of runtime output lines that should be returned in the response. Set to 0 to get all lines",
             ge=0,
         ),
     ] = int(os.environ.get("VERBOSE_OUTPUT_MAX_LINES_DEFAULT", "10"))

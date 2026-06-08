@@ -338,6 +338,27 @@ class TestOutputOptions:
         assert shortResponse.status_code == 201
         assert len(shortResponseData["runtime_output"]) == 4
 
+    @pytest.mark.asyncio
+    async def test_max_lines_maximum(self):
+        await scan_example_domain()
+
+        """Max lines set to 0 should output all lines. Tests whether 0 is functionally the same as using max possible lines"""
+        minusOneResponse = client.post(
+            "/api/scan/start",
+            json=mock_scan_request_variable_shortening_options(0, 0, True)
+        )
+        minusOneData = minusOneResponse.json()
+
+        maxLinesResponse = client.post(
+            "/api/scan/start",
+            json=mock_scan_request_variable_shortening_options(0, 2147483647, True)
+        )
+        maxLinesData = maxLinesResponse.json()
+
+        assert minusOneResponse.status_code == 201
+        assert maxLinesResponse.status_code == 201
+        assert len(maxLinesData["runtime_output"]) == len(minusOneData["runtime_output"])
+
 
 class TestDomainValidation:
     """Tests for domain validation logic"""
