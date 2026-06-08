@@ -487,7 +487,7 @@ export default defineComponent({
       const blob = new Blob([this.result?.results_checker ?? ''], { type: 'application/json' })
       const a = document.createElement('a')
       a.href = URL.createObjectURL(blob)
-      a.download = `${this.domain}-result.json`
+      a.download = `${this.domainRescan}-result.json`
       a.click()
       URL.revokeObjectURL(a.href)
     },
@@ -495,7 +495,7 @@ export default defineComponent({
       const blob = new Blob([this.result?.runtime_output?.join('\n') ?? ''], { type: 'text/plain' })
       const a = document.createElement('a')
       a.href = URL.createObjectURL(blob)
-      a.download = `${this.domain}-log.txt`
+      a.download = `${this.domainRescan}-log.txt`
       a.click()
       URL.revokeObjectURL(a.href)
     },
