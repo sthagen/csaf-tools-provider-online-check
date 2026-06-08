@@ -298,7 +298,7 @@ export default defineComponent({
       setTimeout(() => {
         ;this.placeholderIndex = (this.placeholderIndex + 1) % PLACEHOLDERS.length
         ;this.placeholderVisible = true
-      }, 400)
+      }, 500)
     }, 3000)
   },
   unmounted() {
