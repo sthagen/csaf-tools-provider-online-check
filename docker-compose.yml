@@ -60,7 +60,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: ${FRONTEND_MEMORY_LIMIT:-200m}
+          memory: ${FRONTEND_MEMORY_LIMIT:-400m}
     networks:
       - scanner
     depends_on:

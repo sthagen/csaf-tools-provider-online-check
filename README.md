@@ -222,7 +222,7 @@ Docker Compose reads this file automatically.
 | `RUNTIME_LOG_MAX_BYTES` | 500000 | Maximum total byte size of runtime log stored per scan, 0 for unlimited. |
 | `SCAN_SLOTS` | `10` | Maximum number of concurrent scans. |
 | `CSAF_CHECKER_MEMORY_LIMIT` | `500m` | Memory limit for the backend container. |
-| `FRONTEND_MEMORY_LIMIT` | `200m` | Memory limit for the frontend container. |
+| `FRONTEND_MEMORY_LIMIT` | `400m` | Memory limit for the frontend container. |
 | `CSAF_VALIDATOR_MEMORY_LIMIT` | `75m` | Memory limit for the validator container. |
 | `VALKEY_MEMORY_LIMIT` | `500m` | Memory limit for the valkey container. |
 | `VERBOSE_OUTPUT_MAX_LINES_DEFAULT` | 10 | Default value for the maximum amount of verbose runtime output displayed at once. |
