@@ -21,7 +21,9 @@ RUNTIME_LOG_MAX_BYTES: Optional[int] = (
 # when RUNTIME_LOG_MAX_BYTES is exceeded, remove this many lines per batch
 RUNTIME_LOG_TRUNCATE_LINES = 100
 # Log line inserted at the start of a truncated log
-RUNTIME_LOG_TRUNCATE_MESSAGE = 'The log output is truncated as it exceeded the maximum allowed size.'
+RUNTIME_LOG_TRUNCATE_MESSAGE = (
+    "The log output is truncated as it exceeded the maximum allowed size."
+)
 
 
 class Domain_Task_Data(BaseModel):
@@ -89,8 +91,14 @@ class Domain_Task_Data(BaseModel):
 
     def append_runtime_log(self, line: str) -> None:
         self.csaf_checker_output_runtime_log.append(line)
-        if RUNTIME_LOG_MAX_BYTES is not None and getsizeof(self.csaf_checker_output_runtime_log) > RUNTIME_LOG_MAX_BYTES:
-            self.csaf_checker_output_runtime_log[:RUNTIME_LOG_TRUNCATE_LINES] = [RUNTIME_LOG_TRUNCATE_MESSAGE]
+        if (
+            RUNTIME_LOG_MAX_BYTES is not None
+            and getsizeof(self.csaf_checker_output_runtime_log)  # noqa: W503
+            > RUNTIME_LOG_MAX_BYTES  # noqa: W503
+        ):
+            self.csaf_checker_output_runtime_log[:RUNTIME_LOG_TRUNCATE_LINES] = [
+                RUNTIME_LOG_TRUNCATE_MESSAGE
+            ]
 
     def get_domain_hash(self) -> str:
         return Domain_Name_Hash_Wrapper().domain_hash(self.domain)
