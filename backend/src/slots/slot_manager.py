@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 German Federal Office for Information Security (BSI) <https://www.bsi.bund.de>
+# Software-Engineering: 2026 Intevation GmbH <https://intevation.de>
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Interface between router and running tasks.
 # Manages slots, directs requests and returns user relevant data.
 # Either fetches data from cache or starts a new domain task.

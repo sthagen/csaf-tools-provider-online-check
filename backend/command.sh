@@ -1,11 +1,17 @@
 #!/bin/bash
+
+# SPDX-FileCopyrightText: 2026 German Federal Office for Information Security (BSI) <https://www.bsi.bund.de>
+# Software-Engineering: 2026 Intevation GmbH <https://intevation.de>
+#
+# SPDX-License-Identifier: Apache-2.0
+
 set -e
 
 # Due to docker compose volume mounting, we need to reinstall all pip packages
 pip install -r requirements.txt
 
 # Install csaf binary as well
-CSAF_CHECKER_VERSION=${CSAF_CHECKER_VERSION:-"3.5.1"}
+: "${CSAF_CHECKER_VERSION:?CSAF_CHECKER_VERSION is not set}"
 (
     mkdir -p bin
     cd bin || exit 1

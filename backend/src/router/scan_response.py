@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 German Federal Office for Information Security (BSI) <https://www.bsi.bund.de>
+# Software-Engineering: 2026 Intevation GmbH <https://intevation.de>
+#
+# SPDX-License-Identifier: Apache-2.0
+
 from enum import Enum
 from typing import Annotated
 
@@ -41,7 +46,6 @@ class ScanResponse(BaseModel):
     files_checked: Annotated[
         int, Field(description="Amount of files that have been checked so far")
     ] = 0
-
     latest_file_checked: Annotated[
         str,
         Field(

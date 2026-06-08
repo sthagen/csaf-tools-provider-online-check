@@ -1,3 +1,10 @@
+<!--
+SPDX-FileCopyrightText: 2026 German Federal Office for Information Security (BSI) <https://www.bsi.bund.de>
+Software-Engineering: 2026 Intevation GmbH <https://intevation.de>
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
 <template>
   <div id="app">
     <nav class="navbar navbar-dark bg-dark">
@@ -11,11 +18,10 @@
         <div class="col-md-12">
           <div class="card shadow">
             <div class="card-body">
-              <h2 class="card-title mb-4">Scan a Domain <span class="badge bg-warning ms-2" style="font-size: 0.4em; vertical-align: middle;">Experimental</span></h2>
+              <h2 class="card-title mb-4">Scan a Domain or PMD<span class="badge bg-warning ms-2" style="font-size: 0.4em; vertical-align: middle;">Experimental</span></h2>
 
               <form @submit.prevent="startScan">
                 <div class="mb-3">
-                  <label for="domainInput" class="form-label">Domain</label>
                   <input
                     type="text"
                     class="form-control"
@@ -34,15 +40,19 @@
                 <button
                   type="submit"
                   class="btn btn-primary"
-                  :disabled="loading"
                 >
-                  <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  <span v-else>{{ 'Start Scan' }}</span>
+                  Start Scan
                 </button>
               </form>
 
+              <div class="alert alert-light mt-4" role="alert" v-show="domainRescan">
+                  {{ loading ? 'Scanning': 'Done'}} domain or PMD: {{ domainRescan }}
+                  <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  <span v-else>✔</span>
+              </div>
+
               <!-- display of requirements messages -->
-              <div v-if="messagesList" class="mt-4">
+              <div v-if="messagesList" class="alert alert-light mt-4">
                 <div v-if="result?.status === 'DONE_CHECKER'">
                   <h3 class="alert-heading">Scan Done</h3>
                 </div>
@@ -59,7 +69,13 @@
                   <span v-else>FAILED:</span>
                   {{ role }}
                 </h4>
-                <MessageLine v-for="item of trustedProviderMessages" :key="item.text" :text="item.text" :type="item.type"></MessageLine>
+                <MessageGroup
+                  v-for="group of groupedTrustedProviderMessages"
+                  :key="group.num"
+                  :num="group.num"
+                  :description="group.description"
+                  :messages="group.messages"
+                />
 
                 <p class="small-margin-top">
                     <a class="btn btn-primary" data-bs-toggle="collapse" href="#collapseAllMessages" role="button" aria-expanded="false" aria-controls="collapseAllMessages"
@@ -190,25 +206,34 @@
 import axios from 'axios'
 import { defineComponent } from 'vue'
 import MessageLine from './MessageLine.vue'
+import MessageGroup from './MessageGroup.vue'
 import VersionDisplay from './VersionDisplay.vue';
 
 interface ResultCheckerData {
   domains: {
-    requirements: {num: number, messages: {text: string, type: number}[]}[],
+    requirements: {num: number, description: string, messages: {text: string, type: number}[]}[],
     passed: boolean;
     role: string;
   }[];
   date: string;
 }
 
+interface RequirementGroup {
+  num: number;
+  description: string;
+  messages: { text: string; type: number }[];
+}
+
 interface AppData {
   session_id: string;
   domain: string;
+  domainRescan: string | null;
   loading: boolean;
   initializedListeners: boolean;
   result: any;
   error: any;
   messagesList: null | MessageData[];
+  requirementGroups: RequirementGroup[];
   scanTime: null | string;
   passed: boolean;
   role: string | null;
@@ -230,16 +255,18 @@ interface MessageData {
 
 export default defineComponent({
   name: 'App',
-  components: { MessageLine, VersionDisplay },
+  components: { MessageLine, MessageGroup, VersionDisplay },
   data() {
     return {
       session_id: '1',
       domain: '',
+      domainRescan: null,
       loading: false,
       initializedListeners: false,
       result: null,
       error: null,
       messagesList: null,
+      requirementGroups: [],
       scanTime: null,
       passed: false,
       role: null,
@@ -328,6 +355,21 @@ export default defineComponent({
       }
       return null
     },
+    groupedTrustedProviderMessages(): RequirementGroup[] {
+      const flatMessages = this.trustedProviderMessages
+      if (!flatMessages) return []
+      const groupMap = new Map<number, RequirementGroup>()
+      for (const g of this.requirementGroups) {
+        groupMap.set(g.num, { num: g.num, description: g.description, messages: [] })
+      }
+      for (const msg of flatMessages) {
+        const group = groupMap.get(msg.num)
+        if (group) {
+          group.messages.push({ text: msg.text, type: msg.type })
+        }
+      }
+      return [...groupMap.values()].filter(g => g.messages.length > 0)
+    },
     trustedProviderStatus() {
       return this.passed ? 'text-green': 'text-red'
     },
@@ -343,14 +385,23 @@ export default defineComponent({
   },
   methods: {
     async startScan() {
-      this.loading = true
-      this.result = null
-      this.error = null
-      this.clearFields()
+      this.domainRescan = null
+      this.scanWork()
+    },
+    async scanWork() {
+      if (!this.domainRescan) {
+        this.domainRescan = this.domain
+        this.domain = ''
+        this.loading = true
+        this.result = null
+        this.messagesList = null
+        this.error = null
+        this.clearFields()
+      }
 
       try {
         const response = await axios.post(`${this.backendUrl}/api/scan/start`, {
-          domain: this.domain,
+          domain: this.domainRescan,
           session_id: this.session_id
         })
         this.result = response.data
@@ -376,7 +427,7 @@ export default defineComponent({
         }
       } finally {
         if (['INITIALIZED', 'RUNNING_CHECKER'].includes(this.result?.status) ) {
-          setTimeout(this.startScan, 3000)
+          setTimeout(this.scanWork, 3000)
         } else {
           this.loading = false
         }
@@ -384,6 +435,7 @@ export default defineComponent({
     },
     clearFields() {
       this.messagesList = null
+      this.requirementGroups = []
       this.scanTime = null
       this.passed = false
     },
@@ -392,7 +444,11 @@ export default defineComponent({
     },
     setScanTime(parsedResultsChecker: ResultCheckerData) {
       if (parsedResultsChecker?.date) {
-        this.scanTime = new Date(parsedResultsChecker?.date).toLocaleString(undefined, { timeZoneName: 'short' })
+        // toISOString always return UTC, but that is not well readable for anyone not living close to UTC
+        // the use-case is: user starts a scan or gets it from the cache and wants to recognize if thats the result of a scan just started, or how old it is
+        // d.toLocaleString('sv') results an ISO format string in the local time zone (a widely used method)
+        const d = new Date(parsedResultsChecker.date)
+        this.scanTime = d.toLocaleString('sv', {timeZoneName: 'longOffset'}).replace(' GMT', '')
       }
     },
     setPassed(parsedResultsChecker: ResultCheckerData) {
@@ -407,12 +463,15 @@ export default defineComponent({
       const allMessagesRef = this.$refs.allMessagesRef as HTMLElement
       allMessagesRef?.addEventListener('show.bs.collapse', () => { this.isShowAllMessages = true })
       allMessagesRef?.addEventListener('hide.bs.collapse', () => { this.isShowAllMessages = false })
+      allMessagesRef?.addEventListener('shown.bs.collapse', () => { allMessagesRef.scrollIntoView({ behavior: 'smooth', block: 'nearest' }) })
       const resultOutputRef = this.$refs.resultOutputRef as HTMLElement
       resultOutputRef?.addEventListener('show.bs.collapse', () => { this.isShowResultOutput = true })
       resultOutputRef?.addEventListener('hide.bs.collapse', () => { this.isShowResultOutput = false })
+      resultOutputRef?.addEventListener('shown.bs.collapse', () => { resultOutputRef.scrollIntoView({ behavior: 'smooth', block: 'nearest' }) })
       const logOutputRef = this.$refs.logOutputRef as HTMLElement
       logOutputRef?.addEventListener('show.bs.collapse', () => { this.isShowLogOutput = true })
       logOutputRef?.addEventListener('hide.bs.collapse', () => { this.isShowLogOutput = false })
+      logOutputRef?.addEventListener('shown.bs.collapse', () => { logOutputRef.scrollIntoView({ behavior: 'smooth', block: 'nearest' }) })
       this.initializedListeners = true
     },
     extractMessagesFromResultsChecker(results_checker: ResultCheckerData) {
@@ -422,10 +481,13 @@ export default defineComponent({
         this.messagesList = null
       }
     },
-    extractMessages(requirements: {num: number, messages: {text: string, type: number}[]}[]) {
+    extractMessages(requirements: {num: number, description: string, messages: {text: string, type: number}[]}[]) {
       this.messagesList = []
+      this.requirementGroups = []
       for (const req of requirements) {
-        for (const msg2 of req.messages ?? []) {
+        const msgs = req.messages ?? []
+        this.requirementGroups.push({ num: req.num, description: req.description ?? '', messages: msgs })
+        for (const msg2 of msgs) {
           this.messagesList.push({type: msg2.type, text: msg2.text, num: req.num })
         }
       }
@@ -459,7 +521,7 @@ export default defineComponent({
       const blob = new Blob([this.result?.results_checker ?? ''], { type: 'application/json' })
       const a = document.createElement('a')
       a.href = URL.createObjectURL(blob)
-      a.download = `${this.domain}-result.json`
+      a.download = `${this.domainRescan}-result.json`
       a.click()
       URL.revokeObjectURL(a.href)
     },
@@ -467,7 +529,7 @@ export default defineComponent({
       const blob = new Blob([this.result?.runtime_output?.join('\n') ?? ''], { type: 'text/plain' })
       const a = document.createElement('a')
       a.href = URL.createObjectURL(blob)
-      a.download = `${this.domain}-log.txt`
+      a.download = `${this.domainRescan}-log.txt`
       a.click()
       URL.revokeObjectURL(a.href)
     },

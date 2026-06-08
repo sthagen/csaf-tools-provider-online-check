@@ -1,7 +1,13 @@
+# SPDX-FileCopyrightText: 2026 German Federal Office for Information Security (BSI) <https://www.bsi.bund.de>
+# Software-Engineering: 2026 Intevation GmbH <https://intevation.de>
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # --- Shared base ---
 FROM ubuntu:22.04 AS base
 
-ARG CSAF_CHECKER_VERSION=3.5.1
+ARG CSAF_CHECKER_VERSION
+ENV CSAF_CHECKER_VERSION=${CSAF_CHECKER_VERSION}
 
 # Install Python and curl
 RUN apt-get update && \

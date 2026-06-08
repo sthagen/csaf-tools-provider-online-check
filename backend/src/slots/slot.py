@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2026 German Federal Office for Information Security (BSI) <https://www.bsi.bund.de>
+# Software-Engineering: 2026 Intevation GmbH <https://intevation.de>
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Wrapper around a Domain Task
 # Interface for Slot Manager and Domain Tasks
 # May or may not have a running Domain Task

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2026 German Federal Office for Information Security (BSI) <https://www.bsi.bund.de>
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # csaf-tools/provider-online-check
 
 ## Introduction
@@ -228,6 +234,7 @@ Docker Compose reads this file automatically.
 | `TASK_TIME_BEFORE_ORPHANED` | `50` | Time in seconds a task can run without it's status being requested by a user before being considered orphaned. |
 | `LINTER_SHELLCHECK_OPTS` | `-e SC1091 -e SC2048` | Shellcheck rules that should be ignored. |
 | `DOMAIN_BLOCKLIST` | `` | List of domains that are not to be scanned. Exmaple: DOMAIN_BLOCKLIST="example.com second.example.com" |
+| `VERBOSE_OUTPUT_MAX_LINES_DEFAULT` | 10 | Default value for the maximum amount of verbose runtime output displayed at once. |
 | `FOOTER_TEXT` | _empty_ | Custom HTML content appended to the footer of the frontend. |
 
 Example `.env`:
@@ -389,7 +396,9 @@ docker compose -f docker-compose.prod.yml up -d
 
 ## License
 
+```
 SPDX-License-Identifier: Apache-2.0
 
-SPDX-FileCopyrightText: 2025 German Federal Office for Information Security (BSI) <https://www.bsi.bund.de>
-Software-Engineering: 2025 Intevation GmbH <https://intevation.de>
+SPDX-FileCopyrightText: 2026 German Federal Office for Information Security (BSI) <https://www.bsi.bund.de>
+Software-Engineering: 2026 Intevation GmbH <https://intevation.de>
+```
