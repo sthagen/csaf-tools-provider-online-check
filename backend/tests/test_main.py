@@ -342,10 +342,10 @@ class TestOutputOptions:
     async def test_max_lines_maximum(self):
         await scan_example_domain()
 
-        """Max lines set to 0 should output all lines. Tests whether 0 is functionally the same as using max possible lines"""
+        """Max lines set to -1 should output all lines. Tests whether -1 is functionally the same as using max possible lines"""
         minusOneResponse = client.post(
             "/api/scan/start",
-            json=mock_scan_request_variable_shortening_options(0, 0, True)
+            json=mock_scan_request_variable_shortening_options(0, -1, True)
         )
         minusOneData = minusOneResponse.json()
 

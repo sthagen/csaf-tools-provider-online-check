@@ -108,7 +108,7 @@ async def start_scan(request: ScanRequest) -> ScanResponse:
         full_output = data.csaf_checker_output_runtime_log
         displayed_output = full_output
         used_max_lines = request.max_lines
-        if used_max_lines == 0:
+        if used_max_lines == -1:
             used_max_lines = len(full_output)  # Full logs
 
         if request.prioritize_newest_lines:
