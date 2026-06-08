@@ -52,6 +52,10 @@ services:
     ports:
       - "${PORT_FRONTEND:-48091}:8080"
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: ${FRONTEND_MEMORY_LIMIT:-100m}
     networks:
       - scanner
     depends_on:
@@ -73,6 +77,10 @@ services:
     ports:
       - "${PORT_VALIDATOR:-48092}:8082"
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: ${CSAF_VALIDATOR_MEMORY_LIMIT:-75m}
     networks:
       - scanner
     depends_on:
@@ -97,6 +105,10 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: ${VALKEY_MEMORY_LIMIT:-500m}
 
 volumes:
   valkey-data:
