@@ -48,15 +48,18 @@ SPDX-License-Identifier: Apache-2.0
 
               <!-- display of requirements messages -->
               <div v-if="messagesList" class="alert alert-light mt-4">
-                <h3 class="alert-heading">Check results</h3>
-                <div v-if="result?.status === 'CACHED_CHECKER'" class="alert alert-info" role="alert">
-                  <h4 class="alert-heading">Result loaded from cache</h4>
-                  <p class="mb-0">
-                    This domain was checked previously.
-                    To reduce load on this service and the targeted CSAF provider, recent results are cached and reused.
-                    The result below may not reflect the current state of the provider.
-                    For up-to-date results, you can <a href="https://github.com/csaf-tools/provider-online-check/" target="_blank">run your own instance</a> of this service or use the <a href="https://github.com/gocsaf/csaf/blob/main/docs/csaf_checker.md" target="_blank">csaf_checker</a> command-line tool directly.
-                  </p>
+                <h3 class="alert-heading d-inline">Check results</h3>
+                <button v-if="result?.status === 'CACHED_CHECKER'"
+                  class="cache-info-btn ms-2"
+                  type="button"
+                  @click="isShowCacheInfo = !isShowCacheInfo"
+                  :aria-expanded="isShowCacheInfo"
+                >Loaded cached result <span class="cache-info-circle">?</span></button>
+                <div v-if="result?.status === 'CACHED_CHECKER' && isShowCacheInfo" class="cache-info-box mt-1">
+                  This target was checked previously.
+                   To reduce load on this service and the targeted CSAF provider, recent results are cached and reused.
+                   The result below may not reflect the current state of the provider.
+                   For up-to-date results, you can <a href="https://github.com/csaf-tools/provider-online-check/" target="_blank">run your own instance</a> of this service or use the <a href="https://github.com/gocsaf/csaf/blob/main/docs/csaf_checker.md" target="_blank">csaf_checker</a> command-line tool directly.
                 </div>
 
                 <div v-show="scanTime">
@@ -247,6 +250,7 @@ interface AppData {
   isShowAllMessages: boolean;
   isShowResultOutput: boolean;
   isShowLogOutput: boolean;
+  isShowCacheInfo: boolean;
   version: {
     csaf_checker_version: string;
     csaf_validator_version: string;
@@ -284,6 +288,7 @@ export default defineComponent({
       isShowAllMessages: false,
       isShowResultOutput: false,
       isShowLogOutput: false,
+      isShowCacheInfo: false,
       placeholderIndex: 0,
       placeholderTimer: null,
       placeholderVisible: true
@@ -464,6 +469,7 @@ export default defineComponent({
       this.requirementGroups = []
       this.scanTime = null
       this.passed = false
+      this.isShowCacheInfo = false
     },
     parseResultsChecker(results_checker: string): ResultCheckerData {
       return JSON.parse(results_checker)
@@ -595,6 +601,35 @@ export default defineComponent({
 }
 .small-margin-top {
   margin-top: 15px;
+}
+.cache-info-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.8rem;
+  color: var(--bs-secondary);
+  cursor: pointer;
+  vertical-align: middle;
+}
+.cache-info-btn:hover {
+  color: var(--bs-primary);
+}
+.cache-info-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2ex;
+  height: 2ex;
+  border-radius: 1ex;
+  border: thin solid;
+  font-size: 0.8rem;
+  vertical-align: middle;
+}
+.cache-info-box {
+  font-size: 0.875rem;
+  color: var(--bs-secondary);
+  border-left: 3px solid var(--bs-secondary);
+  padding-left: 0.75rem;
 }
 .log-header {
   margin-top: 7px;
