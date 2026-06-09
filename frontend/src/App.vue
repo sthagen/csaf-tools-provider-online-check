@@ -443,13 +443,10 @@ export default defineComponent({
       this.requirementGroups = []
       this.scanTime = null
       this.passed = false
-<<<<<<< HEAD
       this.isShowAllMessages = false
       this.isShowResultOutput = false
       this.isShowLogOutput = false
-=======
       this.isShowCacheInfo = false
->>>>>>> main
     },
     parseResultsChecker(results_checker: string): ResultCheckerData {
       return JSON.parse(results_checker)
