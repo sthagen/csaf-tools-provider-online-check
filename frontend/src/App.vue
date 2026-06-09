@@ -411,6 +411,9 @@ export default defineComponent({
           session_id: this.session_id
         })
         this.result = response.data
+        if (this.result?.domain) {
+          this.domainRescan = this.result.domain
+        }
         if (['DONE_CHECKER', 'CACHED_CHECKER'].includes(this.result?.status)) {
           const parsedResultsChecker = this.parseResultsChecker(this.result.results_checker)
           this.extractMessagesFromResultsChecker(parsedResultsChecker)
