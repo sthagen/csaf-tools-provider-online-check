@@ -141,17 +141,14 @@ SPDX-License-Identifier: Apache-2.0
                   </div>
                   <div v-if="result.status === 'INITIALIZED'">
                     <h5 class="alert-heading">Check started...</h5>
-                    <pre>{{ result.results_checker }}</pre>
                   </div>
                   <div v-if="result.status === 'RUNNING_CHECKER'">
                     <h5 class="alert-heading">Check running...</h5>
                     <h6 class="alert-heading">Files checked: {{ result.files_checked }}</h6>
                     <h6 class="alert-heading">Latest file checked: {{ result.latest_file_checked }}</h6>
-                    <pre>{{ result.results_checker }}</pre>
                   </div>
                   <div v-if="result.status === 'PAUSED'">
                     <h5 class="alert-heading">Check paused</h5>
-                    <pre>{{ result.results_checker }}</pre>
                   </div>
                 </div>
                 <div v-if="result.runtime_output" class="mt-4">
