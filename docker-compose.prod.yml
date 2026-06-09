@@ -81,7 +81,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: ${CSAF_VALIDATOR_MEMORY_LIMIT:-75m}
+          memory: ${CSAF_VALIDATOR_MEMORY_LIMIT:-150m}
     networks:
       - scanner
     depends_on:
