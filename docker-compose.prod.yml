@@ -30,7 +30,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: ${CSAF_CHECKER_MEMORY_LIMIT:-500m}
+          memory: ${BACKEND_MEMORY_LIMIT:-500m}
     networks:
       - scanner
     depends_on:
