@@ -224,6 +224,7 @@ Docker Compose reads this file automatically.
 | `CSAF_VALIDATOR_VERSION` | Version of the CSAF Validator. |
 | `APP_VERSION` | This App's Version. |
 | `CSAF_SHA256` | The expected checksum of the gocsaf tarball. |
+| `RUNTIME_LOG_MAX_BYTES` | 500000 | Maximum total byte size of runtime log stored per scan, 0 for unlimited. |
 | `SCAN_SLOTS` | Maximum number of concurrent scans. |
 | `BACKEND_MEMORY_LIMIT` | Memory limit for the backend container. |
 | `CSAF_CHECKER_TIMEOUT` | Timeout for csaf_checker in seconds, 0 for unlimited. |

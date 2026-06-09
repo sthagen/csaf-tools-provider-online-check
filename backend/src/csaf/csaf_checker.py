@@ -94,8 +94,7 @@ class CSAF_Checker(BaseModel):
         # Handle non-null running task
         await self.__terminate_asyncio_task()
 
-        # Write args. Everything after the `--` is not a flag but a positional argument (the scan target)
-        args = ["--verbose", "--", data.domain]
+        args = ["--verbose"]
 
         if data.enable_validator:
             args.append("--validator=http://validator:8082")
@@ -107,6 +106,10 @@ class CSAF_Checker(BaseModel):
                 args.append(
                     f"--validator_cache={CACHE_PATH_VALIDATOR}{data.validator_cache_file}"
                 )
+
+        # Write args. `--` before the domain ensures it is treated as a positional
+        # argument and not a flag, even if it starts with `-`.
+        args += ["--", data.domain]
 
         # Run task asynchronously
         self._running_task_checker = await asyncio.create_subprocess_exec(
@@ -229,7 +232,7 @@ class CSAF_Checker(BaseModel):
                 data.csaf_checker_output_result += decoded_line + "\n"
             else:
                 # Runtime Line
-                data.csaf_checker_output_runtime_log.append(decoded_line)
+                data.append_runtime_log(decoded_line)
                 # Check if log line references a file
                 if "[GET]" in decoded_line:
                     data.files_checked += 1
