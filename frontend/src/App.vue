@@ -62,6 +62,7 @@ SPDX-License-Identifier: Apache-2.0
 
                 <div v-show="scanTime">
                   Start time of the check: {{ scanTime }}
+                  Duration {{ formatDuration(result?.start_time, result?.end_time) }}
                 </div>
 
                 <h4 :class="trustedProviderStatus" class="small-margin-top medium-font-size">
@@ -540,6 +541,22 @@ export default defineComponent({
     },
     formatTime(ts: number) {
       return new Date(ts * 1000).toLocaleString()
+    },
+    formatDuration(startTime: number, endTime: number) {
+      const duration = endTime - startTime;
+      const hours = Math.floor(duration / 3600000);
+      const minutes = Math.floor((duration % 3600000) / 60000);
+      const seconds = Math.floor((duration % 60000) / 1000);
+      const milliseconds = duration % 1000;
+
+      return [
+          hours && `${hours}h`,
+          minutes && `${minutes}m`,
+          seconds && `${seconds}s`,
+          `${milliseconds}ms`
+      ]
+          .filter(Boolean)
+          .join(' ');
     }
   }
 })
