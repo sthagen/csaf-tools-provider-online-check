@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0
               <p>Check a CSAF Provider's metadata and all its documents for validity.<br />
                 Learn more about CSAF (Common Security Advisory Framework) at <a href="https://csaf.io" target="_blank">csaf.io</a>.</p>
 
-              <form @submit.prevent="startScan">
+              <form @submit.prevent="startScan" v-if="allowInput">
                 <div class="mb-3">
                   <label for="domainInput" class="form-label">Enter a domain name or <a href="https://docs.oasis-open.org/csaf/csaf/v2.1/csaf-v2.1.html#717-requirement-7-provider-metadatajson-" title="Provider Metadata File" target="_blank">PMD</a> to start the check:</label>
                   <input
@@ -38,10 +38,12 @@ SPDX-License-Identifier: Apache-2.0
                 </button>
               </form>
 
-              <div class="alert alert-light mt-4" role="alert" v-show="domainRescan">
-                  {{ loading ? 'Running check on target': 'Completed the check of'}} <code>{{ domainRescan }}</code>
-                  <span v-if="loading" class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
-                  <span v-else class="ms-2">✓</span>
+              <div class="alert alert-light mt-4 d-flex gap-2" role="alert" v-else>
+                  <span>{{ loading ? 'Running check on target': 'Completed the check of'}}</span>
+                  <span><code>{{ domainRescan }}</code></span>
+                  <span v-if="loading" class="spinner-border spinner-border-sm ms-2 me-auto" role="status" aria-hidden="true"></span>
+                  <span v-else class="ms-2 me-auto">✓</span>
+                  <button class="btn btn-danger btn-sm" @click="reset">Reset</button>
               </div>
 
               <!-- display of requirements messages -->
@@ -230,6 +232,7 @@ interface AppData {
   domain: string;
   domainRescan: string | null;
   loading: boolean;
+  allowInput: boolean;
   result: any;
   error: any;
   messagesList: null | MessageData[];
@@ -263,6 +266,7 @@ export default defineComponent({
       domain: '',
       domainRescan: null,
       loading: false,
+      allowInput: true,
       result: null,
       error: null,
       messagesList: null,
@@ -394,6 +398,7 @@ export default defineComponent({
         this.domainRescan = this.domain
         this.domain = ''
         this.loading = true
+        this.allowInput = false
         this.result = null
         this.messagesList = null
         this.error = null
@@ -405,7 +410,7 @@ export default defineComponent({
           domain: this.domainRescan,
           session_id: this.session_id
         })
-        this.result = response.data
+        this.result = this.loading ? response.data: null
         if (this.result?.domain) {
           this.domainRescan = this.result.domain
         }
@@ -429,11 +434,19 @@ export default defineComponent({
         }
       } finally {
         if (['INITIALIZED', 'RUNNING_CHECKER'].includes(this.result?.status) ) {
-          setTimeout(this.scanWork, 3000)
+          if (this.loading) {
+            setTimeout(this.scanWork, 3000)
+          }
         } else {
           this.loading = false
         }
       }
+    },
+    reset() {
+      this.loading = false
+      this.allowInput = true
+      this.result = null
+      this.clearFields()
     },
     clearFields() {
       this.messagesList = null
