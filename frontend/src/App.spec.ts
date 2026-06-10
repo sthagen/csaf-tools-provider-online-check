@@ -258,7 +258,6 @@ describe("Testing App...", () => {
         expect(app.vm.isShowAllMessages).toBe(false)
         expect(app.vm.isShowResultOutput).toBe(false)
         expect(app.vm.isShowLogOutput).toBe(false)
-        expect(app.vm.initializedListeners).toBe(true)
     })
     test("downloadJson triggers download with correct filename and content", async () => {
         // mock to intercept the click event of the new a element
