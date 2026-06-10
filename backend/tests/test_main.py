@@ -215,7 +215,7 @@ class TestScanStartEndpointDomains:
         """Fails with invalid JSON"""
         response = client.post(
             "/api/scan/start",
-            data="not json",
+            content="not json",
             headers={"Content-Type": "application/json"}
         )
         assert response.status_code == 422
