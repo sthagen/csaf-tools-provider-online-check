@@ -141,17 +141,14 @@ SPDX-License-Identifier: Apache-2.0
                   </div>
                   <div v-if="result.status === 'INITIALIZED'">
                     <h5 class="alert-heading">Check started...</h5>
-                    <pre>{{ result.results_checker }}</pre>
                   </div>
                   <div v-if="result.status === 'RUNNING_CHECKER'">
                     <h5 class="alert-heading">Check running...</h5>
                     <h6 class="alert-heading">Files checked: {{ result.files_checked }}</h6>
                     <h6 class="alert-heading">Latest file checked: {{ result.latest_file_checked }}</h6>
-                    <pre>{{ result.results_checker }}</pre>
                   </div>
                   <div v-if="result.status === 'PAUSED'">
                     <h5 class="alert-heading">Check paused</h5>
-                    <pre>{{ result.results_checker }}</pre>
                   </div>
                 </div>
                 <div v-if="result.runtime_output" class="mt-4">
@@ -233,7 +230,6 @@ interface AppData {
   domain: string;
   domainRescan: string | null;
   loading: boolean;
-  initializedListeners: boolean;
   result: any;
   error: any;
   messagesList: null | MessageData[];
@@ -267,7 +263,6 @@ export default defineComponent({
       domain: '',
       domainRescan: null,
       loading: false,
-      initializedListeners: false,
       result: null,
       error: null,
       messagesList: null,
@@ -420,11 +415,9 @@ export default defineComponent({
           this.setScanTime(parsedResultsChecker)
           this.setPassed(parsedResultsChecker)
           this.setRole(parsedResultsChecker)
-          if (!this.initializedListeners) {
-            setTimeout(() => {
-              this.initializeListeners()
-            })
-          }
+          setTimeout(() => {
+            this.initializeListeners()
+          })
         } else {
           this.clearFields()
         }
@@ -447,6 +440,9 @@ export default defineComponent({
       this.requirementGroups = []
       this.scanTime = null
       this.passed = false
+      this.isShowAllMessages = false
+      this.isShowResultOutput = false
+      this.isShowLogOutput = false
       this.isShowCacheInfo = false
     },
     parseResultsChecker(results_checker: string): ResultCheckerData {
@@ -482,7 +478,6 @@ export default defineComponent({
       logOutputRef?.addEventListener('show.bs.collapse', () => { this.isShowLogOutput = true })
       logOutputRef?.addEventListener('hide.bs.collapse', () => { this.isShowLogOutput = false })
       logOutputRef?.addEventListener('shown.bs.collapse', () => { logOutputRef.scrollIntoView({ behavior: 'smooth', block: 'nearest' }) })
-      this.initializedListeners = true
     },
     extractMessagesFromResultsChecker(results_checker: ResultCheckerData) {
       if (results_checker.domains?.[0]?.requirements) {
