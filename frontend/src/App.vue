@@ -43,7 +43,7 @@ SPDX-License-Identifier: Apache-2.0
                   <span><code>{{ domainRescan }}</code></span>
                   <span v-if="loading" class="spinner-border spinner-border-sm ms-2 me-auto" role="status" aria-hidden="true"></span>
                   <span v-else class="ms-2 me-auto">✓</span>
-                  <button class="btn btn-danger btn-sm" @click="reset">Reset</button>
+                  <button class="btn btn-danger btn-sm" @click="reset">{{ loading ? 'Cancel': 'Start a new check'}}</button>
               </div>
 
               <!-- display of requirements messages -->
@@ -446,6 +446,7 @@ export default defineComponent({
       this.loading = false
       this.allowInput = true
       this.result = null
+      this.domainRescan = null
       this.clearFields()
     },
     clearFields() {
