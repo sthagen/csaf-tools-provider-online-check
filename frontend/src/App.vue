@@ -522,11 +522,14 @@ export default defineComponent({
       // runtime_output is a list, join it by newlines
       this.copyToClipboard(this.result?.runtime_output?.join('\n') ?? '')
     },
+    sanitizeFilename(name: string): string {
+      return name.replace(/^https?:\/\//, '').replace(/[^a-zA-Z0-9._-]/g, '_')
+    },
     downloadJson() {
       const blob = new Blob([this.result?.results_checker ?? ''], { type: 'application/json' })
       const a = document.createElement('a')
       a.href = URL.createObjectURL(blob)
-      a.download = `${this.domainRescan}-result.json`
+      a.download = `${this.sanitizeFilename(this.domainRescan ?? '')}-result.json`
       a.click()
       URL.revokeObjectURL(a.href)
     },
@@ -534,7 +537,7 @@ export default defineComponent({
       const blob = new Blob([this.result?.runtime_output?.join('\n') ?? ''], { type: 'text/plain' })
       const a = document.createElement('a')
       a.href = URL.createObjectURL(blob)
-      a.download = `${this.domainRescan}-log.txt`
+      a.download = `${this.sanitizeFilename(this.domainRescan ?? '')}-log.txt`
       a.click()
       URL.revokeObjectURL(a.href)
     },
