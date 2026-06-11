@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import App from './App.vue'
 import axios from 'axios'
@@ -16,6 +16,9 @@ describe("Testing App...", () => {
             () => new Promise(resolve => resolve({}))
         )
         app = mount(App)
+    })
+    afterEach(() => {
+        vi.restoreAllMocks()
     })
 
     test('extractMessages', () => {
@@ -267,13 +270,21 @@ describe("Testing App...", () => {
         // required to capture the output
         vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock')
 
-        app.vm.domain = 'example.com'
+        app.vm.domain = 'https://example.com/.well-known/csaf/provider-metadata.json'
         app.vm.result = { results_checker: '{"version": "3.5.1}' }
         app.vm.downloadJson()
 
-        expect(anchor.download).toBe('example.com-result.json')
+        expect(anchor.download).toBe('example.com_.well-known_csaf_provider-metadata.json-result.json')
         expect(anchor.click).toHaveBeenCalled()
         const blob = vi.mocked(URL.createObjectURL).mock.calls[0][0] as Blob
         expect(await blob.text()).toBe('{"version": "3.5.1}')
+    })
+
+    test("sanitizeFilename", () => {
+        expect(app.vm.sanitizeFilename('example.com')).toBe('example.com')
+        expect(app.vm.sanitizeFilename('https://example.com/.well-known/csaf/provider-metadata.json'))
+            .toBe('example.com_.well-known_csaf_provider-metadata.json')
+        expect(app.vm.sanitizeFilename('http://example.com/path?foo=bar'))
+            .toBe('example.com_path_foo_bar')
     })
 })
