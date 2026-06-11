@@ -96,12 +96,12 @@ describe("Testing App...", () => {
             )}
         ))
         app.vm.startScan()
-        expect(app.vm.domainRescan).toBe('EXAMPLE.com')
+        expect(app.vm.domain).toBe('EXAMPLE.com')
         await flushPromises()
         expect(app.vm.loading).toBe(false)
         expect(app.vm.result?.status).toBe('CACHED_CHECKER')
         expect(app.vm.messagesList).toStrictEqual([{text: 'Test1', type: 0, num: 12}])
-        expect(app.vm.domainRescan).toBe('example.com')
+        expect(app.vm.domain).toBe('example.com')
 
     })
     test('startScan ERROR', async () => {
@@ -267,7 +267,7 @@ describe("Testing App...", () => {
         // required to capture the output
         vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock')
 
-        app.vm.domainRescan = 'example.com'
+        app.vm.domain = 'example.com'
         app.vm.result = { results_checker: '{"version": "3.5.1}' }
         app.vm.downloadJson()
 
