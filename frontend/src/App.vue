@@ -544,16 +544,14 @@ export default defineComponent({
     },
     formatDuration(startTime: number, endTime: number) {
       const duration = endTime - startTime;
-      const hours = Math.floor(duration / 3600000);
-      const minutes = Math.floor((duration % 3600000) / 60000);
-      const seconds = Math.floor((duration % 60000) / 1000);
-      const milliseconds = duration % 1000;
+      const hours = Math.floor(duration / 3600);
+      const minutes = Math.floor((duration % 3600) / 60);
+      const seconds = Math.floor((duration % 60));
 
       return [
           hours && `${hours}h`,
           minutes && `${minutes}m`,
-          seconds && `${seconds}s`,
-          `${milliseconds}ms`
+          `${seconds}s`,
       ]
           .filter(Boolean)
           .join(' ');
