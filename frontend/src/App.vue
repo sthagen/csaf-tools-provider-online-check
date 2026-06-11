@@ -61,8 +61,8 @@ SPDX-License-Identifier: Apache-2.0
                 </div>
 
                 <div v-show="scanTime">
-                  Start time of the check: {{ scanTime }}
-                  Duration {{ formatDuration(result?.start_time, result?.end_time) }}
+                  <div>Start time of the check: {{ scanTime }}</div>
+                  <div>Duration {{ formatDuration(result?.start_time, result?.end_time) }}</div>
                 </div>
 
                 <h4 :class="trustedProviderStatus" class="small-margin-top medium-font-size">
