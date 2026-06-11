@@ -39,9 +39,12 @@ SPDX-License-Identifier: Apache-2.0
               </form>
 
               <div class="alert alert-light mt-4" role="alert" v-show="domainRescan">
-                  {{ loading ? 'Running check on target': 'Completed the check of'}} <code>{{ domainRescan }}</code>
-                  <span v-if="loading" class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
-                  <span v-else class="ms-2">✓</span>
+                  <div>
+                    {{ loading ? 'Running check on target': 'Completed the check of'}} <code>{{ domainRescan }}</code>
+                    <span v-if="loading" class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
+                    <span v-else class="ms-2">✓</span>
+                  </div>
+                  <div>Duration {{ formatDuration(result?.start_time, result?.end_time) }}</div>
               </div>
 
               <!-- display of requirements messages -->
@@ -62,7 +65,6 @@ SPDX-License-Identifier: Apache-2.0
 
                 <div v-show="scanTime">
                   <div>Start time of the check: {{ scanTime }}</div>
-                  <div>Duration {{ formatDuration(result?.start_time, result?.end_time) }}</div>
                 </div>
 
                 <h4 :class="trustedProviderStatus" class="small-margin-top medium-font-size">
@@ -543,6 +545,9 @@ export default defineComponent({
       return new Date(ts * 1000).toLocaleString()
     },
     formatDuration(startTime: number, endTime: number) {
+      if (endTime === 0) {
+        endTime = Date.now() / 1000
+      }
       const duration = endTime - startTime;
       const hours = Math.floor(duration / 3600);
       const minutes = Math.floor((duration % 3600) / 60);
