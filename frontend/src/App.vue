@@ -40,7 +40,7 @@ SPDX-License-Identifier: Apache-2.0
 
               <div class="alert alert-light mt-4 d-flex gap-2" role="alert" v-else>
                   <span>{{ loading ? 'Running check on target': 'Completed the check of'}}</span>
-                  <span><code>{{ domainRescan }}</code></span>
+                  <span><code>{{ domain }}</code></span>
                   <span v-if="loading" class="spinner-border spinner-border-sm ms-2 me-auto" role="status" aria-hidden="true"></span>
                   <span v-else class="ms-2 me-auto">✓</span>
                   <button class="btn btn-danger btn-sm" @click="reset">{{ loading ? 'Cancel': 'Start a new check'}}</button>
@@ -230,7 +230,6 @@ interface RequirementGroup {
 interface AppData {
   session_id: string;
   domain: string;
-  domainRescan: string | null;
   loading: boolean;
   allowInput: boolean;
   result: any;
@@ -264,7 +263,6 @@ export default defineComponent({
     return {
       session_id: '1',
       domain: '',
-      domainRescan: null,
       loading: false,
       allowInput: true,
       result: null,
@@ -390,29 +388,23 @@ export default defineComponent({
   },
   methods: {
     async startScan() {
-      this.domainRescan = null
+      this.loading = true
+      this.allowInput = false
+      this.result = null
+      this.messagesList = null
+      this.error = null
+      this.clearFields()
       this.scanWork()
     },
     async scanWork() {
-      if (!this.domainRescan) {
-        this.domainRescan = this.domain
-        this.domain = ''
-        this.loading = true
-        this.allowInput = false
-        this.result = null
-        this.messagesList = null
-        this.error = null
-        this.clearFields()
-      }
-
       try {
         const response = await axios.post(`${this.backendUrl}/api/scan/start`, {
-          domain: this.domainRescan,
+          domain: this.domain,
           session_id: this.session_id
         })
         this.result = this.loading ? response.data: null
         if (this.result?.domain) {
-          this.domainRescan = this.result.domain
+          this.domain = this.result.domain
         }
         if (['DONE_CHECKER', 'CACHED_CHECKER'].includes(this.result?.status)) {
           const parsedResultsChecker = this.parseResultsChecker(this.result.results_checker)
@@ -539,7 +531,7 @@ export default defineComponent({
       const blob = new Blob([this.result?.results_checker ?? ''], { type: 'application/json' })
       const a = document.createElement('a')
       a.href = URL.createObjectURL(blob)
-      a.download = `${this.domainRescan}-result.json`
+      a.download = `${this.domain}-result.json`
       a.click()
       URL.revokeObjectURL(a.href)
     },
@@ -547,7 +539,7 @@ export default defineComponent({
       const blob = new Blob([this.result?.runtime_output?.join('\n') ?? ''], { type: 'text/plain' })
       const a = document.createElement('a')
       a.href = URL.createObjectURL(blob)
-      a.download = `${this.domainRescan}-log.txt`
+      a.download = `${this.domain}-log.txt`
       a.click()
       URL.revokeObjectURL(a.href)
     },
