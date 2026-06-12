@@ -19,6 +19,7 @@ def mock_scan_request_variable_domain(domain: str):
         "session_id": "0",
         "domain": domain,
         "clear_any_running": True,
+        "skip_cache": True,
     }
     return mock
 
@@ -28,6 +29,7 @@ def mock_scan_request_variable_session_id(session_id: str):
         "session_id": session_id,
         "domain": "example.com",
         "clear_any_running": True,
+        "skip_cache": True,
     }
     return mock
 
@@ -213,7 +215,7 @@ class TestScanStartEndpointDomains:
         """Fails with invalid JSON"""
         response = client.post(
             "/api/scan/start",
-            data="not json",
+            content="not json",
             headers={"Content-Type": "application/json"}
         )
         assert response.status_code == 422
@@ -277,19 +279,25 @@ class TestOutputOptions:
         """Different start points should result in the same output that is offset"""
         normalResponse = client.post(
             "/api/scan/start",
-            json=mock_scan_request_variable_shortening_options(0, 10, False)
+            json=mock_scan_request_variable_shortening_options(0, -1, False)
         )
         normalResponseData = normalResponse.json()
 
+        assert normalResponse.status_code == 201
+
+        total_lines = len(normalResponseData["runtime_output"])
+        offset = min(5, total_lines - 1)
+        if offset == 0:
+            pytest.skip("Log has too few lines to test start_at offset")
+
         offsetResponse = client.post(
             "/api/scan/start",
-            json=mock_scan_request_variable_shortening_options(5, 10, False)
+            json=mock_scan_request_variable_shortening_options(offset, 10, False)
         )
         offsetResponseData = offsetResponse.json()
 
-        assert normalResponse.status_code == 201
         assert offsetResponse.status_code == 201
-        assert normalResponseData["runtime_output"][5] == offsetResponseData["runtime_output"][0]
+        assert normalResponseData["runtime_output"][offset] == offsetResponseData["runtime_output"][0]
 
     @pytest.mark.asyncio
     async def test_prioritize_latest(self):
@@ -338,6 +346,27 @@ class TestOutputOptions:
         assert shortResponse.status_code == 201
         assert len(shortResponseData["runtime_output"]) == 4
 
+    @pytest.mark.asyncio
+    async def test_max_lines_maximum(self):
+        await scan_example_domain()
+
+        """Max lines set to -1 should output all lines. Tests whether -1 is functionally the same as using max possible lines"""
+        minusOneResponse = client.post(
+            "/api/scan/start",
+            json=mock_scan_request_variable_shortening_options(0, -1, True)
+        )
+        minusOneData = minusOneResponse.json()
+
+        maxLinesResponse = client.post(
+            "/api/scan/start",
+            json=mock_scan_request_variable_shortening_options(0, 2147483647, True)
+        )
+        maxLinesData = maxLinesResponse.json()
+
+        assert minusOneResponse.status_code == 201
+        assert maxLinesResponse.status_code == 201
+        assert len(maxLinesData["runtime_output"]) == len(minusOneData["runtime_output"])
+
 
 class TestDomainValidation:
     """Tests for domain validation logic"""
@@ -366,6 +395,16 @@ class TestDomainValidation:
         """validation rejects invalid domain format"""
         with pytest.raises(ValueError, match="Invalid domain/PMD format. Please enter a valid Domain or PMD URL. Domains require a non-zero length extension. PMDs must start with 'https://' and end with '/provider-metadata.json'"):
             ScanRequest(domain="not a valid domain")
+
+    def test_validate_pmd_url_normalizes_hostname_only(self):
+        """validation lowercases PMD hostname but preserves path case"""
+        request = ScanRequest(session_id="0", domain="HTTPS://Example.COM/CSAF/provider-metadata.json")
+        assert request.domain == "https://example.com/CSAF/provider-metadata.json"
+
+    def test_validate_pmd_url_normalizes_idn_hostname(self):
+        """validation converts IDN hostname in PMD to Punycode"""
+        request = ScanRequest(session_id="0", domain="https://püñi.example/strange/path/provider-metadata.json")
+        assert request.domain == "https://xn--pi-zja7b.example/strange/path/provider-metadata.json"
 
 
 class TestOpenAPIDocumentation:

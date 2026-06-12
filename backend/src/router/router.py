@@ -14,7 +14,7 @@ import asyncio
 import logging
 import os
 
-import httpx
+import httpx2
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
 
@@ -107,10 +107,13 @@ async def start_scan(request: ScanRequest) -> ScanResponse:
         # Shorten output
         full_output = data.csaf_checker_output_runtime_log
         displayed_output = full_output
+        used_max_lines = request.max_lines
+        if used_max_lines == -1:
+            used_max_lines = len(full_output)  # Full logs
 
         if request.prioritize_newest_lines:
             # Latest max_lines entries. Lower boundary clamped at start_at_line
-            lower_boundary = max(0, len(full_output) - request.max_lines)
+            lower_boundary = max(0, len(full_output) - used_max_lines)
             if request.start_at_line > lower_boundary:
                 lower_boundary = request.start_at_line
 
@@ -118,7 +121,7 @@ async def start_scan(request: ScanRequest) -> ScanResponse:
         else:
             # max_lines entries starting from start_at_line
             # fmt: off
-            displayed_output = full_output[request.start_at_line:(request.start_at_line + request.max_lines)]  # Slicing is boundary safe
+            displayed_output = full_output[request.start_at_line:(request.start_at_line + used_max_lines)]  # Slicing is boundary safe
 
         return {
             "status": status,
@@ -204,7 +207,7 @@ async def health_check() -> HealthResponse:
     # Check Validator connectivity
     validator_available = False
     try:
-        async with httpx.AsyncClient() as client:
+        async with httpx2.AsyncClient() as client:
             validator_response = await client.get(
                 "http://validator:8082/api/v1/tests", timeout=10
             )
@@ -216,9 +219,9 @@ async def health_check() -> HealthResponse:
             )
         else:
             validator_available = True
-    except httpx.TimeoutException as e:
+    except httpx2.TimeoutException as e:
         errors.append(f"Validator timed out: {e}")
-    except httpx.RequestError as e:
+    except httpx2.RequestError as e:
         errors.append(f"Validator is not available: {e}")
     if not validator_available:
         errors.append("Validator is not available")
